@@ -151,8 +151,8 @@ importers:
         specifier: 3.2.2
         version: 3.2.2
       jurist:
-        specifier: 0.0.3
-        version: 0.0.3
+        specifier: 0.0.4
+        version: 0.0.4
       nanoid:
         specifier: 5.1.5
         version: 5.1.5
@@ -2763,8 +2763,8 @@ packages:
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
 
-  jurist@0.0.3:
-    resolution: {integrity: sha512-Zh3xeCPtaiA4d3A4pFKqRYMk4FFAlxpXDByvaY6OfJ6DtCH1MvubcF/lIHAPySrAJyql7nm/U4FbojJNkzgAOA==}
+  jurist@0.0.4:
+    resolution: {integrity: sha512-gbE08NLZK1P/D5e6bGGrpteDmfY0UsIg4qXhU0UEIPFXIeiFPvNvRhW2hSkTlGblPyGqVtZCkf1hGXnee+ZGtA==}
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -3370,9 +3370,6 @@ packages:
   tree-kill@1.2.2:
     resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}
     hasBin: true
-
-  treetrunks@0.1.1:
-    resolution: {integrity: sha512-D/MQDu6vtoo5FmDRNapQobO/1w0jB1SMgWbm2zAcneZsVYU6UhTcJWpQYMswUpWz4QEI4CXcU0pGnqk8FKPFmw==}
 
   treetrunks@0.1.2:
     resolution: {integrity: sha512-VT0SaMvGk41s7aUGrQP/ez+AAOYPsH/M2RXdwkO7bx2FjyIpucu7qlwFognB2KFlufmXAWUVyrwBw5OAZA7FaA==}
@@ -6099,9 +6096,9 @@ snapshots:
     optionalDependencies:
       graceful-fs: 4.2.11
 
-  jurist@0.0.3:
+  jurist@0.0.4:
     dependencies:
-      treetrunks: 0.1.1
+      treetrunks: 0.1.2
 
   keyv@4.5.4:
     dependencies:
@@ -6699,8 +6696,6 @@ snapshots:
       punycode: 2.3.1
 
   tree-kill@1.2.2: {}
-
-  treetrunks@0.1.1: {}
 
   treetrunks@0.1.2: {}
 
