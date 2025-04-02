@@ -49,5 +49,5 @@ jobs:
           publish: pnpm release
           version: ./lib/version.sh
         env:
-          GITHUB_TOKEN: ${{ secrets.CHANGESETS_GITHUB_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
