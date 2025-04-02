@@ -1,7 +1,7 @@
 {
 	"name": "recoverage",
 	"version": "0.1.6",
-	"license": "MIT",
+	"license": "BSD-3-Clause",
 	"author": {
 		"name": "Jeremy Banka",
 		"email": "hello@jeremybanka.com"
@@ -11,7 +11,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/jeremybanka/wayforge.git",
+		"url": "git+https://github.com/jeremybanka/recoverage.git",
 		"directory": "packages/recoverage"
 	},
 	"type": "module",
