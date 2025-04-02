@@ -17,8 +17,6 @@ jobs:
   Release:
     runs-on: ubuntu-latest
     timeout-minutes: 9
-    env:
-      NEXT_PUBLIC_REMOTE_ORIGIN: ${{ secrets.NEXT_PUBLIC_REMOTE_ORIGIN }}
 
     steps:
       - name: Checkout Repo
