@@ -1,0 +1,119 @@
+{
+	"$schema": "https://turbo.build/schema.json",
+	"ui": "tui",
+	"globalDependencies": ["tsconfig.json", ".bun-version", ".node-version"],
+	"tasks": {
+		"build": {
+			"dependsOn": ["gen", "^build", "^gen"],
+			"outputs": ["dist/**", "**/dist/*", "**/dist/**/*", "bin/**"],
+			"inputs": ["**/package.json", "src/**", "**/src/**"]
+		},
+		"test:build": {
+			"dependsOn": ["build"],
+			"inputs": [
+				"**/package.json",
+				"src/**",
+				"**/src/**",
+				"__tests__/**",
+				"__scripts__/**"
+			]
+		},
+		"test:once": {
+			"dependsOn": ["test:build", "^build"],
+			"inputs": [
+				"**/package.json",
+				"src/**",
+				"**/src/**",
+				"__tests__/**",
+				"__scripts__/**"
+			]
+		},
+		"test:coverage:once": {
+			"dependsOn": ["^build"],
+			"outputs": ["coverage/**", "**/coverage/**"],
+			"inputs": [
+				"../../.github/workflows/test.yml",
+				"../../git.sha",
+				"**/package.json",
+				"src/**",
+				"**/src/**",
+				"__tests__/**",
+				"__scripts__/**"
+			]
+		},
+		"test:coverage:increased": {
+			"dependsOn": ["test:coverage:once"],
+			"cache": false
+		},
+		"test:semver": {
+			"dependsOn": ["^build"],
+			"inputs": [
+				"../../.changeset/**",
+				"../../packages/break-check/src/**/*.ts",
+				"break-check.config.json",
+				"**/package.json",
+				"src/**/*.{ts,tsx,scss,mdx}",
+				"**/src/**/*.{ts,tsx,scss,mdx}",
+				"__tests__/public/**/*.test.{ts,tsx}",
+				"__scripts__/**/*.ts"
+			]
+		},
+		"lint:biome": {
+			"cache": false
+		},
+		"lint:eslint": {
+			"dependsOn": ["gen"],
+			"inputs": [
+				"../../package.json",
+				"../../eslint.config.ts",
+				"**/package.json",
+				"tsconfig.json",
+				"src/**",
+				"**/src/**",
+				"__tests__/**",
+				"__scripts__/**"
+			]
+		},
+		"lint:types": {
+			"dependsOn": ["gen", "^lint:types", "^build", "^gen"],
+			"inputs": [
+				"../../package.json",
+				"../../tsconfig.json",
+				"**/package.json",
+				"tsconfig.json",
+				"src/**",
+				"**/src/**",
+				"__tests__/**",
+				"__scripts__/**"
+			]
+		},
+		"watch:types": {
+			"persistent": true,
+			"dependsOn": ["gen", "^build", "^gen"],
+			"inputs": [
+				"../../package.json",
+				"**/package.json",
+				"tsconfig.json",
+				"src/**",
+				"**/src/**",
+				"__tests__/**",
+				"__scripts__/**"
+			]
+		},
+		"lint": {
+			"dependsOn": ["lint:biome", "lint:eslint", "lint:types"]
+		},
+		"gen": {
+			"dependsOn": ["^build"],
+			"outputs": ["**/*.gen.ts", "**/*.gen.tsx"],
+			"inputs": [
+				"**/package.json",
+				"tsconfig.json",
+				"src/**",
+				"**/src/**",
+				"__tests__/**",
+				"__scripts__/**"
+			]
+		}
+	}
+}

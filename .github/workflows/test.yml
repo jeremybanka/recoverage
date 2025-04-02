@@ -1,0 +1,65 @@
+name: Test
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    types: [opened, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  Vitest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/setup
+      - run: pnpm run test
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: Varmint
+          path: /tmp/varmint-uploads
+          retention-days: 1
+
+  Build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/setup
+      - run: pnpm run build
+
+  Coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/setup
+      - run: |
+          printenv > packages/atom.io/.env
+          printenv > packages/treetrunks/.env
+        env:
+          RECOVERAGE_CLOUD_TOKEN: ${{ secrets.RECOVERAGE_CLOUD_TOKEN }}
+      - run: git rev-parse HEAD > git.sha
+      - run: pnpm test:coverage:increased
+
+  BreakCheck:
+    name: Break Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/setup
+      - run: pnpm test:semver

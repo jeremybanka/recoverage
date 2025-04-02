@@ -1,0 +1,5 @@
+packages:
+  - packages/*
+  - recoverage.cloud
+onlyBuiltDependencies:
+  - esbuild
