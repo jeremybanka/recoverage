@@ -40,7 +40,7 @@
 	"dependencies": {
 		"@t3-oss/env-core": "0.12.0",
 		"colors": "1.4.0",
-		"comline": "0.2.1",
+		"comline": "0.2.2",
 		"diff": "7.0.0",
 		"istanbul-lib-coverage": "3.2.2",
 		"istanbul-lib-report": "3.0.1",
