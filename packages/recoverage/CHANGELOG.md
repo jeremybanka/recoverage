@@ -1,5 +1,11 @@
 # recoverage
 
+## 0.1.7
+
+### Patch Changes
+
+- b041759: 🚚 Update manifest to point at the new repository: https://github.com/jeremybanka/recoverage
+
 ## 0.1.6
 
 ### Patch Changes
