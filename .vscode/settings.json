@@ -34,5 +34,5 @@
 		"**/app/**/page.mdx": "${dirname}/page.tsx",
 		"**/app/**/layout.tsx": "${dirname}/layout.tsx"
 	},
-	"cSpell.words": ["comline", "recoverage", "yalc"]
+	"cSpell.words": ["comline", "recoverage", "workerd", "yalc"]
 }
