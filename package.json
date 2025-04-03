@@ -49,12 +49,6 @@
 		"vitest": "3.1.1"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": [
-			"@biomejs/biome",
-			"bun",
-			"esbuild",
-			"sharp",
-			"workerd"
-		]
+		"onlyBuiltDependencies": ["@biomejs/biome", "bun", "esbuild", "sharp"]
 	}
 }
