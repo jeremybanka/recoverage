@@ -47,7 +47,9 @@ jobs:
         with:
           # This expects you to have a script called release which does a build for your packages and calls changeset publish
           publish: pnpm release
-          version: ./lib/version.sh
+          version: |
+            bun changeset version
+            bun fmt:fix
         env:
           GITHUB_TOKEN: ${{ secrets.CHANGESETS_GITHUB_PAT }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
