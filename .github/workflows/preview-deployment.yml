@@ -32,7 +32,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           database_name="preview-db-pr-${{ github.event.number }}"
-          output=$(cd recoverage.cloud && pnpm wrangler d1 create $database_name --json)
+          output=$(cd recoverage.cloud && pnpm wrangler d1 create $database_name)
+          echo $output
           database_id=$(echo $output | jq -r '.uuid')
           echo "database_id=$database_id" >> $GITHUB_OUTPUT
           echo "database_name=$database_name" >> $GITHUB_OUTPUT
