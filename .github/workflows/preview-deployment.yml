@@ -57,6 +57,7 @@ jobs:
           DATABASE_NAME: ${{ steps.create_db.outputs.database_name }}
         run: |
           printenv > recoverage.cloud/.env
+          chmod +x recoverage.cloud/.env
           pnpm -F recoverage.cloud run preview
 
       - name: teardown all
