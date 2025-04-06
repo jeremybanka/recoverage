@@ -48,7 +48,7 @@ jobs:
           DATABASE_NAME: ${{ steps.create_db.outputs.database_name }}
         run: |
           pnpm -F recoverage.cloud run preview:config
-          cat wrangler-preview.jsonc
+          cat recoverage.cloud/wrangler-preview.jsonc
 
       - name: deploy preview worker
         if: github.event.action != 'closed'
