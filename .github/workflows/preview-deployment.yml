@@ -18,52 +18,45 @@ jobs:
       - uses: actions/checkout@v4.2.2
       - uses: ./.github/actions/setup
 
-      - name: create database
+      - name: teardown preview database
         if: github.event.action != 'closed'
-        id: check_db
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          databases=$(wrangler d1 list --json)
-          db_name="preview-db-pr-${{ github.event.number }}"
-          existing_db=$(echo $databases | jq -r ".[] | select(.name == \"$db_name\") | .database_id")
-          if [ -z "$existing_db" ]; then
-            output=$(wrangler d1 create $db_name --json)
-            database_id=$(echo $output | jq -r '.database_id')
-          else
-            database_id=$existing_db
-          fi
-          echo "::set-output name=database_id::$database_id"
+          wrangler d1 delete "preview-db-pr-${{ github.event.number }}" --yes || true
 
-      - name: Generate wrangler.toml
+      - name: create preview database
         if: github.event.action != 'closed'
+        id: create_db
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          cat <<EOF > wrangler.toml
-          name = "preview-worker-pr-${{ github.event.number }}"
-          [[d1_databases]]
-          binding = "DB"
-          database_id = "${{ steps.check_db.outputs.database_id }}"
-          EOF
+          database_name="preview-db-pr-${{ github.event.number }}"
+          output=$(wrangler d1 create $database_name --json)
+          database_id=$(echo $output | jq -r '.uuid')
+          echo "database_id=$database_id" >> $GITHUB_OUTPUT
+          echo "database_name=$database_name" >> $GITHUB_OUTPUT
 
-      - name: Apply migrations
+      - name: configure preview worker
         if: github.event.action != 'closed'
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+          DATABASE_ID: ${{ steps.create_db.outputs.database_id }}
+          DATABASE_NAME: ${{ steps.create_db.outputs.database_name }}
         run: |
-          wrangler d1 migrations apply preview-db-pr-${{ github.event.number }}
+          pnpm -F recoverage.cloud run preview:config
+          cat wrangler-preview.jsonc
 
-      - name: Deploy preview
+      - name: deploy preview worker
         if: github.event.action != 'closed'
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          command: deploy
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: pnpm -F recoverage.cloud run preview
 
-      - name: Comment on PR
-        if: github.event.action != 'closed'
-        uses: thollander/actions-comment-pull-request@v1
-        with:
-          message: "Preview deployment is available at https://preview-worker-pr-${{ github.event.number }}.mycompany.workers.dev"
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Teardown preview
+      - name: teardown all
         if: github.event.action == 'closed'
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          wrangler delete preview-worker-pr-${{ github.event.number }}
-          wrangler d1 delete preview-db-pr-${{ github.event.number }} --yes
+          npx wrangler delete --name "preview-worker-pr-${{ github.event.number }}"
+          npx wrangler d1 delete "preview-db-pr-${{ github.event.number }}" --yes
