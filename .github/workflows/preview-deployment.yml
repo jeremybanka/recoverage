@@ -55,7 +55,9 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           DATABASE_NAME: ${{ steps.create_db.outputs.database_name }}
-        run: pnpm -F recoverage.cloud run preview
+        run: |
+          printenv > recoverage.cloud/.env
+          pnpm -F recoverage.cloud run preview
 
       - name: teardown all
         if: github.event.action == 'closed'
