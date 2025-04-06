@@ -15,18 +15,10 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/setup
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: "16"
-
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
-      - name: Check if database exists
+      - name: create database
         if: github.event.action != 'closed'
         id: check_db
         run: |
