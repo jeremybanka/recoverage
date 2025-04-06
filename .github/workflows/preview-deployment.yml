@@ -1,0 +1,77 @@
+name: Preview Deployment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: preview-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Check if database exists
+        if: github.event.action != 'closed'
+        id: check_db
+        run: |
+          databases=$(wrangler d1 list --json)
+          db_name="preview-db-pr-${{ github.event.number }}"
+          existing_db=$(echo $databases | jq -r ".[] | select(.name == \"$db_name\") | .database_id")
+          if [ -z "$existing_db" ]; then
+            output=$(wrangler d1 create $db_name --json)
+            database_id=$(echo $output | jq -r '.database_id')
+          else
+            database_id=$existing_db
+          fi
+          echo "::set-output name=database_id::$database_id"
+
+      - name: Generate wrangler.toml
+        if: github.event.action != 'closed'
+        run: |
+          cat <<EOF > wrangler.toml
+          name = "preview-worker-pr-${{ github.event.number }}"
+          [[d1_databases]]
+          binding = "DB"
+          database_id = "${{ steps.check_db.outputs.database_id }}"
+          EOF
+
+      - name: Apply migrations
+        if: github.event.action != 'closed'
+        run: |
+          wrangler d1 migrations apply preview-db-pr-${{ github.event.number }}
+
+      - name: Deploy preview
+        if: github.event.action != 'closed'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: deploy
+
+      - name: Comment on PR
+        if: github.event.action != 'closed'
+        uses: thollander/actions-comment-pull-request@v1
+        with:
+          message: "Preview deployment is available at https://preview-worker-pr-${{ github.event.number }}.mycompany.workers.dev"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Teardown preview
+        if: github.event.action == 'closed'
+        run: |
+          wrangler delete preview-worker-pr-${{ github.event.number }}
+          wrangler d1 delete preview-db-pr-${{ github.event.number }} --yes
