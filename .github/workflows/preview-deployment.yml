@@ -42,10 +42,30 @@ jobs:
         run: |
           ls
           cd recoverage.cloud
-          output=$(pnpm wrangler d1 create $DATABASE_NAME)
+          echo "DATABASE_NAME: $DATABASE_NAME"
+          output=$(pnpm wrangler d1 create "$DATABASE_NAME" 2>&1) || {
+            echo "Failed to create database:"
+            echo "$output"
+            exit 1
+          }
+
+          echo "Command output:"
           echo "$output"
-          json_part=$(echo "$output" | perl -0777 -ne 'print $1 if /({.*})/s')
-          database_id=$(echo "$json_part" | jq -r '.d1_databases[0].database_id')
+
+          json_part=$(echo "$output" | perl -0777 -ne 'print $1 if /({.*})/s') || {
+            echo "Failed to extract JSON from output"
+            exit 1
+          }
+
+          echo "Parsed JSON:"
+          echo "$json_part"
+
+          database_id=$(echo "$json_part" | jq -r '.d1_databases[0].database_id') || {
+            echo "Failed to parse database_id from JSON"
+            exit 1
+          }
+
+          echo "Database ID: $database_id"
           echo "database_id=$database_id" >> $GITHUB_OUTPUT
 
       - name: configure preview worker
