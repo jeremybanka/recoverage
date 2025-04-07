@@ -133,8 +133,8 @@ importers:
   recoverage.cloud:
     dependencies:
       arktype:
-        specifier: 2.1.17
-        version: 2.1.17
+        specifier: 2.1.18
+        version: 2.1.18
       bun:
         specifier: 1.2.8
         version: 1.2.8
@@ -215,11 +215,11 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@ark/schema@0.45.7':
-    resolution: {integrity: sha512-TS8jHOkAwRLviu84a7PQGebQ8PzGfxeAznJX3AzaXbb9bOYrtCiqo52/BWBwptc7pZJxL0ejN4Yufgb9YsNALw==}
+  '@ark/schema@0.45.8':
+    resolution: {integrity: sha512-YsX/OmTv11XvfNOVDGplIlRwPpDs51Bjiis3VLDVDuJgL0z4grDLHx+FZQpQTkYB6R43WfcV0wHLR5jRdUoy0A==}
 
-  '@ark/util@0.45.7':
-    resolution: {integrity: sha512-ymzzU8C8W+tQzkOIcaLWx4lLXSe5AnF3lpmAtc2FqkxLEVwRnyeKCYPOVXuttLjMwv8R4S/0D0E2cwmUUzim2Q==}
+  '@ark/util@0.45.8':
+    resolution: {integrity: sha512-X6+LSxAuUe0+BUzP7KGyFQn/zqWGvk71eOchz51+auRpHbIMEgocoSsvyvPFxmm6l4RrFWXJnRZWDtXHThsf8g==}
 
   '@babel/code-frame@7.26.2':
     resolution: {integrity: sha512-RJlIHRueQgwWitWgF8OdFYGZX328Ax5BCemNGlqHfplnRT9ESi8JkFlvaVYbS+UubVY6dpv87Fs2u5M29iNFVQ==}
@@ -1862,8 +1862,8 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
-  arktype@2.1.17:
-    resolution: {integrity: sha512-w1uDYt+5riOWhjLV7mho7UgofiXLyVWXpHC/Y6xkqVTi9ickuF8aNmEOne7fPN5eTT4Ub4HBfDD7JKJMSa4Htw==}
+  arktype@2.1.18:
+    resolution: {integrity: sha512-b2Xf1IP+tua4LY+YFM+x0JGmq/RyvXpwvk52jxYQjuB8mVwMJUkTfMU8dlWkm/wEqZACAQxNyV6hIGyFQ8j3BA==}
 
   array-union@2.1.0:
     resolution: {integrity: sha512-HGyxoOTYUyCM6stUe6EJgnd4EoewAI7zMdfqO+kGjnlZmBDz/cR5pf8r/cR4Wq60sL/p0IkcjUEEPwS3GFrIyw==}
@@ -3742,11 +3742,11 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@ark/schema@0.45.7':
+  '@ark/schema@0.45.8':
     dependencies:
-      '@ark/util': 0.45.7
+      '@ark/util': 0.45.8
 
-  '@ark/util@0.45.7': {}
+  '@ark/util@0.45.8': {}
 
   '@babel/code-frame@7.26.2':
     dependencies:
@@ -5157,10 +5157,10 @@ snapshots:
 
   argparse@2.0.1: {}
 
-  arktype@2.1.17:
+  arktype@2.1.18:
     dependencies:
-      '@ark/schema': 0.45.7
-      '@ark/util': 0.45.7
+      '@ark/schema': 0.45.8
+      '@ark/util': 0.45.8
 
   array-union@2.1.0: {}
 
