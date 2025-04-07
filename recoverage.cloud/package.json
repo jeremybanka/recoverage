@@ -26,7 +26,7 @@
 		"preview:setup:db": "./.env && wrangler d1 migrations apply $DATABASE_NAME --remote --config wrangler-preview.jsonc"
 	},
 	"dependencies": {
-		"arktype": "2.1.17",
+		"arktype": "2.1.18",
 		"bun": "1.2.8",
 		"drizzle-orm": "0.41.0",
 		"hono": "4.7.5",
