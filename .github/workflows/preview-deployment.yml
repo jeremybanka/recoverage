@@ -31,7 +31,8 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          cd recoverage.cloud && pnpm wrangler d1 delete "recoverage-preview-db-pr-${{ github.event.number }}" -y || true
+          cd recoverage.cloud
+          pnpm wrangler d1 delete "recoverage-preview-db-pr-${{ github.event.number }}" -y || true
 
       - name: create preview database
         id: create_db
@@ -39,7 +40,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
         run: |
-          output=$(cd recoverage.cloud && pnpm wrangler d1 create $DATABASE_NAME)
+          cd recoverage.cloud
+          output=$(pnpm wrangler d1 create $DATABASE_NAME)
           json_part=$(echo "$output" | perl -0777 -ne 'print $1 if /({.*})/s')
           database_id=$(echo "$json_part" | jq -r '.d1_databases[0].database_id')
           echo "database_id=$database_id" >> $GITHUB_OUTPUT
