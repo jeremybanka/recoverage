@@ -1,0 +1,82 @@
+name: Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: preview-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/setup
+
+      - name: set variables from PR number
+        id: vars
+        run: |
+          database_name="recoverage-preview-db-pr-${{ github.event.number }}"
+          worker_name="recoverage-preview-pr-${{ github.event.number }}"
+          echo "database_name=$database_name" >> $GITHUB_OUTPUT
+          echo "worker_name=$worker_name" >> $GITHUB_OUTPUT
+
+      - name: teardown preview database
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          cd recoverage.cloud
+          pnpm wrangler d1 delete "recoverage-preview-db-pr-${{ github.event.number }}" -y || true
+
+      - name: create preview database
+        id: create_db
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
+        run: |
+          cd recoverage.cloud
+          output=$(pnpm wrangler d1 create $DATABASE_NAME)
+          json_part=$(echo "$output" | perl -0777 -ne 'print $1 if /({.*})/s')
+          database_id=$(echo "$json_part" | jq -r '.d1_databases[0].database_id')
+          echo "database_id=$database_id" >> $GITHUB_OUTPUT
+
+      - name: configure preview worker
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+          DATABASE_ID: ${{ steps.create_db.outputs.database_id }}
+          DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
+          WORKER_NAME: ${{ steps.vars.outputs.worker_name }}
+        run: |
+          pnpm -F recoverage.cloud run preview:config
+          cat recoverage.cloud/wrangler-preview.jsonc
+
+      - name: deploy preview worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
+        run: |
+          printenv > recoverage.cloud/.env
+          chmod +x recoverage.cloud/.env
+          pnpm -F recoverage.cloud run preview
+
+  Teardown:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/setup
+      - name: teardown all
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npx wrangler delete --name "preview-worker-pr-${{ github.event.number }}"
+          npx wrangler d1 delete "recoverage-preview-db-pr-${{ github.event.number }}"
