@@ -142,8 +142,8 @@ importers:
         specifier: 0.41.0
         version: 0.41.0(@cloudflare/workers-types@4.20250407.0)(bun-types@1.2.8)(gel@2.0.2)
       hono:
-        specifier: 4.7.5
-        version: 4.7.5
+        specifier: 4.7.6
+        version: 4.7.6
       htmx.org:
         specifier: 2.0.4
         version: 2.0.4
@@ -168,10 +168,10 @@ importers:
         version: 4.20250407.0
       '@hono/vite-build':
         specifier: 1.6.0
-        version: 1.6.0(hono@4.7.5)
+        version: 1.6.0(hono@4.7.6)
       '@hono/vite-dev-server':
         specifier: 0.19.0
-        version: 0.19.0(hono@4.7.5)(miniflare@4.20250405.0)(wrangler@4.8.0(@cloudflare/workers-types@4.20250407.0))
+        version: 0.19.0(hono@4.7.6)(miniflare@4.20250405.0)(wrangler@4.8.0(@cloudflare/workers-types@4.20250407.0))
       '@octokit/types':
         specifier: 13.10.0
         version: 13.10.0
@@ -2620,8 +2620,8 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  hono@4.7.5:
-    resolution: {integrity: sha512-fDOK5W2C1vZACsgLONigdZTRZxuBqFtcKh7bUQ5cVSbwI2RWjloJDcgFOVzbQrlI6pCmhlTsVYZ7zpLj4m4qMQ==}
+  hono@4.7.6:
+    resolution: {integrity: sha512-564rVzELU+9BRqqx5k8sT2NFwGD3I3Vifdb6P7CmM6FiarOSY+fDC+6B+k9wcCb86ReoayteZP2ki0cRLN1jbw==}
     engines: {node: '>=16.9.0'}
 
   html-escaper@2.0.2:
@@ -4466,18 +4466,18 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
-  '@hono/node-server@1.14.0(hono@4.7.5)':
+  '@hono/node-server@1.14.0(hono@4.7.6)':
     dependencies:
-      hono: 4.7.5
+      hono: 4.7.6
 
-  '@hono/vite-build@1.6.0(hono@4.7.5)':
+  '@hono/vite-build@1.6.0(hono@4.7.6)':
     dependencies:
-      hono: 4.7.5
+      hono: 4.7.6
 
-  '@hono/vite-dev-server@0.19.0(hono@4.7.5)(miniflare@4.20250405.0)(wrangler@4.8.0(@cloudflare/workers-types@4.20250407.0))':
+  '@hono/vite-dev-server@0.19.0(hono@4.7.6)(miniflare@4.20250405.0)(wrangler@4.8.0(@cloudflare/workers-types@4.20250407.0))':
     dependencies:
-      '@hono/node-server': 1.14.0(hono@4.7.5)
-      hono: 4.7.5
+      '@hono/node-server': 1.14.0(hono@4.7.6)
+      hono: 4.7.6
       minimatch: 9.0.5
     optionalDependencies:
       miniflare: 4.20250405.0
@@ -6012,7 +6012,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.7.5: {}
+  hono@4.7.6: {}
 
   html-escaper@2.0.2: {}
 
