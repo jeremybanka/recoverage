@@ -106,8 +106,8 @@ importers:
         specifier: 0.2.6
         version: 0.2.6
       bun-types:
-        specifier: 1.2.8
-        version: 1.2.8
+        specifier: 1.2.9
+        version: 1.2.9
       concurrently:
         specifier: 9.1.2
         version: 9.1.2
@@ -137,7 +137,7 @@ importers:
         version: 1.2.8
       drizzle-orm:
         specifier: 0.41.0
-        version: 0.41.0(@cloudflare/workers-types@4.20250409.0)(bun-types@1.2.8)(gel@2.0.2)
+        version: 0.41.0(@cloudflare/workers-types@4.20250409.0)(bun-types@1.2.9)(gel@2.0.2)
       hono:
         specifier: 4.7.6
         version: 4.7.6
@@ -176,8 +176,8 @@ importers:
         specifier: 2.0.6
         version: 2.0.6
       bun-types:
-        specifier: 1.2.8
-        version: 1.2.8
+        specifier: 1.2.9
+        version: 1.2.9
       cloudflare:
         specifier: 4.2.0
         version: 4.2.0
@@ -1935,8 +1935,8 @@ packages:
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
 
-  bun-types@1.2.8:
-    resolution: {integrity: sha512-D5npfxKIGuYe9dTHLK1hi4XFmbMdKYoLrgyd25rrUyCrnyU4ljmQW7vDdonvibKeyU72mZuixIhQ2J+q6uM0Mg==}
+  bun-types@1.2.9:
+    resolution: {integrity: sha512-dk/kOEfQbajENN/D6FyiSgOKEuUi9PWfqKQJEgwKrCMWbjS/S6tEXp178mWvWAcUSYm9ArDlWHZKO3T/4cLXiw==}
 
   bun@1.2.8:
     resolution: {integrity: sha512-X8r9UuXAruvpE37u/JVfvJI8KRdFf9hUdTLw00DMScnBe7Xerawd/VvmFVT9Y/NrmXDAdDp0Dm6N6bulZYTGvA==}
@@ -4929,7 +4929,7 @@ snapshots:
 
   '@types/node-fetch@2.6.12':
     dependencies:
-      '@types/node': 18.19.86
+      '@types/node': 22.14.0
       form-data: 4.0.2
 
   '@types/node@12.20.55': {}
@@ -5256,7 +5256,7 @@ snapshots:
 
   buffer-from@1.1.2: {}
 
-  bun-types@1.2.8:
+  bun-types@1.2.9:
     dependencies:
       '@types/node': 22.14.0
       '@types/ws': 8.18.1
@@ -5489,10 +5489,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.41.0(@cloudflare/workers-types@4.20250409.0)(bun-types@1.2.8)(gel@2.0.2):
+  drizzle-orm@0.41.0(@cloudflare/workers-types@4.20250409.0)(bun-types@1.2.9)(gel@2.0.2):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20250409.0
-      bun-types: 1.2.8
+      bun-types: 1.2.9
       gel: 2.0.2
 
   dunder-proto@1.0.1:
