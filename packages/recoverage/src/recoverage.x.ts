@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { cli, help, noOptions, optional } from "comline"
+import { b } from "vitest/dist/chunks/suite.d.FvehnV49.js"
 import { z } from "zod"
 
 import { logger } from "./logger"
@@ -18,11 +19,11 @@ const parse = cli({
 		"": {
 			description: `capture and diff the current state of your coverage.`,
 			options: {
-				"default-branch": {
+				defaultBranch: {
 					flag: `b`,
 					required: false,
 					description: `The default branch for the repository (default: "main").`,
-					example: `--default-branch=trunk`,
+					example: `--defaultBranch=trunk`,
 				},
 			},
 			optionsSchema: z.object({
@@ -33,11 +34,11 @@ const parse = cli({
 		diff: {
 			description: `diff the current state of your coverage.`,
 			options: {
-				"default-branch": {
+				defaultBranch: {
 					flag: `b`,
 					required: false,
 					description: `The default branch for the repository (default: "main").`,
-					example: `--default-branch=trunk`,
+					example: `--defaultBranch=trunk`,
 				},
 			},
 			optionsSchema: z.object({
@@ -59,7 +60,7 @@ switch (inputs.case) {
 			}
 			try {
 				const diffCode = await Recoverage.diff(
-					inputs.opts[`default-branch`] ?? `main`,
+					inputs.opts.defaultBranch ?? `main`,
 				)
 				logger.logMarks?.()
 				if (diffCode === 1) {
@@ -82,9 +83,7 @@ switch (inputs.case) {
 		break
 	case `diff`:
 		try {
-			const diffCode = await Recoverage.diff(
-				inputs.opts[`default-branch`] ?? `main`,
-			)
+			const diffCode = await Recoverage.diff(inputs.opts.defaultBranch ?? `main`)
 			if (diffCode === 1) {
 				process.exit(1)
 			}

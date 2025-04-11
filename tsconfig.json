@@ -16,7 +16,9 @@
 		"useUnknownInCatchVariables": true,
 		"noUnusedParameters": true,
 		"skipLibCheck": true,
-		"erasableSyntaxOnly": true
+		"erasableSyntaxOnly": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"noImplicitAny": true
 	},
 	"include": [
 		"**/*.ts",
