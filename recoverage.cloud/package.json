@@ -18,7 +18,6 @@
 		"lint:types": "tsc --noEmit",
 		"watch:types": "tsc --watch --noEmit",
 		"lint": "concurrently \"bun:lint:*\"",
-
 		"preview": "concurrently \"pnpm:preview:setup:*\" && wrangler deploy --minify --config wrangler-preview.jsonc",
 		"preview:config": "bun __scripts__/configure-preview.bun.ts",
 		"preview:setup:deps": "pnpm setup:deps",

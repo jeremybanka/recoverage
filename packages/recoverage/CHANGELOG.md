@@ -1,5 +1,12 @@
 # recoverage
 
+## 0.1.8
+
+### Patch Changes
+
+- 70b55f4: 🐛 Fix bug where the defaultBranch would always be reported as `main`.
+- 70b55f4: 🐛 Fix bug where calling `recoverage help` would result in an error.
+
 ## 0.1.7
 
 ### Patch Changes
