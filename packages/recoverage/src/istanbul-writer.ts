@@ -264,7 +264,7 @@ class FileContentWriter extends ContentWriter {
 		this.vfs = vfs
 	}
 
-	public write(str) {
+	public write(str: string) {
 		this.vfs.writeSync(this.fd, str)
 	}
 
