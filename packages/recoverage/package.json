@@ -15,11 +15,7 @@
 		"directory": "packages/recoverage"
 	},
 	"type": "module",
-	"files": [
-		"bin",
-		"dist",
-		"src"
-	],
+	"files": ["bin", "dist", "src"],
 	"main": "dist/recoverage.js",
 	"exports": {
 		"./package.json": "./package.json",
