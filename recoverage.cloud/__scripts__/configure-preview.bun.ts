@@ -4,9 +4,9 @@ import { assert } from "node:console"
 import * as fs from "node:fs"
 import * as path from "node:path"
 
-assert(process.env.DATABASE_ID, `DATABASE_ID is required`)
-assert(process.env.DATABASE_NAME, `DATABASE_NAME is required`)
-assert(process.env.WORKER_NAME, `WORKER_NAME is required`)
+assert(process.env[`DATABASE_ID`], `DATABASE_ID is required`)
+assert(process.env[`DATABASE_NAME`], `DATABASE_NAME is required`)
+assert(process.env[`WORKER_NAME`], `WORKER_NAME is required`)
 
 const projectRootPath = path.join(import.meta.dir, `..`)
 const wranglerConfigPath = path.join(projectRootPath, `wrangler.jsonc`)
@@ -16,10 +16,10 @@ content = content.replace(/\/\/.*$/gm, ``)
 const config = JSON.parse(content)
 
 // Update worker name
-config.name = process.env.WORKER_NAME
+config.name = process.env[`WORKER_NAME`]
 // Update database name and ID (assuming single database at index 0)
-config.d1_databases[0].database_name = process.env.DATABASE_NAME
-config.d1_databases[0].database_id = process.env.DATABASE_ID
+config.d1_databases[0].database_name = process.env[`DATABASE_NAME`]
+config.d1_databases[0].database_id = process.env[`DATABASE_ID`]
 
 const wranglerPreviewConfigPath = path.join(
 	projectRootPath,
