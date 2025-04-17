@@ -61,13 +61,13 @@ importers:
     dependencies:
       '@t3-oss/env-core':
         specifier: 0.12.0
-        version: 0.12.0(typescript@5.8.3)(zod@3.24.2)
+        version: 0.12.0(typescript@5.8.3)(zod@3.24.3)
       colors:
         specifier: 1.4.0
         version: 1.4.0
       comline:
         specifier: 0.2.3
-        version: 0.2.3(zod-to-json-schema@3.24.5(zod@3.24.2))(zod@3.24.2)
+        version: 0.2.3(zod-to-json-schema@3.24.5(zod@3.24.3))(zod@3.24.3)
       diff:
         specifier: 7.0.0
         version: 7.0.0
@@ -87,8 +87,8 @@ importers:
         specifier: 0.2.3
         version: 0.2.3
       zod:
-        specifier: 3.24.2
-        version: 3.24.2
+        specifier: 3.24.3
+        version: 3.24.3
     devDependencies:
       '@types/diff':
         specifier: 7.0.2
@@ -3411,8 +3411,8 @@ packages:
   zod@3.22.3:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
 
-  zod@3.24.2:
-    resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
+  zod@3.24.3:
+    resolution: {integrity: sha512-HhY1oqzWCQWuUqvBFnsyrtZRhyPeR7SUGv+C4+MsisMuVfSPx8HpwWqH8tRahSlt6M3PiFAcoeFhZAqIXTxoSg==}
 
 snapshots:
 
@@ -3729,7 +3729,7 @@ snapshots:
       semver: 7.7.1
       vitest: 3.1.1(@types/node@22.14.1)(jiti@2.4.2)
       wrangler: 4.12.0(@cloudflare/workers-types@4.20250417.0)
-      zod: 3.24.2
+      zod: 3.24.3
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
       - bufferutil
@@ -4409,10 +4409,10 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.40.0':
     optional: true
 
-  '@t3-oss/env-core@0.12.0(typescript@5.8.3)(zod@3.24.2)':
+  '@t3-oss/env-core@0.12.0(typescript@5.8.3)(zod@3.24.3)':
     optionalDependencies:
       typescript: 5.8.3
-      zod: 3.24.2
+      zod: 3.24.3
 
   '@tybys/wasm-util@0.9.0':
     dependencies:
@@ -4875,12 +4875,12 @@ snapshots:
     dependencies:
       delayed-stream: 1.0.0
 
-  comline@0.2.3(zod-to-json-schema@3.24.5(zod@3.24.2))(zod@3.24.2):
+  comline@0.2.3(zod-to-json-schema@3.24.5(zod@3.24.3))(zod@3.24.3):
     dependencies:
       chalk: 5.4.1
       treetrunks: 0.1.2
-      zod: 3.24.2
-      zod-to-json-schema: 3.24.5(zod@3.24.2)
+      zod: 3.24.3
+      zod-to-json-schema: 3.24.5(zod@3.24.3)
 
   commander@4.1.1: {}
 
@@ -6529,10 +6529,10 @@ snapshots:
       mustache: 4.2.0
       stacktracey: 2.1.8
 
-  zod-to-json-schema@3.24.5(zod@3.24.2):
+  zod-to-json-schema@3.24.5(zod@3.24.3):
     dependencies:
-      zod: 3.24.2
+      zod: 3.24.3
 
   zod@3.22.3: {}
 
-  zod@3.24.2: {}
+  zod@3.24.3: {}
