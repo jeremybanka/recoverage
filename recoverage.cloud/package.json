@@ -48,7 +48,7 @@
 		"cloudflare": "4.2.0",
 		"concurrently": "9.1.2",
 		"drizzle-kit": "0.31.0",
-		"eslint": "9.25.0",
+		"eslint": "9.25.1",
 		"fast-xml-parser": "5.2.0",
 		"recoverage": "workspace:*",
 		"vite": "6.3.2",
