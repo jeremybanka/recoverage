@@ -2,4 +2,9 @@ packages:
   - packages/*
   - recoverage.cloud
 onlyBuiltDependencies:
+  - "@biomejs/biome"
+  - bun
   - esbuild
+  - sharp
+  - unrs-resolver
+  - workerd
