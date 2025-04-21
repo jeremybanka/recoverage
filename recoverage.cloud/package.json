@@ -52,7 +52,7 @@
 		"fast-xml-parser": "5.2.0",
 		"recoverage": "workspace:*",
 		"vite": "6.3.2",
-		"vitest": "3.1.1",
+		"vitest": "3.1.2",
 		"wrangler": "4.12.0"
 	}
 }
