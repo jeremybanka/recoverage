@@ -46,14 +46,5 @@
 		"typescript": "5.8.3",
 		"vite-tsconfig-paths": "5.1.4",
 		"vitest": "3.1.2"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"@biomejs/biome",
-			"bun",
-			"esbuild",
-			"sharp",
-			"workerd"
-		]
 	}
 }
