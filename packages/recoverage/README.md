@@ -49,35 +49,14 @@ Then, update your package.json with the following scripts and devDependencies:
 ```json
 {
   "scripts": {
-    "build": "tsup",
     "test": "vitest",
-    "test:coverage": "vitest run --coverage && recoverage capture"
+    "test:coverage": "vitest run --coverage && recoverage"
   },
   "devDependencies": {
-    "typescript": "^4.x",
+    "typescript": "^5.x",
     "vitest": "^3.x",
     "@vitest/coverage-v8": "^3.x",
-    "recoverage": "workspace:*"
-  }
-}
-```
-
-Then, update your `package.json` with the following scripts and devDependencies:
-
-```json
-{
-  "scripts": {
-    "build": "tsup",
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage && recoverage capture",
-    "coverage:status": "recoverage diff"
-  },
-  "devDependencies": {
-    "typescript": "^4.x",
-    "vitest": "^3.x",
-    "@vitest/coverage-v8": "^3.x",
-    "tsup": "^8.x",
-    "recoverage": "workspace:*"
+    "recoverage": "^0.1.x"
   }
 }
 ```
