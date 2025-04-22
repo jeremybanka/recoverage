@@ -45,8 +45,8 @@ importers:
         specifier: 2.4.2
         version: 2.4.2
       pin-dependencies-checker:
-        specifier: 2.5.0
-        version: 2.5.0
+        specifier: 2.6.0
+        version: 2.6.0
       turbo:
         specifier: 2.5.0
         version: 2.5.0
@@ -1896,6 +1896,7 @@ packages:
 
   bun@1.2.10:
     resolution: {integrity: sha512-7KZgjyJQh/nJaU8av0/2Ld9jDPdrVmQb/gAQKuhr796pKLSONJw+mbshme78viR9jbL4q+sgLNW6HOLwYhL0rg==}
+    cpu: [arm64, x64, aarch64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -2013,10 +2014,6 @@ packages:
     resolution: {integrity: sha512-H9MWcoPsYddwbOGM6difjVwVZHl63nwMEwDJG/L7VGtuaJhb12h2caPG2tVPWs7emuYix252iGfqOyrz1GczTQ==}
     engines: {node: '>=18'}
     hasBin: true
-
-  consola@3.2.3:
-    resolution: {integrity: sha512-I5qxpzLv+sJhTVEoLYNcTW+bThDCPsit0vLNKShZx6rLtpilNpmmeTPaeqJb9ZE9dV3DGaeby6Vuhrw38WjeyQ==}
-    engines: {node: ^14.18.0 || >=16.10.0}
 
   consola@3.4.2:
     resolution: {integrity: sha512-5IKcdX0nnYavi6G7TtOhwkYzyjfJlatbjMjuLSfE2kYT5pMDOilZ4OvMhi637CcDICTmz3wARPoyhqyX1Y+XvA==}
@@ -2841,6 +2838,7 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
@@ -3000,9 +2998,9 @@ packages:
     resolution: {integrity: sha512-uB80kBFb/tfd68bVleG9T5GGsGPjJrLAUpR5PZIrhBnIaRTQRjqdJSsIKkOP6OAIFbj7GOrcudc5pNjZ+geV2g==}
     engines: {node: '>=6'}
 
-  pin-dependencies-checker@2.5.0:
-    resolution: {integrity: sha512-f705ByIu4p2+wbkrOKFUoNsS/CQ8Fwth3GS3Mw461KkxnMo/KmJUGNQFFj8ChDa7U49NlPkylW8RiWwTXI/qpQ==}
-    engines: {node: '20', pnpm: 9.6.0}
+  pin-dependencies-checker@2.6.0:
+    resolution: {integrity: sha512-pI2Tgc9dC05ParRFHWxqI4mQVx0CTzynO/WIrle0QoxvjXAGQvGAKJdWeStY3P1Z4t0znmoATGqESFtjCJ5ohQ==}
+    engines: {bun: 1.2.10, node: '20'}
     hasBin: true
 
   pkg-dir@4.2.0:
@@ -5298,8 +5296,6 @@ snapshots:
       tree-kill: 1.2.2
       yargs: 17.7.2
 
-  consola@3.2.3: {}
-
   consola@3.4.2: {}
 
   convert-source-map@1.9.0: {}
@@ -6278,10 +6274,10 @@ snapshots:
 
   pify@4.0.1: {}
 
-  pin-dependencies-checker@2.5.0:
+  pin-dependencies-checker@2.6.0:
     dependencies:
       '@manypkg/get-packages': 2.2.2
-      consola: 3.2.3
+      consola: 3.4.2
 
   pkg-dir@4.2.0:
     dependencies:
