@@ -49,35 +49,14 @@ Then, update your package.json with the following scripts and devDependencies:
 ```json
 {
   "scripts": {
-    "build": "tsup",
     "test": "vitest",
-    "test:coverage": "vitest run --coverage && recoverage capture"
+    "test:coverage": "vitest run --coverage && recoverage"
   },
   "devDependencies": {
-    "typescript": "^4.x",
+    "typescript": "^5.x",
     "vitest": "^3.x",
     "@vitest/coverage-v8": "^3.x",
-    "recoverage": "workspace:*"
-  }
-}
-```
-
-Then, update your `package.json` with the following scripts and devDependencies:
-
-```json
-{
-  "scripts": {
-    "build": "tsup",
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage && recoverage capture",
-    "coverage:status": "recoverage diff"
-  },
-  "devDependencies": {
-    "typescript": "^4.x",
-    "vitest": "^3.x",
-    "@vitest/coverage-v8": "^3.x",
-    "tsup": "^8.x",
-    "recoverage": "workspace:*"
+    "recoverage": "^0.1.x"
   }
 }
 ```
@@ -134,11 +113,12 @@ test("demoSwitch covers case2", () => {
   expect(demoSwitch("case2")).toBe("Result for case 2");
 });
 
-// Initially, we do not test case3 to simulate incomplete coverage
 // test("demoSwitch covers case3", () => {
 //   expect(demoSwitch("case3")).toBe("Result for case 3");
 // });
 ```
+
+This will give us a baseline coverage report less than 100%.
 
 ### 5. Configure Vitest Coverage Settings
 
@@ -194,9 +174,9 @@ This command runs Vitest (which generates coverage-final.json) and then runs rec
    //   expect(demoSwitch("case2")).toBe("Result for case 2");
    // });
 
-   test("demoSwitch covers case3", () => {
-     expect(demoSwitch("case3")).toBe("Result for case 3");
-   });
+   // test("demoSwitch covers case3", () => {
+   //   expect(demoSwitch("case3")).toBe("Result for case 3");
+   // });
    ```
 
 2. **Re-Run the Tests** (and Capture Coverage):
@@ -207,13 +187,13 @@ This command runs Vitest (which generates coverage-final.json) and then runs rec
    bun run test:coverage
    ```
 
-   This command will detect that coverage has decreased (fewer switch cases are covered) and exit with code `1`.
+   This command will detect that coverage has decreased (fewer cases are covered) and exit with code `1`.
 
 ### Coverage Increase
 
 1. **Modify the Test File:**
 
-   Uncomment one of the tests so that all cases are covered. Update **tests**/demo.test.ts as follows:
+   Uncomment all the tests so that all cases are covered. Update **tests**/demo.test.ts as follows:
 
    ```ts
    import { demoSwitch } from "../src/demo";
@@ -239,4 +219,4 @@ This command runs Vitest (which generates coverage-final.json) and then runs rec
    bun run test:coverage
    ```
 
-   This command will detect that coverage has increased (more switch cases are covered) and exit with code `0`.
+   This command will detect that coverage has increased (more cases are covered) and exit with code `0`.

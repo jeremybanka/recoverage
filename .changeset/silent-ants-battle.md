@@ -1,0 +1,5 @@
+---
+"recoverage": patch
+---
+
+📝 Improve documentation.
