@@ -1,5 +1,12 @@
 # recoverage
 
+## 0.1.9
+
+### Patch Changes
+
+- 820eaff: ♻️ Replace our build vendor. Migrated from `tsup` to `tsdown`.
+- 805b8d3: 📝 Improve documentation.
+
 ## 0.1.8
 
 ### Patch Changes
