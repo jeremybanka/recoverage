@@ -5,6 +5,7 @@ onlyBuiltDependencies:
   - "@biomejs/biome"
   - bun
   - esbuild
+  - rolldown
   - sharp
   - unrs-resolver
   - workerd

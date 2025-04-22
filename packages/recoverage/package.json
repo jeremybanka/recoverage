@@ -26,8 +26,8 @@
 		"recoverage": "bin/recoverage.bin.js"
 	},
 	"scripts": {
-		"dev": "tsup-node --watch",
-		"build": "tsup-node && rm -f dist/*.x.d.ts",
+		"dev": "tsdown --watch",
+		"build": "tsdown && rm -f dist/*.x.d.ts",
 		"lint:biome": "biome check -- .",
 		"lint:eslint": "eslint -- .",
 		"lint:types": "tsc --noEmit",
@@ -59,7 +59,7 @@
 		"concurrently": "9.1.2",
 		"eslint": "9.25.1",
 		"nyc": "17.1.0",
-		"tsup": "8.4.0",
+		"tsdown": "0.9.3",
 		"typescript": "5.8.3",
 		"vitest": "3.1.2",
 		"yalc": "1.0.0-pre.53"
