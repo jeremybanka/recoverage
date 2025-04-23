@@ -121,8 +121,8 @@ importers:
         specifier: 17.1.0
         version: 17.1.0
       tsdown:
-        specifier: 0.9.3
-        version: 0.9.3(typescript@5.8.3)
+        specifier: 0.9.5
+        version: 0.9.5(typescript@5.8.3)
       typescript:
         specifier: 5.8.3
         version: 5.8.3
@@ -2552,6 +2552,9 @@ packages:
     resolution: {integrity: sha512-2PCpQRbN87Crty8/L/7akZN3UyZIAopSoRxCwRbJgUuV1+MHNFHzYFxZTg4v/03cXUm+jce/qa2VSBZpKBm3Qw==}
     engines: {node: '>=16.9.0'}
 
+  hookable@5.5.3:
+    resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
+
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
 
@@ -3328,8 +3331,8 @@ packages:
       typescript:
         optional: true
 
-  tsdown@0.9.3:
-    resolution: {integrity: sha512-NHO5h39lNh5vFsfjeSBoXIqdq/MdI3Pu1KfgyULpkqiQkjGWXXYK7zuBY2SK7I/39Fqhw9776eHF4e+snxGEMw==}
+  tsdown@0.9.5:
+    resolution: {integrity: sha512-Bx0A0T0obQ43G/hU/gOayb7mq8jEMQtr4w8wOxxJHl/BmhZ4Wdt5OhgO35pS4G9XLb7jgz1IeUmGsK+ujP0d/Q==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
@@ -5812,6 +5815,8 @@ snapshots:
 
   hono@4.7.7: {}
 
+  hookable@5.5.3: {}
+
   html-escaper@2.0.2: {}
 
   htmx.org@2.0.4: {}
@@ -6615,7 +6620,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
 
-  tsdown@0.9.3(typescript@5.8.3):
+  tsdown@0.9.5(typescript@5.8.3):
     dependencies:
       ansis: 3.17.0
       cac: 6.7.14
@@ -6624,6 +6629,7 @@ snapshots:
       debug: 4.4.0
       diff: 7.0.0
       find-up-simple: 1.0.1
+      hookable: 5.5.3
       rolldown: 1.0.0-beta.8-commit.d984417(typescript@5.8.3)
       rolldown-plugin-dts: 0.8.3(rolldown@1.0.0-beta.8-commit.d984417(typescript@5.8.3))(typescript@5.8.3)
       tinyexec: 1.0.1
