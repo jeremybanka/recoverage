@@ -145,8 +145,8 @@ importers:
         specifier: 0.43.1
         version: 0.43.1(@cloudflare/workers-types@4.20250428.0)(bun-types@1.2.10)
       hono:
-        specifier: 4.7.7
-        version: 4.7.7
+        specifier: 4.7.8
+        version: 4.7.8
       htmx.org:
         specifier: 2.0.4
         version: 2.0.4
@@ -171,10 +171,10 @@ importers:
         version: 4.20250428.0
       '@hono/vite-build':
         specifier: 1.6.0
-        version: 1.6.0(hono@4.7.7)
+        version: 1.6.0(hono@4.7.8)
       '@hono/vite-dev-server':
         specifier: 0.19.0
-        version: 0.19.0(hono@4.7.7)(miniflare@4.20250424.1)(wrangler@4.13.2(@cloudflare/workers-types@4.20250428.0))
+        version: 0.19.0(hono@4.7.8)(miniflare@4.20250424.1)(wrangler@4.13.2(@cloudflare/workers-types@4.20250428.0))
       '@octokit/types':
         specifier: 14.0.0
         version: 14.0.0
@@ -2647,8 +2647,8 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  hono@4.7.7:
-    resolution: {integrity: sha512-2PCpQRbN87Crty8/L/7akZN3UyZIAopSoRxCwRbJgUuV1+MHNFHzYFxZTg4v/03cXUm+jce/qa2VSBZpKBm3Qw==}
+  hono@4.7.8:
+    resolution: {integrity: sha512-PCibtFdxa7/Ldud9yddl1G81GjYaeMYYTq4ywSaNsYbB1Lug4mwtOMJf2WXykL0pntYwmpRJeOI3NmoDgD+Jxw==}
     engines: {node: '>=16.9.0'}
 
   hookable@5.5.3:
@@ -4461,18 +4461,18 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
-  '@hono/node-server@1.14.1(hono@4.7.7)':
+  '@hono/node-server@1.14.1(hono@4.7.8)':
     dependencies:
-      hono: 4.7.7
+      hono: 4.7.8
 
-  '@hono/vite-build@1.6.0(hono@4.7.7)':
+  '@hono/vite-build@1.6.0(hono@4.7.8)':
     dependencies:
-      hono: 4.7.7
+      hono: 4.7.8
 
-  '@hono/vite-dev-server@0.19.0(hono@4.7.7)(miniflare@4.20250424.1)(wrangler@4.13.2(@cloudflare/workers-types@4.20250428.0))':
+  '@hono/vite-dev-server@0.19.0(hono@4.7.8)(miniflare@4.20250424.1)(wrangler@4.13.2(@cloudflare/workers-types@4.20250428.0))':
     dependencies:
-      '@hono/node-server': 1.14.1(hono@4.7.7)
-      hono: 4.7.7
+      '@hono/node-server': 1.14.1(hono@4.7.8)
+      hono: 4.7.8
       minimatch: 9.0.5
     optionalDependencies:
       miniflare: 4.20250424.1
@@ -6051,7 +6051,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.7.7: {}
+  hono@4.7.8: {}
 
   hookable@5.5.3: {}
 
