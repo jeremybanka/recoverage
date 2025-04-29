@@ -10,7 +10,7 @@
 		"strict": true,
 		"skipLibCheck": true,
 		"lib": ["ESNext"],
-		"types": ["bun-types"],
+		"types": ["bun"],
 		"jsx": "react-jsx",
 		"jsxImportSource": "hono/jsx"
 	}

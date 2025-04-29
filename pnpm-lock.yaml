@@ -93,6 +93,9 @@ importers:
         specifier: 3.24.3
         version: 3.24.3
     devDependencies:
+      '@types/bun':
+        specifier: npm:bun-types@1.2.11
+        version: bun-types@1.2.11
       '@types/diff':
         specifier: 7.0.2
         version: 7.0.2
@@ -108,9 +111,6 @@ importers:
       '@types/tmp':
         specifier: 0.2.6
         version: 0.2.6
-      bun-types:
-        specifier: 1.2.11
-        version: 1.2.11
       concurrently:
         specifier: 9.1.2
         version: 9.1.2
@@ -178,12 +178,12 @@ importers:
       '@octokit/types':
         specifier: 14.0.0
         version: 14.0.0
+      '@types/bun':
+        specifier: npm:bun-types@1.2.11
+        version: bun-types@1.2.11
       '@types/istanbul-lib-coverage':
         specifier: 2.0.6
         version: 2.0.6
-      bun-types:
-        specifier: 1.2.11
-        version: 1.2.11
       cloudflare:
         specifier: 4.2.0
         version: 4.2.0
@@ -2015,7 +2015,6 @@ packages:
 
   bun@1.2.11:
     resolution: {integrity: sha512-9brVfsp6/TYVsE3lCl1MUxoyKhvljqyL1MNPErgwsOaS9g4Gzi2nY+W5WtRAXGzLrgz5jzsoGHHwyH/rTeRCIg==}
-    cpu: [arm64, x64, aarch64]
     os: [darwin, linux, win32]
     hasBin: true
 
