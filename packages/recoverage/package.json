@@ -59,7 +59,7 @@
 		"concurrently": "9.1.2",
 		"eslint": "9.25.1",
 		"nyc": "17.1.0",
-		"tsdown": "0.10.0",
+		"tsdown": "0.10.1",
 		"typescript": "5.8.3",
 		"vitest": "3.1.2",
 		"yalc": "1.0.0-pre.53"
