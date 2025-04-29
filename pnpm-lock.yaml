@@ -109,8 +109,8 @@ importers:
         specifier: 0.2.6
         version: 0.2.6
       bun-types:
-        specifier: 1.2.10
-        version: 1.2.10
+        specifier: 1.2.11
+        version: 1.2.11
       concurrently:
         specifier: 9.1.2
         version: 9.1.2
@@ -143,7 +143,7 @@ importers:
         version: 1.2.11
       drizzle-orm:
         specifier: 0.43.1
-        version: 0.43.1(@cloudflare/workers-types@4.20250429.0)(bun-types@1.2.10)
+        version: 0.43.1(@cloudflare/workers-types@4.20250429.0)(bun-types@1.2.11)
       hono:
         specifier: 4.7.8
         version: 4.7.8
@@ -182,8 +182,8 @@ importers:
         specifier: 2.0.6
         version: 2.0.6
       bun-types:
-        specifier: 1.2.10
-        version: 1.2.10
+        specifier: 1.2.11
+        version: 1.2.11
       cloudflare:
         specifier: 4.2.0
         version: 4.2.0
@@ -2010,8 +2010,8 @@ packages:
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
 
-  bun-types@1.2.10:
-    resolution: {integrity: sha512-b5ITZMnVdf3m1gMvJHG+gIfeJHiQPJak0f7925Hxu6ZN5VKA8AGy4GZ4lM+Xkn6jtWxg5S3ldWvfmXdvnkp3GQ==}
+  bun-types@1.2.11:
+    resolution: {integrity: sha512-dbkp5Lo8HDrXkLrONm6bk+yiiYQSntvFUzQp0v3pzTAsXk6FtgVMjdQ+lzFNVAmQFUkPQZ3WMZqH5tTo+Dp/IA==}
 
   bun@1.2.11:
     resolution: {integrity: sha512-9brVfsp6/TYVsE3lCl1MUxoyKhvljqyL1MNPErgwsOaS9g4Gzi2nY+W5WtRAXGzLrgz5jzsoGHHwyH/rTeRCIg==}
@@ -5088,7 +5088,7 @@ snapshots:
 
   '@types/node-fetch@2.6.12':
     dependencies:
-      '@types/node': 18.19.86
+      '@types/node': 22.14.1
       form-data: 4.0.2
 
   '@types/node@12.20.55': {}
@@ -5426,7 +5426,7 @@ snapshots:
 
   buffer-from@1.1.2: {}
 
-  bun-types@1.2.10:
+  bun-types@1.2.11:
     dependencies:
       '@types/node': 22.14.1
 
@@ -5647,10 +5647,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.43.1(@cloudflare/workers-types@4.20250429.0)(bun-types@1.2.10):
+  drizzle-orm@0.43.1(@cloudflare/workers-types@4.20250429.0)(bun-types@1.2.11):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20250429.0
-      bun-types: 1.2.10
+      bun-types: 1.2.11
 
   dts-resolver@1.0.1:
     dependencies:
