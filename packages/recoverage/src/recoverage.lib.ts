@@ -1,2 +1,2 @@
-export * from "./istanbul-reports"
-export * from "./persist-cloud"
+export * from "./istanbul-reports.ts"
+export * from "./persist-cloud.ts"

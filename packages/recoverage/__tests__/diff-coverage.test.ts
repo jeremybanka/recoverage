@@ -4,7 +4,7 @@ import { copyFile, readdir, rename } from "node:fs/promises"
 import * as path from "node:path"
 
 import type { SimpleGit } from "simple-git"
-import simpleGit from "simple-git"
+import { simpleGit } from "simple-git"
 import tmp from "tmp"
 import * as Yalc from "yalc"
 

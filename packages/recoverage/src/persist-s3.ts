@@ -1,7 +1,7 @@
 import { S3Client, write } from "bun"
 
-import { logger } from "./logger"
-import type { S3Credentials } from "./recoverage.env"
+import { logger } from "./logger.ts"
+import type { S3Credentials } from "./recoverage.env.ts"
 
 let s3isInitialized = false
 export function initS3(credentials: S3Credentials): void {

@@ -4,8 +4,8 @@ import path from "node:path"
 import { file } from "bun"
 import { type SimpleGit, simpleGit } from "simple-git"
 
-import { logger } from "./logger"
-import { env } from "./recoverage.env"
+import { logger } from "./logger.ts"
+import { env } from "./recoverage.env.ts"
 
 export type GitToolkit = {
 	_client: SimpleGit | undefined

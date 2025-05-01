@@ -21,7 +21,8 @@
 			"drizzle/meta",
 			"heap.json",
 			"node_modules/**/*",
-			"projects"
+			"projects",
+			"worker-configuration.d.ts"
 		]
 	},
 	"javascript": {

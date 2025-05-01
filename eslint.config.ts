@@ -161,6 +161,7 @@ const configs = [
 			`**/dist/**`,
 			`**/gen/**`,
 			`**/node_modules/**`,
+			`**/worker-configuration.d.ts`,
 		],
 	},
 	{

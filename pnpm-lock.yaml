@@ -108,6 +108,9 @@ importers:
       '@types/istanbul-reports':
         specifier: 3.0.4
         version: 3.0.4
+      '@types/node':
+        specifier: 22.15.3
+        version: 22.15.3
       '@types/tmp':
         specifier: 0.2.6
         version: 0.2.6
@@ -166,9 +169,6 @@ importers:
       '@cloudflare/vitest-pool-workers':
         specifier: 0.8.23
         version: 0.8.23(@cloudflare/workers-types@4.20250430.0)(@vitest/runner@3.1.2)(@vitest/snapshot@3.1.2)(vitest@3.1.2(@types/node@22.15.3)(jiti@2.4.2)(lightningcss@1.29.3))
-      '@cloudflare/workers-types':
-        specifier: 4.20250430.0
-        version: 4.20250430.0
       '@hono/vite-build':
         specifier: 1.6.0
         version: 1.6.0(hono@4.7.8)
@@ -1990,7 +1990,6 @@ packages:
 
   bun@1.2.11:
     resolution: {integrity: sha512-9brVfsp6/TYVsE3lCl1MUxoyKhvljqyL1MNPErgwsOaS9g4Gzi2nY+W5WtRAXGzLrgz5jzsoGHHwyH/rTeRCIg==}
-    cpu: [arm64, x64, aarch64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -4161,7 +4160,8 @@ snapshots:
   '@cloudflare/workerd-windows-64@1.20250428.0':
     optional: true
 
-  '@cloudflare/workers-types@4.20250430.0': {}
+  '@cloudflare/workers-types@4.20250430.0':
+    optional: true
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -5059,7 +5059,7 @@ snapshots:
 
   '@types/node-fetch@2.6.12':
     dependencies:
-      '@types/node': 18.19.87
+      '@types/node': 22.15.3
       form-data: 4.0.2
 
   '@types/node@12.20.55': {}
