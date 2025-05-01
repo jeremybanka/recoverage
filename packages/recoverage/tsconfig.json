@@ -2,9 +2,6 @@
 	"extends": "../../tsconfig.json",
 	"include": ["src", "__tests__", "**/*.config.ts"],
 	"compilerOptions": {
-		"types": ["vitest/globals"],
-		"target": "ESNext",
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext"
+		"types": ["vitest/globals"]
 	}
 }

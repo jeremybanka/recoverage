@@ -7,9 +7,9 @@
 		"esModuleInterop": true,
 		"exactOptionalPropertyTypes": true,
 		"forceConsistentCasingInFileNames": true,
-		"lib": ["ES2024"],
-		"module": "Preserve",
-		"moduleResolution": "Bundler",
+		"lib": ["ESNext"],
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
 		"noEmit": true,
 		"noImplicitAny": true,
 		"noPropertyAccessFromIndexSignature": true,
@@ -17,7 +17,7 @@
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"strict": true,
-		"target": "ES2017"
+		"target": "ESNext"
 	},
 	"include": ["**/*.ts", "**/*.tsx", "**/*.js"],
 	"exclude": ["**/dist"]
