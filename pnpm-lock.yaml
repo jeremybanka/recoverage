@@ -108,6 +108,9 @@ importers:
       '@types/istanbul-reports':
         specifier: 3.0.4
         version: 3.0.4
+      '@types/node':
+        specifier: 22.15.3
+        version: 22.15.3
       '@types/tmp':
         specifier: 0.2.6
         version: 0.2.6
@@ -1990,7 +1993,6 @@ packages:
 
   bun@1.2.11:
     resolution: {integrity: sha512-9brVfsp6/TYVsE3lCl1MUxoyKhvljqyL1MNPErgwsOaS9g4Gzi2nY+W5WtRAXGzLrgz5jzsoGHHwyH/rTeRCIg==}
-    cpu: [arm64, x64, aarch64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -5059,7 +5061,7 @@ snapshots:
 
   '@types/node-fetch@2.6.12':
     dependencies:
-      '@types/node': 18.19.87
+      '@types/node': 22.15.3
       form-data: 4.0.2
 
   '@types/node@12.20.55': {}
