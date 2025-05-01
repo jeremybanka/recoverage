@@ -6,20 +6,20 @@ import {
 	getCoverage,
 	initDatabase,
 	saveCoverage,
-} from "./database"
-import { getBaseGitRef, getCurrentGitRef } from "./git-status"
+} from "./database.ts"
+import { getBaseGitRef, getCurrentGitRef } from "./git-status.ts"
 import {
 	getCoverageJsonSummary,
 	getCoverageTextReport,
-} from "./istanbul-reports"
-import { stringify } from "./json"
-import { logDiff, logger, useMarks } from "./logger"
+} from "./istanbul-reports.ts"
+import { stringify } from "./json.ts"
+import { logDiff, logger, useMarks } from "./logger.ts"
 import {
 	downloadCoverageReportFromCloud,
 	uploadCoverageReportToCloud,
-} from "./persist-cloud"
-import { uploadCoverageDatabaseToS3 } from "./persist-s3"
-import { env, S3_CREDENTIALS } from "./recoverage.env"
+} from "./persist-cloud.ts"
+import { uploadCoverageDatabaseToS3 } from "./persist-s3.ts"
+import { env, S3_CREDENTIALS } from "./recoverage.env.ts"
 
 export class BranchCoverage {
 	public git_ref!: string

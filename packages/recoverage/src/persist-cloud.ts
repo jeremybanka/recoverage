@@ -1,7 +1,7 @@
 import type { CoverageMap } from "istanbul-lib-coverage"
 
-import { type Json, stringify } from "./json"
-import type { JsonSummary } from "./recoverage"
+import { stringify } from "./json.ts"
+import type { JsonSummary } from "./recoverage.ts"
 
 export async function downloadCoverageReportFromCloud(
 	reportName: string,

@@ -3,6 +3,8 @@
 	"include": ["src", "__tests__", "**/*.config.ts"],
 	"compilerOptions": {
 		"types": ["vitest/globals"],
-		"target": "ESNext"
+		"target": "ESNext",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext"
 	}
 }

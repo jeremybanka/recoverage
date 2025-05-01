@@ -1,10 +1,10 @@
 import type { Statement } from "bun:sqlite"
 import Database from "bun:sqlite"
 
-import { logger } from "./logger"
-import { downloadCoverageDatabaseFromS3 } from "./persist-s3"
-import { BranchCoverage } from "./recoverage"
-import { S3_CREDENTIALS } from "./recoverage.env"
+import { logger } from "./logger.ts"
+import { downloadCoverageDatabaseFromS3 } from "./persist-s3.ts"
+import { S3_CREDENTIALS } from "./recoverage.env.ts"
+import { BranchCoverage } from "./recoverage.ts"
 
 type Maybe<T> = T | undefined
 let database: Maybe<Database>

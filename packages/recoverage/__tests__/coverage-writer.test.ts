@@ -48,7 +48,7 @@ import { createCoverageMap } from "istanbul-lib-coverage"
 import { Context, createContext } from "istanbul-lib-report"
 import reports from "istanbul-reports"
 
-import { VirtualFileWriter } from "../src/istanbul-writer"
+import { VirtualFileWriter } from "../src/istanbul-writer.ts"
 
 test(`coverage writer`, () => {
 	const coverageMap = createCoverageMap(reportFixture)

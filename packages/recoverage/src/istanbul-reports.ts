@@ -2,8 +2,8 @@ import type { CoverageMap } from "istanbul-lib-coverage"
 import { createContext } from "istanbul-lib-report"
 import reports from "istanbul-reports"
 
-import { VirtualFileWriter } from "./istanbul-writer"
-import type { JsonSummary } from "./recoverage"
+import { VirtualFileWriter } from "./istanbul-writer.ts"
+import type { JsonSummary } from "./recoverage.ts"
 
 export function getCoverageJsonSummary(coverageMap: CoverageMap): JsonSummary {
 	const context = createContext({ coverageMap })
