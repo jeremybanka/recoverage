@@ -22,8 +22,8 @@ import { uploadCoverageDatabaseToS3 } from "./persist-s3"
 import { env, S3_CREDENTIALS } from "./recoverage.env"
 
 export class BranchCoverage {
-	public git_ref: string
-	public coverage: string
+	public git_ref!: string
+	public coverage!: string
 }
 
 export type CoverageEval = {
