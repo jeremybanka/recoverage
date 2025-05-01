@@ -1,3 +1,5 @@
+import type { PerformanceMark } from "node:perf_hooks"
+
 import colors from "colors"
 import * as Diff from "diff"
 
