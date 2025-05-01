@@ -14,7 +14,6 @@ class VirtualFileSystem extends TreeMap<string, string> {
 		number,
 		{ path: string; flag: string; position: number; appendMode: boolean }
 	> = new Map()
-	private tree: TreeMap<string, string>
 
 	// Existing methods (with assumed correction in writeFileSync)
 	public mkdirSync(dirPath: string): void {
