@@ -35,4 +35,5 @@ lerna-debug.log*
 .DS_Store
 
 # custom
+worker-configuration.d.ts
 wrangler-preview.jsonc
