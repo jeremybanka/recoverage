@@ -19,6 +19,6 @@
 		"strict": true,
 		"target": "ESNext"
 	},
-	"include": ["**/*.ts", "**/*.tsx", "**/*.js"],
+	"include": ["*.ts", "types"],
 	"exclude": ["**/dist"]
 }
