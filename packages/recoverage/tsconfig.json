@@ -1,7 +1,10 @@
 {
 	"extends": "../../tsconfig.json",
-	"include": ["src", "__tests__", "**/*.config.ts"],
+	"include": ["src", "__tests__/**/*.ts", "**/*.config.ts"],
 	"compilerOptions": {
+		"allowJs": false,
+		"declaration": true,
+		"isolatedDeclarations": true,
 		"types": ["vitest/globals"]
 	}
 }
