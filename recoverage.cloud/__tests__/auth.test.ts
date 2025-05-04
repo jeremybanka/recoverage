@@ -4,7 +4,7 @@ import { createCoverageMap } from "istanbul-lib-coverage"
 import {
 	downloadCoverageReportFromCloud,
 	uploadCoverageReportToCloud,
-} from "recoverage/lib"
+} from "recoverage"
 
 import app from "../src"
 import { GITHUB_CALLBACK_ENDPOINT } from "../src/env"

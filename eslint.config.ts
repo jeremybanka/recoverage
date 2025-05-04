@@ -7,12 +7,7 @@ import { default as SimpleImportSortPlugin } from "eslint-plugin-simple-import-s
 const ERROR = 2
 
 const parserOptions = {
-	project: [
-		`./tsconfig.json`,
-		"./packages/recoverage/tsconfig.json",
-		"./recoverage.cloud/tsconfig.json",
-		"./recoverage.cloud/__scripts__/tsconfig.json",
-	],
+	project: [`./tsconfig.json`, "__scripts__/tsconfig.json"],
 	sourceType: `module`,
 } satisfies parser.ParserOptions
 
