@@ -1,9 +1,11 @@
 {
 	"workspaces": ["packages/*"],
+	"type": "module",
 	"devDependencies": {
 		"@vitest/coverage-v8": "3.0.5",
 		"c8": "10.1.3",
 		"recoverage": "workspace:*",
+		"vite": "6.3.4",
 		"vitest": "3.0.5"
 	},
 	"scripts": {

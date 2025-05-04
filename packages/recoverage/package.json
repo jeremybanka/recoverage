@@ -17,10 +17,17 @@
 	"type": "module",
 	"files": ["bin", "dist", "src"],
 	"main": "dist/recoverage.js",
+	"types": "dist/recoverage.d.ts",
 	"exports": {
 		"./package.json": "./package.json",
-		".": "./dist/recoverage.js",
-		"./lib": "./dist/recoverage.lib.js"
+		".": {
+			"types": "./src/recoverage.d.ts",
+			"import": "./dist/recoverage.js"
+		},
+		"./lib": {
+			"types": "./src/recoverage.lib.d.ts",
+			"import": "./dist/recoverage.lib.js"
+		}
 	},
 	"bin": {
 		"recoverage": "bin/recoverage.bin.js"
@@ -62,6 +69,7 @@
 		"nyc": "17.1.0",
 		"tsdown": "0.10.2",
 		"typescript": "5.8.3",
+		"vite": "6.3.4",
 		"vitest": "3.1.2",
 		"yalc": "1.0.0-pre.53"
 	}

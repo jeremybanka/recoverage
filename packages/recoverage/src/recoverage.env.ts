@@ -1,7 +1,15 @@
 import { createEnv } from "@t3-oss/env-core"
 import { z } from "zod"
 
-export const env = createEnv({
+export const env: Readonly<{
+	S3_ACCESS_KEY_ID?: string | undefined
+	S3_BUCKET?: string | undefined
+	S3_ENDPOINT?: string | undefined
+	S3_SECRET_ACCESS_KEY?: string | undefined
+	RECOVERAGE_CLOUD_TOKEN?: string | undefined
+	RECOVERAGE_CLOUD_URL?: string | undefined
+	CI: boolean
+}> = createEnv({
 	server: {
 		S3_ACCESS_KEY_ID: z.string().optional(),
 		S3_BUCKET: z.string().optional(),

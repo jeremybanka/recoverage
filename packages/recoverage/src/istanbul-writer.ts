@@ -285,7 +285,10 @@ let output = ``
 export class VirtualFileWriter {
 	public baseDir: string
 	public vfs: VirtualFileSystem
-	public constructor(baseDir: string, vfs = new VirtualFileSystem()) {
+	public constructor(
+		baseDir: string,
+		vfs: VirtualFileSystem = new VirtualFileSystem(),
+	) {
 		if (!baseDir) {
 			throw new Error(`baseDir must be specified`)
 		}
