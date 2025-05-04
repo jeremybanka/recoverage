@@ -15,6 +15,7 @@ export type ProjectProps =
 			tokens: CompleteProjectTokenProps[]
 			reports: {
 				ref: string
+				// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 				jsonSummary: Json.stringified<JsonSummary> | null
 			}[]
 			mode: `deleted` | `existing`
