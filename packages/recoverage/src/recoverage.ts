@@ -21,9 +21,6 @@ import {
 import { uploadCoverageDatabaseToS3 } from "./persist-s3.ts"
 import { env, S3_CREDENTIALS } from "./recoverage.env.ts"
 
-export * from "./istanbul-reports.ts"
-export * from "./persist-cloud.ts"
-
 export class BranchCoverage {
 	public git_ref!: string
 	public coverage!: string

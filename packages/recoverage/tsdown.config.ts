@@ -7,6 +7,7 @@ const config: UserConfig = defineConfig({
 	entry: {
 		recoverage: `src/recoverage.ts`,
 		"recoverage.x": `src/recoverage.x.ts`,
+		"recoverage.lib": `src/recoverage.lib.ts`,
 	},
 	format: [`esm`],
 	external: [`bun`, `bun:sqlite`],

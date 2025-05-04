@@ -23,6 +23,10 @@
 		".": {
 			"types": "./src/recoverage.d.ts",
 			"import": "./dist/recoverage.js"
+		},
+		"./lib": {
+			"types": "./src/recoverage.lib.d.ts",
+			"import": "./dist/recoverage.lib.js"
 		}
 	},
 	"bin": {
