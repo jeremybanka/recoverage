@@ -17,10 +17,13 @@
 	"type": "module",
 	"files": ["bin", "dist", "src"],
 	"main": "dist/recoverage.js",
+	"types": "dist/recoverage.d.ts",
 	"exports": {
 		"./package.json": "./package.json",
-		".": "./dist/recoverage.js",
-		"./lib": "./dist/recoverage.lib.js"
+		".": {
+			"types": "./src/recoverage.d.ts",
+			"import": "./dist/recoverage.js"
+		}
 	},
 	"bin": {
 		"recoverage": "bin/recoverage.bin.js"
