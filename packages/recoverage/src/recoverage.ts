@@ -215,7 +215,7 @@ export async function diff(
 			baseCoverageTextReport,
 			currentCoverageTextReport,
 		)
-		logger.mark?.(`coverage increased by ${+coverageDifference}%`)
+		logger.mark?.(`coverage increased by ${coverageDifference}%`)
 		return 0
 	}
 	logger.mark?.(`coverage is the same`)
