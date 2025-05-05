@@ -9,7 +9,10 @@ export default null
 const ENV = type({
 	RECOVERAGE_CLOUD_TOKEN: type(`string`),
 })(import.meta.env)
-if (ENV instanceof ArkErrors) throw ENV
+if (ENV instanceof ArkErrors) {
+	console.error(ENV)
+	throw new Error(`failed to parse env`)
+}
 
 await fetch(`http://localhost:8787/reporter/thingy`, {
 	method: `PUT`,
