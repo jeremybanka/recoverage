@@ -105,7 +105,7 @@
 		},
 		"gen": {
 			"dependsOn": ["^build"],
-			"outputs": ["**/*.gen.ts", "**/*.gen.tsx"],
+			"outputs": ["**/*.gen.ts", "**/*.gen.tsx", "worker-configuration.d.ts"],
 			"inputs": [
 				"**/package.json",
 				"tsconfig.json",
