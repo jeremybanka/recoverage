@@ -124,8 +124,8 @@ importers:
         specifier: 17.1.0
         version: 17.1.0
       tsdown:
-        specifier: 0.11.0
-        version: 0.11.0(typescript@5.8.3)(unplugin-lightningcss@0.3.3)
+        specifier: 0.11.1
+        version: 0.11.1(typescript@5.8.3)(unplugin-lightningcss@0.3.3)
       typescript:
         specifier: 5.8.3
         version: 5.8.3
@@ -3646,8 +3646,8 @@ packages:
       typescript:
         optional: true
 
-  tsdown@0.11.0:
-    resolution: {integrity: sha512-WU3ZVksLk/9JIiSYuH0sR7iNwo/dZQoYxc3ri75CjFv8cj2M735Xstj44x2TMgZGHA1uii9mI55Ja/NpDVHAAQ==}
+  tsdown@0.11.1:
+    resolution: {integrity: sha512-VtooVG/dMeIddux3AG5fYatl9WEAS42A+pQVuHWrE3doGo1ZW9A57gT477x/hL7jxkq52srv3zKyrp2hyFdDng==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
@@ -7301,7 +7301,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
 
-  tsdown@0.11.0(typescript@5.8.3)(unplugin-lightningcss@0.3.3):
+  tsdown@0.11.1(typescript@5.8.3)(unplugin-lightningcss@0.3.3):
     dependencies:
       ansis: 3.17.0
       cac: 6.7.14
