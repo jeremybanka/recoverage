@@ -48,7 +48,7 @@
 		"@t3-oss/env-core": "0.13.4",
 		"colors": "1.4.0",
 		"comline": "0.2.5",
-		"diff": "7.0.0",
+		"diff": "8.0.0",
 		"istanbul-lib-coverage": "3.2.2",
 		"istanbul-lib-report": "3.0.1",
 		"istanbul-reports": "3.1.7",
