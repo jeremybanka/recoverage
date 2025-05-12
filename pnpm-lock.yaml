@@ -72,8 +72,8 @@ importers:
         specifier: 0.2.5
         version: 0.2.5(zod-to-json-schema@3.24.5(zod@3.24.4))(zod@3.24.4)
       diff:
-        specifier: 7.0.0
-        version: 7.0.0
+        specifier: 8.0.0
+        version: 8.0.0
       istanbul-lib-coverage:
         specifier: 3.2.2
         version: 3.2.2
@@ -96,9 +96,6 @@ importers:
       '@types/bun':
         specifier: npm:bun-types@1.2.13
         version: bun-types@1.2.13
-      '@types/diff':
-        specifier: 7.0.2
-        version: 7.0.2
       '@types/istanbul-lib-coverage':
         specifier: 2.0.6
         version: 2.0.6
@@ -1548,9 +1545,6 @@ packages:
   '@types/aws-lambda@8.10.149':
     resolution: {integrity: sha512-NXSZIhfJjnXqJgtS7IwutqIF/SOy1Wz5Px4gUY1RWITp3AYTyuJS4xaXr/bIJY1v15XMzrJ5soGnPM+7uigZjA==}
 
-  '@types/diff@7.0.2':
-    resolution: {integrity: sha512-JSWRMozjFKsGlEjiiKajUjIJVKuKdE3oVy2DNtK+fUo8q82nhFZ2CPQwicAIkXrofahDXrWJ7mjelvZphMS98Q==}
-
   '@types/eslint@9.6.1':
     resolution: {integrity: sha512-FXx2pKgId/WyYo2jXw63kk7/+TY7u7AziEJxJAnSFzHlqTAS3Ync6SvgYAN/k4/PQpnnVuzoMuVnByKK2qp0ag==}
 
@@ -1887,7 +1881,6 @@ packages:
 
   bun@1.2.13:
     resolution: {integrity: sha512-EhP1MhFbicqtaRSFCbEZdkcFco8Ov47cNJcB9QmKS8U4cojKHfLU+dQR14lCvLYmtBvGgwv/Lp+9SSver2OPzQ==}
-    cpu: [arm64, x64, aarch64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -2116,6 +2109,10 @@ packages:
 
   diff@7.0.0:
     resolution: {integrity: sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==}
+    engines: {node: '>=0.3.1'}
+
+  diff@8.0.0:
+    resolution: {integrity: sha512-DJkPOAHudnz8swaqtm8cYmR9YfHLVDmoIH02+MqJiI/V9PxCf0WG+TBMduL7FZfnO53LhUXaPMo8Iw/uUJXLRA==}
     engines: {node: '>=0.3.1'}
 
   dir-glob@3.0.1:
@@ -5073,8 +5070,6 @@ snapshots:
 
   '@types/aws-lambda@8.10.149': {}
 
-  '@types/diff@7.0.2': {}
-
   '@types/eslint@9.6.1':
     dependencies:
       '@types/estree': 1.0.7
@@ -5640,6 +5635,8 @@ snapshots:
   devalue@4.3.3: {}
 
   diff@7.0.0: {}
+
+  diff@8.0.0: {}
 
   dir-glob@3.0.1:
     dependencies:
