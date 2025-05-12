@@ -124,8 +124,8 @@ importers:
         specifier: 17.1.0
         version: 17.1.0
       tsdown:
-        specifier: 0.11.4
-        version: 0.11.4(typescript@5.8.3)
+        specifier: 0.11.5
+        version: 0.11.5(typescript@5.8.3)
       typescript:
         specifier: 5.8.3
         version: 5.8.3
@@ -1356,71 +1356,6 @@ packages:
   '@oxc-project/types@0.69.0':
     resolution: {integrity: sha512-bu3gzdAlLgncoaqyqWVpMAKx4axo+j3ewvvdAt5iCLtvHB/n3Qeif67NU+2TM/ami1nV5/KVO9lxCH8paPATBA==}
 
-  '@oxc-resolver/binding-darwin-arm64@9.0.0':
-    resolution: {integrity: sha512-KKxxOa7DUxZy8IdJIm6nlLvptr+TkwV+Gytez75wi+C5+GRy+qnO7z1wIL5eNogVKQaOk8RxCYmHcZ9aa8tBsg==}
-    cpu: [arm64]
-    os: [darwin]
-
-  '@oxc-resolver/binding-darwin-x64@9.0.0':
-    resolution: {integrity: sha512-x0QQt0IvPSi1wfHZ8f+ahKKOdGnUYj0DsxUf0Fpw/CoJYOapeNbOTgpy1FAPJU5FSED0gTrSt++fhrcqMAzD0Q==}
-    cpu: [x64]
-    os: [darwin]
-
-  '@oxc-resolver/binding-freebsd-x64@9.0.0':
-    resolution: {integrity: sha512-UQR0iWwZB/djSiuyMZR8SihcE8pb13mTjGSBkhE43rV7wQUtFmvCJry3Pw0FwHw3wmJMNdIyoPDWuL7L5ZsoAw==}
-    cpu: [x64]
-    os: [freebsd]
-
-  '@oxc-resolver/binding-linux-arm-gnueabihf@9.0.0':
-    resolution: {integrity: sha512-pVwdflMCXpJTPWIXm1Zhn7WZSq9VBXYnFyRaBAsqRQrMtBr85ewJIleXk7c1ptOKD3j1q/+9h7ZdfBOSeojaig==}
-    cpu: [arm]
-    os: [linux]
-
-  '@oxc-resolver/binding-linux-arm64-gnu@9.0.0':
-    resolution: {integrity: sha512-JnGX6+mbi21nu3qeQp6D58H3EqIhZzIfjZIJEtiD6/cGRn/1QnI9RnC/KvqIXQTXEhqlgiXP/4ZmMrOZmbQzqg==}
-    cpu: [arm64]
-    os: [linux]
-
-  '@oxc-resolver/binding-linux-arm64-musl@9.0.0':
-    resolution: {integrity: sha512-sfahvJ59VwsovtUPq3kfNhDJ9lLC+xfgUyMf1qN5Ni8/hPk3z4bxrwxWdK9Vj3azASewqLGCNcDd4s2seWmjcA==}
-    cpu: [arm64]
-    os: [linux]
-
-  '@oxc-resolver/binding-linux-riscv64-gnu@9.0.0':
-    resolution: {integrity: sha512-DFhjQbv1/pL5GpecPtPRdhwVOChizocJt80VpcTSUTyJ3KDYawy4ppp29nc3xhLVq3iTFF4a5zGlz6T2PYIktQ==}
-    cpu: [riscv64]
-    os: [linux]
-
-  '@oxc-resolver/binding-linux-s390x-gnu@9.0.0':
-    resolution: {integrity: sha512-m/vqUfDINlzMEzqRIGnz1pRj0Z8Iq3hypnEl0Q02WsLwY9NPPherDHg82OEl8HMEnxUf587F60BLprw515l2Nw==}
-    cpu: [s390x]
-    os: [linux]
-
-  '@oxc-resolver/binding-linux-x64-gnu@9.0.0':
-    resolution: {integrity: sha512-zfyYtF/cyYv1CMefMawRfNEy9jnKTEroseS2S0++c6PcJWINHAwzIvgc3WkZGRPBIa/QGkZZV93UBFdtFYOdlw==}
-    cpu: [x64]
-    os: [linux]
-
-  '@oxc-resolver/binding-linux-x64-musl@9.0.0':
-    resolution: {integrity: sha512-tvPNhEcjpdKNNWJEdIOaVsFfuZAZhjE/aWEGbqTMGYhJbtCbAt1uzuJC4XfFY/VBhkgF24pxJs9f7XkhHRHVnQ==}
-    cpu: [x64]
-    os: [linux]
-
-  '@oxc-resolver/binding-wasm32-wasi@9.0.0':
-    resolution: {integrity: sha512-orbudwE33S1PbcmFUA5l93HHI11lDhBfEjsnCoH5Osqs97/9/Kysruaf1s7Bja4K65I2SPpnISQ+F8b64QhjoQ==}
-    engines: {node: '>=14.0.0'}
-    cpu: [wasm32]
-
-  '@oxc-resolver/binding-win32-arm64-msvc@9.0.0':
-    resolution: {integrity: sha512-SOIQYHHi5XqgOLWKvyafQKy+Rcjtuo9sdm+g49xW0FOl6cSTR7QGTHxIyRATYXkeEnGT+ZT/h3k7WS//lk5ZwA==}
-    cpu: [arm64]
-    os: [win32]
-
-  '@oxc-resolver/binding-win32-x64-msvc@9.0.0':
-    resolution: {integrity: sha512-/5LwrJwk9fT9Qzd3V57zrCI7343NwSUStFhm1i4Llno8oNOBaLbpZ0MEXoDEkPRQTSgN9MvHeIx6iBfy0PpsWQ==}
-    cpu: [x64]
-    os: [win32]
-
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
@@ -2280,9 +2215,14 @@ packages:
       sqlite3:
         optional: true
 
-  dts-resolver@1.2.0:
-    resolution: {integrity: sha512-+xNF7raXYI1E3IFB+f3JqvoKYFI8R+1Mh9mpI75yNm3F5XuiC6ErEXe2Lqh9ach+4MQ1tOefzjxulhWGVclYbg==}
+  dts-resolver@2.0.1:
+    resolution: {integrity: sha512-Pe2kqaQTNVxleYpt9Q9658fn6rEpoZbMbDpEBbcU6pnuGM3Q0IdM+Rv67kN6qcyp8Bv2Uv9NYy5Y1rG1LSgfoQ==}
     engines: {node: '>=20.18.0'}
+    peerDependencies:
+      oxc-resolver: ^9.0.2
+    peerDependenciesMeta:
+      oxc-resolver:
+        optional: true
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -3136,9 +3076,6 @@ packages:
   outdent@0.5.0:
     resolution: {integrity: sha512-/jHxFIzoMXdqPzTaCpFzAAWhpkSjZPF4Vsn6jAfNpmbH/ymsmd7Qc6VE9BGn0L6YMj6uwpQLxCECpus4ukKS9Q==}
 
-  oxc-resolver@9.0.0:
-    resolution: {integrity: sha512-KV20QuwUfhGOuVpWubqhL7gmXDPw0vgsR7rNZd/+huSyGRq80QIRS7UQvRZ4A+C5OoCNCi0Lg48pFLW6hQdKQA==}
-
   p-filter@2.1.0:
     resolution: {integrity: sha512-ZBxxZ5sL2HghephhpGAQdoskxplTwr7ICaehZwLIlfL6acuVgZPm8yBNuRAFBGEqtD/hmUeq9eqLg2ys9Xr/yw==}
     engines: {node: '>=8'}
@@ -3344,8 +3281,8 @@ packages:
     deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
 
-  rolldown-plugin-dts@0.11.4:
-    resolution: {integrity: sha512-nPPrcdIcvFk/k7FbKsjG67s0MBKZBaEVE3rt68RoqX35nFZ4N2VuuZnH35CDPZ0zOkRdAMxPrNvJ1v2v7/7uaA==}
+  rolldown-plugin-dts@0.12.0:
+    resolution: {integrity: sha512-kwLRukEsGBlXlDfWH28LQ/Q3vHTfSbXnO4jBabz6LoNycbOuhq0dQvM6bxZsEL49+oYG+nWrmfZCqJA0Z8vtZw==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
       rolldown: ^1.0.0-beta.8-commit.534fde3
@@ -3629,8 +3566,8 @@ packages:
       typescript:
         optional: true
 
-  tsdown@0.11.4:
-    resolution: {integrity: sha512-/EVrn5chowBIQKokzdw5b0WxOgW23yunrqA40ZKtkSlsicgL18Ks78xDHYC5AZEL9R9HN3tpObCjo5+mQz040w==}
+  tsdown@0.11.5:
+    resolution: {integrity: sha512-HT74DMwjlKJ+8yBWeh5XXfZ7V4rR3lCgpxLyKac8xlFulvYwkDmcJjWOLo0EhiueJLAxWKxIM+Alk8d+ZP8rvQ==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
@@ -5014,47 +4951,6 @@ snapshots:
 
   '@oxc-project/types@0.69.0': {}
 
-  '@oxc-resolver/binding-darwin-arm64@9.0.0':
-    optional: true
-
-  '@oxc-resolver/binding-darwin-x64@9.0.0':
-    optional: true
-
-  '@oxc-resolver/binding-freebsd-x64@9.0.0':
-    optional: true
-
-  '@oxc-resolver/binding-linux-arm-gnueabihf@9.0.0':
-    optional: true
-
-  '@oxc-resolver/binding-linux-arm64-gnu@9.0.0':
-    optional: true
-
-  '@oxc-resolver/binding-linux-arm64-musl@9.0.0':
-    optional: true
-
-  '@oxc-resolver/binding-linux-riscv64-gnu@9.0.0':
-    optional: true
-
-  '@oxc-resolver/binding-linux-s390x-gnu@9.0.0':
-    optional: true
-
-  '@oxc-resolver/binding-linux-x64-gnu@9.0.0':
-    optional: true
-
-  '@oxc-resolver/binding-linux-x64-musl@9.0.0':
-    optional: true
-
-  '@oxc-resolver/binding-wasm32-wasi@9.0.0':
-    dependencies:
-      '@napi-rs/wasm-runtime': 0.2.9
-    optional: true
-
-  '@oxc-resolver/binding-win32-arm64-msvc@9.0.0':
-    optional: true
-
-  '@oxc-resolver/binding-win32-x64-msvc@9.0.0':
-    optional: true
-
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
@@ -5762,10 +5658,7 @@ snapshots:
     optionalDependencies:
       bun-types: 1.2.13
 
-  dts-resolver@1.2.0:
-    dependencies:
-      oxc-resolver: 9.0.0
-      pathe: 2.0.3
+  dts-resolver@2.0.1: {}
 
   dunder-proto@1.0.1:
     dependencies:
@@ -6722,22 +6615,6 @@ snapshots:
 
   outdent@0.5.0: {}
 
-  oxc-resolver@9.0.0:
-    optionalDependencies:
-      '@oxc-resolver/binding-darwin-arm64': 9.0.0
-      '@oxc-resolver/binding-darwin-x64': 9.0.0
-      '@oxc-resolver/binding-freebsd-x64': 9.0.0
-      '@oxc-resolver/binding-linux-arm-gnueabihf': 9.0.0
-      '@oxc-resolver/binding-linux-arm64-gnu': 9.0.0
-      '@oxc-resolver/binding-linux-arm64-musl': 9.0.0
-      '@oxc-resolver/binding-linux-riscv64-gnu': 9.0.0
-      '@oxc-resolver/binding-linux-s390x-gnu': 9.0.0
-      '@oxc-resolver/binding-linux-x64-gnu': 9.0.0
-      '@oxc-resolver/binding-linux-x64-musl': 9.0.0
-      '@oxc-resolver/binding-wasm32-wasi': 9.0.0
-      '@oxc-resolver/binding-win32-arm64-msvc': 9.0.0
-      '@oxc-resolver/binding-win32-x64-msvc': 9.0.0
-
   p-filter@2.1.0:
     dependencies:
       p-map: 2.1.0
@@ -6902,19 +6779,20 @@ snapshots:
     dependencies:
       glob: 7.2.3
 
-  rolldown-plugin-dts@0.11.4(rolldown@1.0.0-beta.8-commit.2a5c6a6)(typescript@5.8.3):
+  rolldown-plugin-dts@0.12.0(rolldown@1.0.0-beta.8-commit.2a5c6a6)(typescript@5.8.3):
     dependencies:
       '@babel/generator': 7.27.1
       '@babel/parser': 7.27.2
       '@babel/types': 7.27.1
       ast-kit: 2.0.0
       debug: 4.4.0
-      dts-resolver: 1.2.0
+      dts-resolver: 2.0.1
       get-tsconfig: 4.10.0
       rolldown: 1.0.0-beta.8-commit.2a5c6a6
     optionalDependencies:
       typescript: 5.8.3
     transitivePeerDependencies:
+      - oxc-resolver
       - supports-color
 
   rolldown@1.0.0-beta.8-commit.2a5c6a6:
@@ -7238,7 +7116,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
 
-  tsdown@0.11.4(typescript@5.8.3):
+  tsdown@0.11.5(typescript@5.8.3):
     dependencies:
       ansis: 4.0.0
       cac: 6.7.14
@@ -7248,13 +7126,14 @@ snapshots:
       empathic: 1.1.0
       hookable: 5.5.3
       rolldown: 1.0.0-beta.8-commit.2a5c6a6
-      rolldown-plugin-dts: 0.11.4(rolldown@1.0.0-beta.8-commit.2a5c6a6)(typescript@5.8.3)
+      rolldown-plugin-dts: 0.12.0(rolldown@1.0.0-beta.8-commit.2a5c6a6)(typescript@5.8.3)
       semver: 7.7.1
       tinyexec: 1.0.1
       tinyglobby: 0.2.13
       unconfig: 7.3.2
     transitivePeerDependencies:
       - '@oxc-project/runtime'
+      - oxc-resolver
       - supports-color
       - typescript
       - vue-tsc
