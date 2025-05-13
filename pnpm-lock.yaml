@@ -72,8 +72,8 @@ importers:
         specifier: 0.2.5
         version: 0.2.5(zod-to-json-schema@3.24.5(zod@3.24.4))(zod@3.24.4)
       diff:
-        specifier: 8.0.0
-        version: 8.0.0
+        specifier: 8.0.1
+        version: 8.0.1
       istanbul-lib-coverage:
         specifier: 3.2.2
         version: 3.2.2
@@ -2133,8 +2133,8 @@ packages:
   devalue@4.3.3:
     resolution: {integrity: sha512-UH8EL6H2ifcY8TbD2QsxwCC/pr5xSwPvv85LrLXVihmHVC3T3YqTCIwnR5ak0yO1KYqlxrPVOA/JVZJYPy2ATg==}
 
-  diff@8.0.0:
-    resolution: {integrity: sha512-DJkPOAHudnz8swaqtm8cYmR9YfHLVDmoIH02+MqJiI/V9PxCf0WG+TBMduL7FZfnO53LhUXaPMo8Iw/uUJXLRA==}
+  diff@8.0.1:
+    resolution: {integrity: sha512-rEaM3KmVm78zE3dFZaop3aCQa2MTm+T4kcigUFLVU/KbOYdiY6JnL2g2puOYnct3QFw9pjZadaCbCZ1O8ArMlQ==}
     engines: {node: '>=0.3.1'}
 
   dir-glob@3.0.1:
@@ -5705,7 +5705,7 @@ snapshots:
 
   devalue@4.3.3: {}
 
-  diff@8.0.0: {}
+  diff@8.0.1: {}
 
   dir-glob@3.0.1:
     dependencies:
@@ -7192,7 +7192,7 @@ snapshots:
       cac: 6.7.14
       chokidar: 4.0.3
       debug: 4.4.0
-      diff: 8.0.0
+      diff: 8.0.1
       empathic: 1.1.0
       hookable: 5.5.3
       rolldown: 1.0.0-beta.8-commit.d95f99e
