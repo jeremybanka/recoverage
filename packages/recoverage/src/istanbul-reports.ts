@@ -20,7 +20,10 @@ export function getCoverageTextReport(coverageMap: CoverageMap): string {
 	const context = createContext({ coverageMap })
 	const writer = new VirtualFileWriter(`/`)
 	context.data.writer = writer
-	const report = reports.create(`text`, { file: `coverage.txt` })
+	const report = reports.create(`text`, {
+		file: `coverage.txt`,
+		maxCols: process.stdout.columns - 2,
+	})
 	report.execute(context)
 	const textReport = writer.vfs.get(`coverage.txt`) as string
 	return textReport
