@@ -1,5 +1,11 @@
 # recoverage
 
+## 0.1.10
+
+### Patch Changes
+
+- 3e07eed: 🐛 Fixed a bug where the coverage diff displayed in the terminal would be marginally wider than the terminal. Now it will be the proper width.
+
 ## 0.1.9
 
 ### Patch Changes
