@@ -6,10 +6,17 @@ import type { JsonSummary } from "recoverage"
 import type { Json } from "./json"
 import type { Role } from "./roles-permissions"
 
+type ISO8601 = string & { __brand__: `ISO8601` }
+
+const SQL_NOW = sql`(current_timestamp)`
+function timestamp() {
+	return text().$type<ISO8601>()
+}
+
 export const users = sqliteTable(`users`, {
 	id: integer().primaryKey(),
 	role: text().$type<Role>().default(`free`).notNull(),
-	createdAt: text().notNull().default(sql`(current_timestamp)`),
+	createdAt: timestamp().default(SQL_NOW).notNull(),
 })
 
 export const projects = sqliteTable(`projects`, {
@@ -18,7 +25,7 @@ export const projects = sqliteTable(`projects`, {
 		.references(() => users.id, { onDelete: `cascade` })
 		.notNull(),
 	name: text().notNull(),
-	createdAt: text().notNull().default(sql`(current_timestamp)`),
+	createdAt: timestamp().default(SQL_NOW).notNull(),
 })
 export const projectsRelations = relations(projects, ({ many, one }) => ({
 	tokens: many(tokens),
@@ -37,9 +44,8 @@ export const tokens = sqliteTable(`tokens`, {
 	projectId: text()
 		.references(() => projects.id, { onDelete: `cascade` })
 		.notNull(),
-	createdAt: text().notNull().default(sql`(current_timestamp)`),
+	createdAt: timestamp().default(SQL_NOW).notNull(),
 })
-
 export const tokensRelations = relations(tokens, ({ one }) => ({
 	project: one(projects, {
 		fields: [tokens.projectId],
@@ -56,7 +62,7 @@ export const reports = sqliteTable(
 			.notNull(),
 		data: text().notNull().$type<Json.stringified<CoverageMap>>(),
 		jsonSummary: text().$type<Json.stringified<JsonSummary>>(),
-		createdAt: text().notNull().default(sql`(current_timestamp)`),
+		createdAt: timestamp().default(SQL_NOW).notNull(),
 	},
 	(table) => [
 		primaryKey({
@@ -65,7 +71,6 @@ export const reports = sqliteTable(
 		}),
 	],
 )
-
 export const reportsRelations = relations(reports, ({ one }) => ({
 	projects: one(projects, {
 		fields: [reports.projectId],
