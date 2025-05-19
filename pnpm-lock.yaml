@@ -64,13 +64,13 @@ importers:
     dependencies:
       '@t3-oss/env-core':
         specifier: 0.13.4
-        version: 0.13.4(arktype@2.1.20)(typescript@5.8.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.25.3)
+        version: 0.13.4(arktype@2.1.20)(typescript@5.8.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.25.5)
       colors:
         specifier: 1.4.0
         version: 1.4.0
       comline:
         specifier: 0.2.5
-        version: 0.2.5(zod-to-json-schema@3.24.5(zod@3.25.3))(zod@3.25.3)
+        version: 0.2.5(zod-to-json-schema@3.24.5(zod@3.25.5))(zod@3.25.5)
       diff:
         specifier: 8.0.1
         version: 8.0.1
@@ -90,8 +90,8 @@ importers:
         specifier: 0.2.3
         version: 0.2.3
       zod:
-        specifier: 3.25.3
-        version: 3.25.3
+        specifier: 3.25.5
+        version: 3.25.5
     devDependencies:
       '@types/bun':
         specifier: npm:bun-types@1.2.13
@@ -3709,8 +3709,8 @@ packages:
   zod@3.22.3:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
 
-  zod@3.25.3:
-    resolution: {integrity: sha512-VGZqnyYNrl8JpEJRZaFPqeVNIuqgXNu4cXZ5cOb6zEUO1OxKbRnWB4UdDIXMmiERWncs0yDQukssHov8JUxykQ==}
+  zod@3.25.5:
+    resolution: {integrity: sha512-ualArhgJydGAKkSdtxQyu6RXFW8nHFKWaw20jey8UFXU9uzkHYqWXJ93Iz+hUVVJb37VpF4LCCsOOfj6xaCVRQ==}
 
 snapshots:
 
@@ -4029,7 +4029,7 @@ snapshots:
       semver: 7.7.2
       vitest: 3.1.4(@types/node@22.15.19)(jiti@2.4.2)(lightningcss@1.29.3)
       wrangler: 4.15.2
-      zod: 3.25.3
+      zod: 3.25.5
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
       - bufferutil
@@ -4837,13 +4837,13 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.40.1':
     optional: true
 
-  '@t3-oss/env-core@0.13.4(arktype@2.1.20)(typescript@5.8.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.25.3)':
+  '@t3-oss/env-core@0.13.4(arktype@2.1.20)(typescript@5.8.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.25.5)':
     dependencies:
       arktype: 2.1.20
     optionalDependencies:
       typescript: 5.8.3
       valibot: 1.0.0(typescript@5.8.3)
-      zod: 3.25.3
+      zod: 3.25.5
 
   '@tybys/wasm-util@0.9.0':
     dependencies:
@@ -5305,12 +5305,12 @@ snapshots:
     dependencies:
       delayed-stream: 1.0.0
 
-  comline@0.2.5(zod-to-json-schema@3.24.5(zod@3.25.3))(zod@3.25.3):
+  comline@0.2.5(zod-to-json-schema@3.24.5(zod@3.25.5))(zod@3.25.5):
     dependencies:
       picocolors: 1.1.1
       treetrunks: 0.1.3
-      zod: 3.25.3
-      zod-to-json-schema: 3.24.5(zod@3.25.3)
+      zod: 3.25.5
+      zod-to-json-schema: 3.24.5(zod@3.25.5)
 
   comment-parser@1.4.1: {}
 
@@ -7034,10 +7034,10 @@ snapshots:
       mustache: 4.2.0
       stacktracey: 2.1.8
 
-  zod-to-json-schema@3.24.5(zod@3.25.3):
+  zod-to-json-schema@3.24.5(zod@3.25.5):
     dependencies:
-      zod: 3.25.3
+      zod: 3.25.5
 
   zod@3.22.3: {}
 
-  zod@3.25.3: {}
+  zod@3.25.5: {}
