@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { cli, help, noOptions, optional } from "comline"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 import { logger } from "./logger.ts"
 import * as Recoverage from "./recoverage.ts"
