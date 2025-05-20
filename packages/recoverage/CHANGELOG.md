@@ -1,5 +1,11 @@
 # recoverage
 
+## 0.1.11
+
+### Patch Changes
+
+- a39f6b8: ⬆️ Use `zod/v4` for parsing CLI options.
+
 ## 0.1.10
 
 ### Patch Changes
