@@ -170,8 +170,8 @@ importers:
         specifier: 0.8.31
         version: 0.8.31(@vitest/runner@3.1.4)(@vitest/snapshot@3.1.4)(vitest@3.1.4(@types/node@22.15.21)(jiti@2.4.2)(lightningcss@1.29.3))
       '@hono/vite-build':
-        specifier: 1.6.1
-        version: 1.6.1(hono@4.7.10)
+        specifier: 1.6.2
+        version: 1.6.2(hono@4.7.10)
       '@hono/vite-dev-server':
         specifier: 0.19.1
         version: 0.19.1(hono@4.7.10)(miniflare@4.20250508.3)(wrangler@4.16.0)
@@ -962,8 +962,8 @@ packages:
     peerDependencies:
       hono: ^4
 
-  '@hono/vite-build@1.6.1':
-    resolution: {integrity: sha512-M60p0cAWgEbYiGa+1j35Ljqcef8s2N5EhpQMWrH1N6fSid5jKD2+D2t1+AntI8HZbgC5VDdpk4QzcEuLMPCgsA==}
+  '@hono/vite-build@1.6.2':
+    resolution: {integrity: sha512-wM1KZelUcLiPABYSe/1YtveCkHJxaZ42e68naRznUPKrfVYPAC7wE8Itilmxa81ICZKhb1tBOQ7CHxtGF5dLGw==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: '*'
@@ -4345,7 +4345,7 @@ snapshots:
     dependencies:
       hono: 4.7.10
 
-  '@hono/vite-build@1.6.1(hono@4.7.10)':
+  '@hono/vite-build@1.6.2(hono@4.7.10)':
     dependencies:
       hono: 4.7.10
 
