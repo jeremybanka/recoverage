@@ -173,8 +173,8 @@ importers:
         specifier: 1.6.1
         version: 1.6.1(hono@4.7.10)
       '@hono/vite-dev-server':
-        specifier: 0.19.0
-        version: 0.19.0(hono@4.7.10)(miniflare@4.20250508.3)(wrangler@4.16.0)
+        specifier: 0.19.1
+        version: 0.19.1(hono@4.7.10)(miniflare@4.20250508.3)(wrangler@4.16.0)
       '@octokit/types':
         specifier: 14.0.0
         version: 14.0.0
@@ -956,8 +956,8 @@ packages:
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
 
-  '@hono/node-server@1.14.1':
-    resolution: {integrity: sha512-vmbuM+HPinjWzPe7FFPWMMQMsbKE9gDPhaH0FFdqbGpkT5lp++tcWDTxwBl5EgS5y6JVgIaCdjeHRfQ4XRBRjQ==}
+  '@hono/node-server@1.14.2':
+    resolution: {integrity: sha512-GHjpOeHYbr9d1vkID2sNUYkl5IxumyhDrUJB7wBp7jvqYwPFt+oNKsAPBRcdSbV7kIrXhouLE199ks1QcK4r7A==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
@@ -968,8 +968,8 @@ packages:
     peerDependencies:
       hono: '*'
 
-  '@hono/vite-dev-server@0.19.0':
-    resolution: {integrity: sha512-myMc4Nm0nFQSPaeE6I/a1ODyDR5KpQ4EHodX4Tu/7qlB31GfUemhUH/WsO91HJjDEpRRpsT4Zbg+PleMlpTljw==}
+  '@hono/vite-dev-server@0.19.1':
+    resolution: {integrity: sha512-hh+0u3IxHErEyj4YwHk/U+2f+qAHEQZ9EIQtadG9jeHfxEXH6r/ZecjnpyEkQbDK7JtgEEoVAq/JGOkd3Dvqww==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: '*'
@@ -4338,7 +4338,7 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
-  '@hono/node-server@1.14.1(hono@4.7.10)':
+  '@hono/node-server@1.14.2(hono@4.7.10)':
     dependencies:
       hono: 4.7.10
 
@@ -4346,9 +4346,9 @@ snapshots:
     dependencies:
       hono: 4.7.10
 
-  '@hono/vite-dev-server@0.19.0(hono@4.7.10)(miniflare@4.20250508.3)(wrangler@4.16.0)':
+  '@hono/vite-dev-server@0.19.1(hono@4.7.10)(miniflare@4.20250508.3)(wrangler@4.16.0)':
     dependencies:
-      '@hono/node-server': 1.14.1(hono@4.7.10)
+      '@hono/node-server': 1.14.2(hono@4.7.10)
       hono: 4.7.10
       minimatch: 9.0.5
     optionalDependencies:
