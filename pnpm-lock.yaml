@@ -174,7 +174,7 @@ importers:
         version: 1.6.2(hono@4.7.10)
       '@hono/vite-dev-server':
         specifier: 0.19.1
-        version: 0.19.1(hono@4.7.10)(miniflare@4.20250508.3)(wrangler@4.16.0)
+        version: 0.19.1(hono@4.7.10)(miniflare@4.20250508.3)(wrangler@4.16.1)
       '@octokit/types':
         specifier: 14.0.0
         version: 14.0.0
@@ -209,8 +209,8 @@ importers:
         specifier: 3.1.4
         version: 3.1.4(@types/node@22.15.21)(jiti@2.4.2)(lightningcss@1.29.3)
       wrangler:
-        specifier: 4.16.0
-        version: 4.16.0
+        specifier: 4.16.1
+        version: 4.16.1
 
 packages:
 
@@ -3618,16 +3618,6 @@ packages:
     engines: {node: '>=16'}
     hasBin: true
 
-  wrangler@4.16.0:
-    resolution: {integrity: sha512-zQojiBJKAWRVG4WdUgTP5/i9N5UcwOixhWljnBrcKxJd+kpqUXVV/L03ytO+0cnr5IhgYUs7qhjd8EWU6UwPfg==}
-    engines: {node: '>=18.0.0'}
-    hasBin: true
-    peerDependencies:
-      '@cloudflare/workers-types': ^4.20250508.0
-    peerDependenciesMeta:
-      '@cloudflare/workers-types':
-        optional: true
-
   wrangler@4.16.1:
     resolution: {integrity: sha512-YiLdWXcaQva2K/bqokpsZbySPmoT8TJFyJPsQPZumnkgimM9+/g/yoXArByA+pf+xU8jhw7ybQ8X1yBGXv731g==}
     engines: {node: '>=18.0.0'}
@@ -4359,14 +4349,14 @@ snapshots:
     dependencies:
       hono: 4.7.10
 
-  '@hono/vite-dev-server@0.19.1(hono@4.7.10)(miniflare@4.20250508.3)(wrangler@4.16.0)':
+  '@hono/vite-dev-server@0.19.1(hono@4.7.10)(miniflare@4.20250508.3)(wrangler@4.16.1)':
     dependencies:
       '@hono/node-server': 1.14.2(hono@4.7.10)
       hono: 4.7.10
       minimatch: 9.0.5
     optionalDependencies:
       miniflare: 4.20250508.3
-      wrangler: 4.16.0
+      wrangler: 4.16.1
 
   '@humanfs/core@0.19.1': {}
 
@@ -6925,23 +6915,6 @@ snapshots:
       '@cloudflare/workerd-linux-64': 1.20250508.0
       '@cloudflare/workerd-linux-arm64': 1.20250508.0
       '@cloudflare/workerd-windows-64': 1.20250508.0
-
-  wrangler@4.16.0:
-    dependencies:
-      '@cloudflare/kv-asset-handler': 0.4.0
-      '@cloudflare/unenv-preset': 2.3.2(unenv@2.0.0-rc.17)(workerd@1.20250508.0)
-      blake3-wasm: 2.1.5
-      esbuild: 0.25.4
-      miniflare: 4.20250508.3
-      path-to-regexp: 6.3.0
-      unenv: 2.0.0-rc.17
-      workerd: 1.20250508.0
-    optionalDependencies:
-      fsevents: 2.3.3
-      sharp: 0.33.5
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
 
   wrangler@4.16.1:
     dependencies:
