@@ -41,7 +41,7 @@
 		"octokit": "5.0.2"
 	},
 	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "0.8.31",
+		"@cloudflare/vitest-pool-workers": "0.8.32",
 		"@hono/vite-build": "1.6.2",
 		"@hono/vite-dev-server": "0.19.1",
 		"@octokit/types": "14.0.0",
