@@ -32,7 +32,7 @@
 	"dependencies": {
 		"arktype": "2.1.20",
 		"bun": "1.2.14",
-		"drizzle-orm": "0.43.1",
+		"drizzle-orm": "0.44.0",
 		"hono": "4.7.10",
 		"htmx.org": "2.0.4",
 		"istanbul-lib-coverage": "3.2.2",
