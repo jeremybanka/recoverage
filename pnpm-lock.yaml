@@ -64,13 +64,13 @@ importers:
     dependencies:
       '@t3-oss/env-core':
         specifier: 0.13.6
-        version: 0.13.6(arktype@2.1.20)(typescript@5.8.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.25.33)
+        version: 0.13.6(arktype@2.1.20)(typescript@5.8.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.25.34)
       colors:
         specifier: 1.4.0
         version: 1.4.0
       comline:
         specifier: 0.3.0
-        version: 0.3.0(zod@3.25.33)
+        version: 0.3.0(zod@3.25.34)
       diff:
         specifier: 8.0.2
         version: 8.0.2
@@ -90,8 +90,8 @@ importers:
         specifier: 0.2.3
         version: 0.2.3
       zod:
-        specifier: 3.25.33
-        version: 3.25.33
+        specifier: 3.25.34
+        version: 3.25.34
     devDependencies:
       '@types/bun':
         specifier: npm:bun-types@1.2.15
@@ -3771,8 +3771,8 @@ packages:
   zod@3.22.3:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
 
-  zod@3.25.33:
-    resolution: {integrity: sha512-RnBGYCwJFrLi/hUmeqbYjSIrS/strWjN5PHWgUfyVq96nKycSa4gp4+p6hQGwvcabZs0DWRGzyLhEeQWl+5NhA==}
+  zod@3.25.34:
+    resolution: {integrity: sha512-lZHvSc2PpWdcfpHlyB33HA9nqP16GpC9IpiG4lYq9jZCJVLZNnWd6Y1cj79bcLSBKTkxepfpjckPv5Y5VOPlwA==}
 
 snapshots:
 
@@ -4108,7 +4108,7 @@ snapshots:
       semver: 7.7.2
       vitest: 3.1.4(@types/node@22.15.24)(jiti@2.4.2)(lightningcss@1.29.3)
       wrangler: 4.17.0
-      zod: 3.25.33
+      zod: 3.25.34
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
       - bufferutil
@@ -4918,12 +4918,12 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.40.1':
     optional: true
 
-  '@t3-oss/env-core@0.13.6(arktype@2.1.20)(typescript@5.8.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.25.33)':
+  '@t3-oss/env-core@0.13.6(arktype@2.1.20)(typescript@5.8.3)(valibot@1.0.0(typescript@5.8.3))(zod@3.25.34)':
     optionalDependencies:
       arktype: 2.1.20
       typescript: 5.8.3
       valibot: 1.0.0(typescript@5.8.3)
-      zod: 3.25.33
+      zod: 3.25.34
 
   '@tybys/wasm-util@0.9.0':
     dependencies:
@@ -5435,11 +5435,11 @@ snapshots:
     dependencies:
       delayed-stream: 1.0.0
 
-  comline@0.3.0(zod@3.25.33):
+  comline@0.3.0(zod@3.25.34):
     dependencies:
       picocolors: 1.1.1
       treetrunks: 0.1.3
-      zod: 3.25.33
+      zod: 3.25.34
 
   comment-parser@1.4.1: {}
 
@@ -7178,4 +7178,4 @@ snapshots:
 
   zod@3.22.3: {}
 
-  zod@3.25.33: {}
+  zod@3.25.34: {}
