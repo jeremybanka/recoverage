@@ -19,6 +19,13 @@
       "code_actions_on_format": {
         "source.fixAll.eslint": true
       }
+    },
+    "JSON": {
+      "formatter": {
+        "language_server": {
+          "name": "biome"
+        }
+      }
     }
   }
 }
