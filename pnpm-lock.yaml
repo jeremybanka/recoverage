@@ -36,8 +36,8 @@ importers:
         specifier: 7.0.3
         version: 7.0.3
       eslint-plugin-import-x:
-        specifier: 4.14.1
-        version: 4.14.1(eslint-import-resolver-node@0.3.9)(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
+        specifier: 4.14.2
+        version: 4.14.2(eslint-import-resolver-node@0.3.9)(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
       eslint-plugin-simple-import-sort:
         specifier: 12.1.1
         version: 12.1.1(eslint@9.28.0(jiti@2.4.2))
@@ -2296,8 +2296,8 @@ packages:
   eslint-import-resolver-node@0.3.9:
     resolution: {integrity: sha512-WFj2isz22JahUv+B788TlO3N6zL3nNJGU8CcZbPZvVEkBPaJdCV4vy5wyghty5ROFbCRnm132v8BScu5/1BQ8g==}
 
-  eslint-plugin-import-x@4.14.1:
-    resolution: {integrity: sha512-ffjkksnesWuX4/+bJtNkqdXtYjhbmbrzWt3vBTxn9tjR/Phe0wVNTYKUrwX8vSLDUObuVVx8fJ/UUCb60QvEOw==}
+  eslint-plugin-import-x@4.14.2:
+    resolution: {integrity: sha512-lc5ZtgsLzjq2aDN+wGt6FyZFsfNDa3/hDFRM6fnaaqXFPkb0Wb5Gu087yed/K4GZkkHpzo75vbEmIb7mX5OOqA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0
@@ -5610,7 +5610,7 @@ snapshots:
       - supports-color
     optional: true
 
-  eslint-plugin-import-x@4.14.1(eslint-import-resolver-node@0.3.9)(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3):
+  eslint-plugin-import-x@4.14.2(eslint-import-resolver-node@0.3.9)(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3):
     dependencies:
       '@typescript-eslint/utils': 8.33.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)
       comment-parser: 1.4.1
