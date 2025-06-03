@@ -124,3 +124,15 @@ export function SplashPage({
 		</Page>
 	)
 }
+
+export function Redirect(): JSX.Element {
+	return (
+		<html lang="en">
+			<head>
+				<meta http-equiv="refresh" content="0; url=/" />
+				<script>location.href = "/"</script>
+			</head>
+			<body>Redirecting...</body>
+		</html>
+	)
+}

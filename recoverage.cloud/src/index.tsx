@@ -8,7 +8,7 @@ import { assetsRoutes } from "./assets"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
 import { GITHUB_CALLBACK_ENDPOINT } from "./env"
-import { Page, SplashPage } from "./page"
+import { Page, Redirect, SplashPage } from "./page"
 import { reporterRoutes } from "./reporter"
 import * as schema from "./schema"
 import { shieldsRoutes } from "./shields"
@@ -61,12 +61,6 @@ app.get(`/`, async (c) => {
 			await db.insert(schema.users).values({ id: data.id }).returning()
 		)[0]
 
-		c.header(
-			`Cache-Control`,
-			`no-store, no-cache, must-revalidate, proxy-revalidate`,
-		)
-		c.header(`Pragma`, `no-cache`)
-		c.header(`Expires`, `0`)
 		return await c.html(
 			<Page>
 				<img
@@ -139,13 +133,7 @@ app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
 		},
 	)
 
-	c.header(
-		`Cache-Control`,
-		`no-store, no-cache, must-revalidate, proxy-revalidate`,
-	)
-	c.header(`Pragma`, `no-cache`)
-	c.header(`Expires`, `0`)
-	return c.redirect(`/`)
+	return c.html(<Redirect />)
 })
 
 export default app
