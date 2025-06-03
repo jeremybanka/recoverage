@@ -1,7 +1,9 @@
 import { css } from "hono/css"
+import type { HtmlEscapedString } from "hono/utils/html"
 
 import * as button from "./button"
 import * as header from "./header"
+import type { Loadable } from "./loadable"
 
 /* eslint-disable quotes */
 export type NamerProps = {
@@ -12,7 +14,7 @@ export type NamerProps = {
 	"hx-confirm"?: string
 }
 /* eslint-enable quotes */
-export function namer(props: NamerProps): JSX.Element {
+export function namer(props: NamerProps): Loadable<HtmlEscapedString> {
 	return (
 		<form
 			{...props}

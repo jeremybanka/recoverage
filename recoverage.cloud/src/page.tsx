@@ -1,16 +1,15 @@
 import { css, Style } from "hono/css"
 import type { PropsWithChildren } from "hono/jsx"
+import type { HtmlEscapedString } from "hono/utils/html"
 
 import { GITHUB_CALLBACK_ENDPOINT } from "./env"
+import type { Loadable } from "./loadable"
 import * as Script from "./scripts.gen"
-
-function when(condition: unknown, children: JSX.Element) {
-	return condition ? children : null
-}
+import { when } from "./when"
 
 export function Page(
 	props: PropsWithChildren & { reload?: boolean },
-): JSX.Element {
+): Loadable<HtmlEscapedString> {
 	const { reload } = props
 	return (
 		<html lang="en">
@@ -113,7 +112,7 @@ export type SplashPageProps = {
 export function SplashPage({
 	githubClientId,
 	currentUrl,
-}: SplashPageProps): JSX.Element {
+}: SplashPageProps): Loadable<HtmlEscapedString> {
 	const { origin } = currentUrl
 	const callbackUrl = new URL(GITHUB_CALLBACK_ENDPOINT, origin)
 	return (

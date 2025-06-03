@@ -12,5 +12,5 @@ declare namespace JSX {
 			HTMLDivElement
 		>
 	}
-	type Element = JSX.Element
+	type Element = Loadable<HtmlEscapedString>
 }
