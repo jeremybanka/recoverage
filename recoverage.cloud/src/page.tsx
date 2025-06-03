@@ -4,6 +4,10 @@ import type { PropsWithChildren } from "hono/jsx"
 import { GITHUB_CALLBACK_ENDPOINT } from "./env"
 import * as Script from "./scripts.gen"
 
+function when(condition: unknown, children: JSX.Element) {
+	return condition ? children : null
+}
+
 export function Page(
 	props: PropsWithChildren & { reload?: boolean },
 ): JSX.Element {
@@ -11,11 +15,12 @@ export function Page(
 	return (
 		<html lang="en">
 			<head>
-				{reload && (
+				{when(
+					reload,
 					<>
 						<meta http-equiv="refresh" content="0; url=/" />
 						<script>location.href = "/"</script>
-					</>
+					</>,
 				)}
 				<meta charset="UTF-8" />
 				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
