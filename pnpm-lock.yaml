@@ -167,8 +167,8 @@ importers:
         version: 5.0.3
     devDependencies:
       '@cloudflare/vitest-pool-workers':
-        specifier: 0.8.35
-        version: 0.8.35(@vitest/runner@3.2.1)(@vitest/snapshot@3.2.1)(vitest@3.2.1(@types/node@22.15.29)(jiti@2.4.2)(lightningcss@1.29.3))
+        specifier: 0.8.36
+        version: 0.8.36(@vitest/runner@3.2.1)(@vitest/snapshot@3.2.1)(vitest@3.2.1(@types/node@22.15.29)(jiti@2.4.2)(lightningcss@1.29.3))
       '@hono/vite-build':
         specifier: 1.6.2
         version: 1.6.2(hono@4.7.11)
@@ -429,8 +429,8 @@ packages:
       workerd:
         optional: true
 
-  '@cloudflare/vitest-pool-workers@0.8.35':
-    resolution: {integrity: sha512-5fh1St0ORDKN8MT8X/SK2z5WFOy7PZcx3O7pRas0ysve2bYsmJ8jLY2l3xfrLFmglotDmx5wKg3z49jls/ybtQ==}
+  '@cloudflare/vitest-pool-workers@0.8.36':
+    resolution: {integrity: sha512-aJ3IP+kMv3ButnQLyfG7ZVWNa2+nPE2w2ds0PHxNPW73JIjm2Hz1fcieWD+mJT/JdxdbERXuRkI3VedJ90magw==}
     peerDependencies:
       '@vitest/runner': 2.0.x - 3.1.x
       '@vitest/snapshot': 2.0.x - 3.1.x
@@ -3690,10 +3690,9 @@ packages:
       '@cloudflare/workers-types':
         optional: true
 
-  wrangler@4.19.0:
-    resolution: {integrity: sha512-rqrqgZKBLff868vQHbIp3qxPNzsGzBx5hx5D6IaNTEQFbchYYSp2j4jT0ZmkGeBlJiJvnbS3N0FU4XmIbaUeog==}
+  wrangler@4.19.1:
+    resolution: {integrity: sha512-b+ed2SJKauHgndl4Im1wHE+FeSSlrdlEZNuvpc8q/94k4EmRxRkXnwBAsVWuicBxG3HStFLQPGGlvL8wGKTtHw==}
     engines: {node: '>=18.0.0'}
-    deprecated: Errors with version upload. Please downgrade to 4.18.0
     hasBin: true
     peerDependencies:
       '@cloudflare/workers-types': ^4.20250525.0
@@ -4101,7 +4100,7 @@ snapshots:
     optionalDependencies:
       workerd: 1.20250525.0
 
-  '@cloudflare/vitest-pool-workers@0.8.35(@vitest/runner@3.2.1)(@vitest/snapshot@3.2.1)(vitest@3.2.1(@types/node@22.15.29)(jiti@2.4.2)(lightningcss@1.29.3))':
+  '@cloudflare/vitest-pool-workers@0.8.36(@vitest/runner@3.2.1)(@vitest/snapshot@3.2.1)(vitest@3.2.1(@types/node@22.15.29)(jiti@2.4.2)(lightningcss@1.29.3))':
     dependencies:
       '@vitest/runner': 3.2.1
       '@vitest/snapshot': 3.2.1
@@ -4111,7 +4110,7 @@ snapshots:
       miniflare: 4.20250525.1
       semver: 7.7.2
       vitest: 3.2.1(@types/node@22.15.29)(jiti@2.4.2)(lightningcss@1.29.3)
-      wrangler: 4.19.0
+      wrangler: 4.19.1
       zod: 3.25.49
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
@@ -7079,7 +7078,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  wrangler@4.19.0:
+  wrangler@4.19.1:
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@cloudflare/unenv-preset': 2.3.2(unenv@2.0.0-rc.17)(workerd@1.20250525.0)
