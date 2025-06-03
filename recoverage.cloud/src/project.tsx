@@ -1,4 +1,5 @@
 import { css } from "hono/css"
+import type { HtmlEscapedString } from "hono/utils/html"
 import type { JsonSummary } from "recoverage"
 
 import * as button from "./button"
@@ -6,7 +7,9 @@ import * as form from "./form"
 import * as h4 from "./h4"
 import * as header from "./header"
 import type { Json } from "./json"
+import type { Loadable } from "./loadable"
 import { reportsAllowed, type Role, tokensAllowed } from "./roles-permissions"
+import { when } from "./when"
 
 export type ProjectProps =
 	| {
@@ -25,7 +28,7 @@ export type ProjectProps =
 			mode: `button` | `creator`
 			disabled?: boolean
 	  }
-export function Project(props: ProjectProps): JSX.Element {
+export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 	switch (props.mode) {
 		case `button`: {
 			return (
@@ -80,13 +83,14 @@ export function Project(props: ProjectProps): JSX.Element {
 							>
 								{name}
 								{` `}
-								{mode === `deleted` ? (
+								{when(
+									mode === `deleted`,
 									<span
 										class={css`font-size: 14px; font-weight: 400; color: var(--color-fg-light);`}
 									>
 										(deleted)
-									</span>
-								) : null}
+									</span>,
+								)}
 							</h3>
 						</span>
 
@@ -172,7 +176,8 @@ export function Project(props: ProjectProps): JSX.Element {
 												`}
 											>
 												{report.ref}
-												{coveragePercent ? (
+												{when(
+													coveragePercent,
 													<span
 														class={css`
 															position: absolute;
@@ -189,8 +194,8 @@ export function Project(props: ProjectProps): JSX.Element {
 														`}
 													>
 														{coveragePercent}%
-													</span>
-												) : null}
+													</span>,
+												)}
 											</span>
 										</span>
 									)
@@ -246,7 +251,9 @@ export type DivProjectTokenProps =
 			disabled?: boolean
 			projectId: string
 	  }
-export function ProjectToken(props: DivProjectTokenProps): JSX.Element {
+export function ProjectToken(
+	props: DivProjectTokenProps,
+): HtmlEscapedString | Promise<HtmlEscapedString> | null {
 	switch (props.mode) {
 		case `button`: {
 			const { projectId, disabled } = props
@@ -303,13 +310,14 @@ export function ProjectToken(props: DivProjectTokenProps): JSX.Element {
 							<h5 class={css`margin: 0; margin-top: 5px;`}>
 								{name}
 								{` `}
-								{mode === `deleted` ? (
+								{when(
+									mode === `deleted`,
 									<span
 										class={css`font-size: 14px; font-weight: 400; color: var(--color-fg-light);`}
 									>
 										(deleted)
-									</span>
-								) : null}
+									</span>,
+								)}
 							</h5>
 						</span>
 						<span class={css`flex-grow: 1;`} />
@@ -352,4 +360,5 @@ export function ProjectToken(props: DivProjectTokenProps): JSX.Element {
 			)
 		}
 	}
+	return null
 }

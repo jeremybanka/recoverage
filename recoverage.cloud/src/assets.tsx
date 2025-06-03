@@ -1,8 +1,11 @@
 import { Hono } from "hono"
+import type { HtmlEscapedString } from "hono/utils/html"
+
+import type { Loadable } from "./loadable"
 
 export const assetsRoutes = new Hono()
 
-function Diagonal(): JSX.Element {
+function Diagonal(): Loadable<HtmlEscapedString> {
 	return (
 		// biome-ignore lint/a11y/noSvgWithoutTitle: graphic
 		<svg viewBox="0 0 2048 2048" xmlns="http://www.w3.org/2000/svg">
@@ -13,10 +16,10 @@ function Diagonal(): JSX.Element {
 
 assetsRoutes.get(`/diagonal.svg`, (c) => {
 	c.header(`Content-Type`, `image/svg+xml`)
-	return c.body(Diagonal())
+	return c.body(Diagonal() as string)
 })
 
-function Dots(): JSX.Element {
+function Dots(): Loadable<HtmlEscapedString> {
 	return (
 		// biome-ignore lint/a11y/noSvgWithoutTitle: graphic
 		<svg viewBox="0 0 2048 2048" xmlns="http://www.w3.org/2000/svg">
@@ -27,5 +30,5 @@ function Dots(): JSX.Element {
 
 assetsRoutes.get(`/dots.svg`, (c) => {
 	c.header(`Content-Type`, `image/svg+xml`)
-	return c.body(Dots())
+	return c.body(Dots() as string)
 })

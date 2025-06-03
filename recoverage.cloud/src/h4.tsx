@@ -1,7 +1,12 @@
 import { css } from "hono/css"
 import type { PropsWithChildren } from "hono/jsx"
+import type { HtmlEscapedString } from "hono/utils/html"
 
-export function diagonals({ children }: PropsWithChildren): JSX.Element {
+import type { Loadable } from "./loadable"
+
+export function diagonals({
+	children,
+}: PropsWithChildren): Loadable<HtmlEscapedString> {
 	return (
 		<h4
 			className={css`

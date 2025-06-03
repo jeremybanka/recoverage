@@ -1,4 +1,7 @@
 import { css } from "hono/css"
+import type { HtmlEscapedString } from "hono/utils/html"
+
+import type { Loadable } from "./loadable"
 
 /* eslint-disable quotes */
 export type CreateProps = {
@@ -10,7 +13,7 @@ export type CreateProps = {
 	disabled?: boolean | undefined
 }
 /* eslint-enable quotes */
-export function create(props: CreateProps): JSX.Element {
+export function create(props: CreateProps): Loadable<HtmlEscapedString> {
 	const { disabled } = props
 	return (
 		<button
@@ -46,7 +49,7 @@ export type XProps = {
 	disabled?: boolean
 }
 /* eslint-enable quotes */
-export function x(props: XProps): JSX.Element {
+export function x(props: XProps): Loadable<HtmlEscapedString> {
 	const { disabled } = props
 	return (
 		<button
@@ -81,7 +84,10 @@ export type CopyProps = {
 	disabled?: boolean
 }
 
-export function copy({ disabled, text }: CopyProps): JSX.Element {
+export function copy({
+	disabled,
+	text,
+}: CopyProps): Loadable<HtmlEscapedString> {
 	return (
 		<button
 			hx-on:click={`navigator.clipboard.writeText('${text}')
@@ -112,7 +118,7 @@ export type SubmitProps = {
 	children?: string
 	disabled?: boolean
 }
-export function submit(props: SubmitProps): JSX.Element {
+export function submit(props: SubmitProps): Loadable<HtmlEscapedString> {
 	const { disabled } = props
 	return (
 		<button
