@@ -4,10 +4,19 @@ import type { PropsWithChildren } from "hono/jsx"
 import { GITHUB_CALLBACK_ENDPOINT } from "./env"
 import * as Script from "./scripts.gen"
 
-export function Page(props: PropsWithChildren): JSX.Element {
+export function Page(
+	props: PropsWithChildren & { reload?: boolean },
+): JSX.Element {
+	const { reload } = props
 	return (
 		<html lang="en">
 			<head>
+				{reload && (
+					<>
+						<meta http-equiv="refresh" content="0; url=/" />
+						<script>location.href = "/"</script>
+					</>
+				)}
 				<meta charset="UTF-8" />
 				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 				{/* <link rel="preload" href="/noise.svg" as="image" type="image/svg+xml" /> */}
@@ -122,17 +131,5 @@ export function SplashPage({
 				Login with GitHub
 			</a>
 		</Page>
-	)
-}
-
-export function Redirect(): JSX.Element {
-	return (
-		<html lang="en">
-			<head>
-				<meta http-equiv="refresh" content="0; url=/" />
-				<script>location.href = "/"</script>
-			</head>
-			<body>Redirecting...</body>
-		</html>
 	)
 }

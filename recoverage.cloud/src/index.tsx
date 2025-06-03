@@ -8,7 +8,7 @@ import { assetsRoutes } from "./assets"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
 import { GITHUB_CALLBACK_ENDPOINT } from "./env"
-import { Page, Redirect, SplashPage } from "./page"
+import { Page, SplashPage } from "./page"
 import { reporterRoutes } from "./reporter"
 import * as schema from "./schema"
 import { shieldsRoutes } from "./shields"
@@ -133,7 +133,11 @@ app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
 		},
 	)
 
-	return c.html(<Redirect />)
+	return c.html(
+		<Page reload>
+			<h1>Redirecting...</h1>
+		</Page>,
+	)
 })
 
 export default app
