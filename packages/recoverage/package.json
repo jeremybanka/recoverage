@@ -45,7 +45,7 @@
 		"postversion": "biome format --write package.json"
 	},
 	"dependencies": {
-		"@t3-oss/env-core": "0.13.7",
+		"@t3-oss/env-core": "0.13.8",
 		"colors": "1.4.0",
 		"comline": "0.3.0",
 		"diff": "8.0.2",
