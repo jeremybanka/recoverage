@@ -63,7 +63,7 @@
 		"@types/istanbul-reports": "3.0.4",
 		"@types/node": "22.15.31",
 		"@types/tmp": "0.2.6",
-		"@typescript/native-preview": "7.0.0-dev.20250609.1",
+		"@typescript/native-preview": "7.0.0-dev.20250610.1",
 		"concurrently": "9.1.2",
 		"eslint": "9.28.0",
 		"nyc": "17.1.0",
