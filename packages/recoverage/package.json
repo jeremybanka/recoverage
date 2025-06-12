@@ -57,7 +57,7 @@
 		"zod": "3.25.62"
 	},
 	"devDependencies": {
-		"@types/bun": "npm:bun-types@1.2.15",
+		"@types/bun": "npm:bun-types@1.2.16",
 		"@types/istanbul-lib-coverage": "2.0.6",
 		"@types/istanbul-lib-report": "3.0.3",
 		"@types/istanbul-reports": "3.0.4",
