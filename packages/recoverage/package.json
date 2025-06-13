@@ -65,7 +65,7 @@
 		"@types/tmp": "0.2.6",
 		"@typescript/native-preview": "7.0.0-dev.20250613.1",
 		"concurrently": "9.1.2",
-		"eslint": "9.28.0",
+		"eslint": "9.29.0",
 		"nyc": "17.1.0",
 		"tsdown": "0.12.7",
 		"typescript": "5.8.3",
