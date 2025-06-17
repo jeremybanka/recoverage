@@ -61,6 +61,8 @@ app.get(`/`, async (c) => {
 			await db.insert(schema.users).values({ id: data.id }).returning()
 		)[0]
 
+		console.log(`User`, user)
+
 		return await c.html(
 			<Page>
 				<img
@@ -89,7 +91,8 @@ app.get(`/`, async (c) => {
 				/>
 			</Page>,
 		)
-	} catch (error) {
+	} catch (thrown) {
+		console.error(thrown)
 		deleteCookie(c, `github-access-token`)
 		return c.html(
 			<SplashPage currentUrl={url} githubClientId={c.env.GITHUB_CLIENT_ID} />,

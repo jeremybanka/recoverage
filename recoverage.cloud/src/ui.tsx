@@ -280,10 +280,7 @@ uiRoutes.delete(`/token/:tokenId`, uiAuth, async (c) => {
 		return c.json({ error: `Not your token` }, 401)
 	}
 
-	const result = await db
-		.delete(schema.tokens)
-		.where(eq(schema.tokens.id, tokenId))
-		.run()
+	await db.delete(schema.tokens).where(eq(schema.tokens.id, tokenId)).run()
 
 	return c.html(<ProjectToken {...token} mode="deleted" />)
 })
