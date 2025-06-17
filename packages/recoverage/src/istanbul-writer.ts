@@ -150,7 +150,7 @@ class VirtualFileSystem extends TreeMap<string, string> {
 			flag,
 			position: currentPosition,
 			appendMode,
-			// biome-ignore lint/style/noNonNullAssertion: <explanation>
+			// biome-ignore lint/style/noNonNullAssertion: it must be here
 		} = this.openFiles.get(fd)!
 
 		// Check if writing is allowed
@@ -204,7 +204,7 @@ class VirtualFileSystem extends TreeMap<string, string> {
 		// Update position if not in append mode and no position was specified
 		if (!appendMode && position === undefined) {
 			const newPosition = writePosition + data.length
-			// biome-ignore lint/style/noNonNullAssertion: <explanation>
+			// biome-ignore lint/style/noNonNullAssertion: it must be here
 			this.openFiles.get(fd)!.position = newPosition
 		}
 
@@ -273,7 +273,7 @@ class FileContentWriter extends ContentWriter {
 }
 
 // allow stdout to be captured for tests.
-let capture = false
+// let capture = false
 let output = ``
 
 /**
@@ -300,13 +300,13 @@ export class VirtualFileWriter {
 	 * static helpers for capturing stdout report output;
 	 * super useful for tests!
 	 */
-	public static startCapture(): void {
-		capture = true
-	}
+	// public static startCapture(): void {
+	// 	capture = true
+	// }
 
-	public static stopCapture(): void {
-		capture = false
-	}
+	// public static stopCapture(): void {
+	// 	capture = false
+	// }
 
 	public static getOutput(): string {
 		return output

@@ -45,7 +45,7 @@ const reportFixture = {
 
 import type { CoverageMapData } from "istanbul-lib-coverage"
 import { createCoverageMap } from "istanbul-lib-coverage"
-import { Context, createContext } from "istanbul-lib-report"
+import { createContext } from "istanbul-lib-report"
 import reports from "istanbul-reports"
 
 import { VirtualFileWriter } from "../src/istanbul-writer.ts"
