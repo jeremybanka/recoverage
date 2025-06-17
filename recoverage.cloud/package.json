@@ -48,7 +48,7 @@
 		"@types/bun": "npm:bun-types@1.2.16",
 		"@types/istanbul-lib-coverage": "2.0.6",
 		"@typescript/native-preview": "7.0.0-dev.20250616.1",
-		"cloudflare": "4.4.0",
+		"cloudflare": "4.4.1",
 		"concurrently": "9.1.2",
 		"drizzle-kit": "0.31.1",
 		"eslint": "9.29.0",
