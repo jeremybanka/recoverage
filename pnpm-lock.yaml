@@ -157,8 +157,8 @@ importers:
         specifier: 4.8.2
         version: 4.8.2
       htmx.org:
-        specifier: 2.0.4
-        version: 2.0.4
+        specifier: 2.0.5
+        version: 2.0.5
       istanbul-lib-coverage:
         specifier: 3.2.2
         version: 3.2.2
@@ -2641,8 +2641,8 @@ packages:
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
 
-  htmx.org@2.0.4:
-    resolution: {integrity: sha512-HLxMCdfXDOJirs3vBZl/ZLoY+c7PfM4Ahr2Ad4YXh6d22T5ltbTXFFkpx9Tgb2vvmWFMbIc3LqN2ToNkZJvyYQ==}
+  htmx.org@2.0.5:
+    resolution: {integrity: sha512-ocgvtHCShWFW0DvSV1NbJC7Y5EzUMy2eo5zeWvGj2Ac4LOr7sv9YKg4jzCZJdXN21fXACmCViwKSy+cm6i2dWQ==}
 
   human-id@4.1.1:
     resolution: {integrity: sha512-3gKm/gCSUipeLsRYZbbdA1BD83lBoWUkZ7G9VFrhWPAU76KwYo5KR8V28bpoPm/ygy0x5/GCbpRQdY7VLYCoIg==}
@@ -5927,7 +5927,7 @@ snapshots:
 
   html-escaper@2.0.2: {}
 
-  htmx.org@2.0.4: {}
+  htmx.org@2.0.5: {}
 
   human-id@4.1.1: {}
 
