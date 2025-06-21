@@ -30,7 +30,7 @@
 	"license": "BSD-3-Clause",
 	"packageManager": "pnpm@10.12.1",
 	"devDependencies": {
-		"@biomejs/biome": "2.0.0",
+		"@biomejs/biome": "2.0.4",
 		"@changesets/cli": "2.29.5",
 		"@eslint/eslintrc": "3.3.1",
 		"@eslint/js": "9.29.0",
