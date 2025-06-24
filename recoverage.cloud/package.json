@@ -54,7 +54,7 @@
 		"eslint": "9.29.0",
 		"fast-xml-parser": "5.2.5",
 		"recoverage": "workspace:*",
-		"vite": "6.3.5",
+		"vite": "7.0.0",
 		"vitest": "3.2.4",
 		"wrangler": "4.21.0"
 	}
