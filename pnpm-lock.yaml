@@ -180,7 +180,7 @@ importers:
         version: 1.6.2(hono@4.8.2)
       '@hono/vite-dev-server':
         specifier: 0.19.1
-        version: 0.19.1(hono@4.8.2)(miniflare@4.20250617.3)(wrangler@4.20.5)
+        version: 0.19.1(hono@4.8.2)(miniflare@4.20250617.3)(wrangler@4.21.0)
       '@octokit/types':
         specifier: 14.1.0
         version: 14.1.0
@@ -218,8 +218,8 @@ importers:
         specifier: 3.2.4
         version: 3.2.4(@types/node@24.0.3)(jiti@2.4.2)
       wrangler:
-        specifier: 4.20.5
-        version: 4.20.5
+        specifier: 4.21.0
+        version: 4.21.0
 
 packages:
 
@@ -3633,16 +3633,6 @@ packages:
     engines: {node: '>=16'}
     hasBin: true
 
-  wrangler@4.20.5:
-    resolution: {integrity: sha512-tmiyt2vBHszhdzJEDbCpFLU2RiV7/QzvGMV07Zaz4ptqiU2h/lTojyNJAugPpSFNiOuY+k0g3ENNTDQqoUkMFA==}
-    engines: {node: '>=18.0.0'}
-    hasBin: true
-    peerDependencies:
-      '@cloudflare/workers-types': ^4.20250617.0
-    peerDependenciesMeta:
-      '@cloudflare/workers-types':
-        optional: true
-
   wrangler@4.21.0:
     resolution: {integrity: sha512-37xm0CG2qMvsJUNZYQKje6HbCsJFYuE8dQSnu7981iDRT4DLrEIL1DAUnZJG9HiXteKPvrSj96AkZyomi5sYHw==}
     engines: {node: '>=18.0.0'}
@@ -4374,14 +4364,14 @@ snapshots:
     dependencies:
       hono: 4.8.2
 
-  '@hono/vite-dev-server@0.19.1(hono@4.8.2)(miniflare@4.20250617.3)(wrangler@4.20.5)':
+  '@hono/vite-dev-server@0.19.1(hono@4.8.2)(miniflare@4.20250617.3)(wrangler@4.21.0)':
     dependencies:
       '@hono/node-server': 1.14.4(hono@4.8.2)
       hono: 4.8.2
       minimatch: 9.0.5
     optionalDependencies:
       miniflare: 4.20250617.3
-      wrangler: 4.20.5
+      wrangler: 4.21.0
 
   '@humanfs/core@0.19.1': {}
 
@@ -6941,22 +6931,6 @@ snapshots:
       '@cloudflare/workerd-linux-64': 1.20250617.0
       '@cloudflare/workerd-linux-arm64': 1.20250617.0
       '@cloudflare/workerd-windows-64': 1.20250617.0
-
-  wrangler@4.20.5:
-    dependencies:
-      '@cloudflare/kv-asset-handler': 0.4.0
-      '@cloudflare/unenv-preset': 2.3.3(unenv@2.0.0-rc.17)(workerd@1.20250617.0)
-      blake3-wasm: 2.1.5
-      esbuild: 0.25.4
-      miniflare: 4.20250617.3
-      path-to-regexp: 6.3.0
-      unenv: 2.0.0-rc.17
-      workerd: 1.20250617.0
-    optionalDependencies:
-      fsevents: 2.3.3
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
 
   wrangler@4.21.0:
     dependencies:
