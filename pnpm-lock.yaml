@@ -179,8 +179,8 @@ importers:
         specifier: 1.6.2
         version: 1.6.2(hono@4.8.3)
       '@hono/vite-dev-server':
-        specifier: 0.19.1
-        version: 0.19.1(hono@4.8.3)(miniflare@4.20250617.4)(wrangler@4.21.2)
+        specifier: 0.20.0
+        version: 0.20.0(hono@4.8.3)(miniflare@4.20250617.4)(wrangler@4.21.2)
       '@octokit/types':
         specifier: 14.1.0
         version: 14.1.0
@@ -976,8 +976,8 @@ packages:
     peerDependencies:
       hono: '*'
 
-  '@hono/vite-dev-server@0.19.1':
-    resolution: {integrity: sha512-hh+0u3IxHErEyj4YwHk/U+2f+qAHEQZ9EIQtadG9jeHfxEXH6r/ZecjnpyEkQbDK7JtgEEoVAq/JGOkd3Dvqww==}
+  '@hono/vite-dev-server@0.20.0':
+    resolution: {integrity: sha512-Qkp9jh4R0q5VnUTBIoaeyh0M6nZWMWPaj5sHa0JJIS3Wu0UPi+Trc5JQTv0tKfYkrnAwOSQXW17pI1815o/5lQ==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: '*'
@@ -4357,7 +4357,7 @@ snapshots:
     dependencies:
       hono: 4.8.3
 
-  '@hono/vite-dev-server@0.19.1(hono@4.8.3)(miniflare@4.20250617.4)(wrangler@4.21.2)':
+  '@hono/vite-dev-server@0.20.0(hono@4.8.3)(miniflare@4.20250617.4)(wrangler@4.21.2)':
     dependencies:
       '@hono/node-server': 1.14.4(hono@4.8.3)
       hono: 4.8.3
