@@ -180,7 +180,7 @@ importers:
         version: 1.6.2(hono@4.8.3)
       '@hono/vite-dev-server':
         specifier: 0.19.1
-        version: 0.19.1(hono@4.8.3)(miniflare@4.20250617.4)(wrangler@4.21.0)
+        version: 0.19.1(hono@4.8.3)(miniflare@4.20250617.4)(wrangler@4.21.2)
       '@octokit/types':
         specifier: 14.1.0
         version: 14.1.0
@@ -218,8 +218,8 @@ importers:
         specifier: 3.2.4
         version: 3.2.4(@types/node@24.0.4)(jiti@2.4.2)
       wrangler:
-        specifier: 4.21.0
-        version: 4.21.0
+        specifier: 4.21.2
+        version: 4.21.2
 
 packages:
 
@@ -2872,11 +2872,6 @@ packages:
     engines: {node: '>=10.0.0'}
     hasBin: true
 
-  miniflare@4.20250617.3:
-    resolution: {integrity: sha512-j+LZycT11UdlVeNdaqD0XdNnYnqAL+wXmboz+tNPFgTq6zhD489Ujj3BfSDyEHDCA9UFBLbkc5ByGWBh+pYZ5Q==}
-    engines: {node: '>=18.0.0'}
-    hasBin: true
-
   miniflare@4.20250617.4:
     resolution: {integrity: sha512-IAoApFKxOJlaaFkym5ETstVX3qWzVt3xyqCDj6vSSTgEH3zxZJ5417jZGg8iQfMHosKCcQH1doPPqqnOZm/yrw==}
     engines: {node: '>=18.0.0'}
@@ -3631,16 +3626,6 @@ packages:
     engines: {node: '>=16'}
     hasBin: true
 
-  wrangler@4.21.0:
-    resolution: {integrity: sha512-37xm0CG2qMvsJUNZYQKje6HbCsJFYuE8dQSnu7981iDRT4DLrEIL1DAUnZJG9HiXteKPvrSj96AkZyomi5sYHw==}
-    engines: {node: '>=18.0.0'}
-    hasBin: true
-    peerDependencies:
-      '@cloudflare/workers-types': ^4.20250617.0
-    peerDependenciesMeta:
-      '@cloudflare/workers-types':
-        optional: true
-
   wrangler@4.21.2:
     resolution: {integrity: sha512-POC8gGIAsJIYISxVe/oWIjSNwCqfaHMcDPzo6zuGTGvqYC33UM5WI82nULse1bNpXBC0L0XpqtHysW3sDqa8DQ==}
     engines: {node: '>=18.0.0'}
@@ -4372,14 +4357,14 @@ snapshots:
     dependencies:
       hono: 4.8.3
 
-  '@hono/vite-dev-server@0.19.1(hono@4.8.3)(miniflare@4.20250617.4)(wrangler@4.21.0)':
+  '@hono/vite-dev-server@0.19.1(hono@4.8.3)(miniflare@4.20250617.4)(wrangler@4.21.2)':
     dependencies:
       '@hono/node-server': 1.14.4(hono@4.8.3)
       hono: 4.8.3
       minimatch: 9.0.5
     optionalDependencies:
       miniflare: 4.20250617.4
-      wrangler: 4.21.0
+      wrangler: 4.21.2
 
   '@humanfs/core@0.19.1': {}
 
@@ -6146,24 +6131,6 @@ snapshots:
 
   mime@3.0.0: {}
 
-  miniflare@4.20250617.3:
-    dependencies:
-      '@cspotcode/source-map-support': 0.8.1
-      acorn: 8.14.0
-      acorn-walk: 8.3.2
-      exit-hook: 2.2.1
-      glob-to-regexp: 0.4.1
-      sharp: 0.33.5
-      stoppable: 1.1.0
-      undici: 5.29.0
-      workerd: 1.20250617.0
-      ws: 8.18.0
-      youch: 3.3.4
-      zod: 3.22.3
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
   miniflare@4.20250617.4:
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
@@ -6953,22 +6920,6 @@ snapshots:
       '@cloudflare/workerd-linux-64': 1.20250617.0
       '@cloudflare/workerd-linux-arm64': 1.20250617.0
       '@cloudflare/workerd-windows-64': 1.20250617.0
-
-  wrangler@4.21.0:
-    dependencies:
-      '@cloudflare/kv-asset-handler': 0.4.0
-      '@cloudflare/unenv-preset': 2.3.3(unenv@2.0.0-rc.17)(workerd@1.20250617.0)
-      blake3-wasm: 2.1.5
-      esbuild: 0.25.4
-      miniflare: 4.20250617.3
-      path-to-regexp: 6.3.0
-      unenv: 2.0.0-rc.17
-      workerd: 1.20250617.0
-    optionalDependencies:
-      fsevents: 2.3.3
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
 
   wrangler@4.21.2:
     dependencies:
