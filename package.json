@@ -28,7 +28,7 @@
 	"keywords": [],
 	"author": "",
 	"license": "BSD-3-Clause",
-	"packageManager": "pnpm@10.12.4",
+	"packageManager": "pnpm@10.13.0",
 	"devDependencies": {
 		"@biomejs/biome": "2.1.1",
 		"@changesets/cli": "2.29.5",
