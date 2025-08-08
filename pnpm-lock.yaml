@@ -127,8 +127,8 @@ importers:
         specifier: 17.1.0
         version: 17.1.0
       tsdown:
-        specifier: 0.13.3
-        version: 0.13.3(@typescript/native-preview@7.0.0-dev.20250808.1)(typescript@5.9.2)
+        specifier: 0.13.4
+        version: 0.13.4(@typescript/native-preview@7.0.0-dev.20250808.1)(typescript@5.9.2)
       typescript:
         specifier: 5.9.2
         version: 5.9.2
@@ -3414,8 +3414,8 @@ packages:
       typescript:
         optional: true
 
-  tsdown@0.13.3:
-    resolution: {integrity: sha512-3ujweLJB70DdWXX3v7xnzrFhzW1F/6/99XhGeKzh1UCmZ+ttFmF7Czha7VaunA5Dq/u+z4aNz3n4GH748uivYg==}
+  tsdown@0.13.4:
+    resolution: {integrity: sha512-2uf0Xo170gmxwJEOgfb7V9y3k+Uq/dQJx4xfXYova7pqqTw9ZjxSvEeq7Y6l+Ys54GlBrRKvxKoEyNhuUcoCTg==}
     engines: {node: '>=20.19.0'}
     hasBin: true
     peerDependencies:
@@ -6722,7 +6722,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.2
 
-  tsdown@0.13.3(@typescript/native-preview@7.0.0-dev.20250808.1)(typescript@5.9.2):
+  tsdown@0.13.4(@typescript/native-preview@7.0.0-dev.20250808.1)(typescript@5.9.2):
     dependencies:
       ansis: 4.1.0
       cac: 6.7.14
