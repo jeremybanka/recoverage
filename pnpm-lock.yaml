@@ -151,8 +151,8 @@ importers:
         specifier: 1.2.21
         version: 1.2.21
       drizzle-orm:
-        specifier: 0.44.4
-        version: 0.44.4(bun-types@1.2.21(@types/react@19.1.10))
+        specifier: 0.44.5
+        version: 0.44.5(bun-types@1.2.21(@types/react@19.1.10))
       hono:
         specifier: 4.9.4
         version: 4.9.4
@@ -2204,8 +2204,8 @@ packages:
     resolution: {integrity: sha512-tCPWVZWZqWVx2XUsVpJRnH9Mx0ClVOf5YUHerZ5so1OKSlqww4zy1R5ksEdGRcO3tM3zj0PYN6V48TbQCL1RfA==}
     hasBin: true
 
-  drizzle-orm@0.44.4:
-    resolution: {integrity: sha512-ZyzKFpTC/Ut3fIqc2c0dPZ6nhchQXriTsqTNs4ayRgl6sZcFlMs9QZKPSHXK4bdOf41GHGWf+FrpcDDYwW+W6Q==}
+  drizzle-orm@0.44.5:
+    resolution: {integrity: sha512-jBe37K7d8ZSKptdKfakQFdeljtu3P2Cbo7tJoJSVZADzIKOBo9IAJPOmMsH2bZl90bZgh8FQlD8BjxXA/zuBkQ==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -5518,7 +5518,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.4(bun-types@1.2.21(@types/react@19.1.10)):
+  drizzle-orm@0.44.5(bun-types@1.2.21(@types/react@19.1.10)):
     optionalDependencies:
       bun-types: 1.2.21(@types/react@19.1.10)
 
