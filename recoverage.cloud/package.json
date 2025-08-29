@@ -47,7 +47,7 @@
 		"@octokit/types": "14.1.0",
 		"@types/bun": "npm:bun-types@1.2.21",
 		"@types/istanbul-lib-coverage": "2.0.6",
-		"@typescript/native-preview": "7.0.0-dev.20250828.1",
+		"@typescript/native-preview": "7.0.0-dev.20250829.3",
 		"cloudflare": "4.5.0",
 		"concurrently": "9.2.1",
 		"drizzle-kit": "0.31.4",
