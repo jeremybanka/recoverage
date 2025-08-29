@@ -33,7 +33,7 @@
 		"arktype": "2.1.20",
 		"bun": "1.2.21",
 		"drizzle-orm": "0.44.5",
-		"hono": "4.9.4",
+		"hono": "4.9.5",
 		"htmx.org": "2.0.6",
 		"istanbul-lib-coverage": "3.2.2",
 		"jurist": "0.0.5",
