@@ -34,7 +34,7 @@
 		"bun": "1.2.21",
 		"drizzle-orm": "0.44.5",
 		"hono": "4.9.6",
-		"htmx.org": "2.0.6",
+		"htmx.org": "2.0.7",
 		"istanbul-lib-coverage": "3.2.2",
 		"jurist": "0.0.6",
 		"nanoid": "5.1.5",
