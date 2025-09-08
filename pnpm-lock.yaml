@@ -72,8 +72,8 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       comline:
-        specifier: 0.3.1
-        version: 0.3.1(zod@4.1.5)
+        specifier: 0.3.2
+        version: 0.3.2(zod@4.1.5)
       diff:
         specifier: 8.0.2
         version: 8.0.2
@@ -2121,8 +2121,8 @@ packages:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
     engines: {node: '>= 0.8'}
 
-  comline@0.3.1:
-    resolution: {integrity: sha512-DAcbGVWHpm+oQcYPLrWTtyNoifjtXNeUOwK3VFMGl6ZTwnQXQyx9+xw2RA/JBPjFKoxTENyuFqCo4XdollvORA==}
+  comline@0.3.2:
+    resolution: {integrity: sha512-L9ccRs1L6bcxufpPE6rqwztNHqJKFCwV/OWkrZTzP94cqfibDp9sDUwJnWPJPXlcM/jvbK8dfW7/b6/3fJmKvg==}
     peerDependencies:
       zod: ^3.25.0
 
@@ -3409,6 +3409,9 @@ packages:
 
   treetrunks@0.1.4:
     resolution: {integrity: sha512-fjZ8VCHaKPDXMFlptcM39P5TGXGdnfH7a8xK4nk+vUkCjFCqRJtSnihOaMtcqdDnIogTD9hMEa35hHh5RyAwew==}
+
+  treetrunks@0.1.5:
+    resolution: {integrity: sha512-X3zX+yYdW9mrzoZE5f1e2CLSAEUbS5Crw9D2JSL0EFt6rb8Jih95ZkP76oUZKR+EHnlZZEO/x9oVhXKccznYKw==}
 
   ts-api-utils@2.1.0:
     resolution: {integrity: sha512-CUgTZL1irw8u29bzrOD/nH85jqyc74D6SshFgujOIA7osm2Rz7dYH77agkx7H4FBNxDq7Cjf+IjaX/8zwFW+ZQ==}
@@ -5458,10 +5461,10 @@ snapshots:
     dependencies:
       delayed-stream: 1.0.0
 
-  comline@0.3.1(zod@4.1.5):
+  comline@0.3.2(zod@4.1.5):
     dependencies:
       picocolors: 1.1.1
-      treetrunks: 0.1.4
+      treetrunks: 0.1.5
       zod: 4.1.5
 
   comment-parser@1.4.1: {}
@@ -6723,6 +6726,8 @@ snapshots:
   tree-kill@1.2.2: {}
 
   treetrunks@0.1.4: {}
+
+  treetrunks@0.1.5: {}
 
   ts-api-utils@2.1.0(typescript@5.9.2):
     dependencies:
