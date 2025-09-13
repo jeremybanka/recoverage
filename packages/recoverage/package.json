@@ -65,7 +65,7 @@
 		"@types/istanbul-lib-coverage": "2.0.6",
 		"@types/istanbul-lib-report": "3.0.3",
 		"@types/istanbul-reports": "3.0.4",
-		"@types/node": "24.3.1",
+		"@types/node": "24.3.3",
 		"@types/tmp": "0.2.6",
 		"@typescript/native-preview": "7.0.0-dev.20250912.1",
 		"concurrently": "9.2.1",
