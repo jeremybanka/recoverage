@@ -44,7 +44,7 @@
 		"@cloudflare/vitest-pool-workers": "0.9.1",
 		"@hono/vite-build": "1.7.0",
 		"@hono/vite-dev-server": "0.21.0",
-		"@octokit/types": "14.1.0",
+		"@octokit/types": "15.0.0",
 		"@types/bun": "npm:bun-types@1.2.22",
 		"@types/istanbul-lib-coverage": "2.0.6",
 		"@typescript/native-preview": "7.0.0-dev.20250915.1",
