@@ -67,13 +67,13 @@ importers:
     dependencies:
       '@t3-oss/env-core':
         specifier: 0.13.8
-        version: 0.13.8(arktype@2.1.22)(typescript@5.9.2)(zod@4.1.8)
+        version: 0.13.8(arktype@2.1.22)(typescript@5.9.2)(zod@4.1.9)
       colors:
         specifier: 1.4.0
         version: 1.4.0
       comline:
         specifier: 0.3.2
-        version: 0.3.2(zod@4.1.8)
+        version: 0.3.2(zod@4.1.9)
       diff:
         specifier: 8.0.2
         version: 8.0.2
@@ -93,8 +93,8 @@ importers:
         specifier: 0.2.5
         version: 0.2.5
       zod:
-        specifier: 4.1.8
-        version: 4.1.8
+        specifier: 4.1.9
+        version: 4.1.9
     devDependencies:
       '@types/bun':
         specifier: npm:bun-types@1.2.22
@@ -3766,8 +3766,8 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.1.8:
-    resolution: {integrity: sha512-5R1P+WwQqmmMIEACyzSvo4JXHY5WiAFHRMg+zBZKgKS+Q1viRa0C1hmUKtHltoIFKtIdki3pRxkmpP74jnNYHQ==}
+  zod@4.1.9:
+    resolution: {integrity: sha512-HI32jTq0AUAC125z30E8bQNz0RQ+9Uc+4J7V97gLYjZVKRjeydPgGt6dvQzFrav7MYOUGFqqOGiHpA/fdbd0cQ==}
 
 snapshots:
 
@@ -4943,11 +4943,11 @@ snapshots:
 
   '@speed-highlight/core@1.2.7': {}
 
-  '@t3-oss/env-core@0.13.8(arktype@2.1.22)(typescript@5.9.2)(zod@4.1.8)':
+  '@t3-oss/env-core@0.13.8(arktype@2.1.22)(typescript@5.9.2)(zod@4.1.9)':
     optionalDependencies:
       arktype: 2.1.22
       typescript: 5.9.2
-      zod: 4.1.8
+      zod: 4.1.9
 
   '@tybys/wasm-util@0.10.0':
     dependencies:
@@ -5476,11 +5476,11 @@ snapshots:
     dependencies:
       delayed-stream: 1.0.0
 
-  comline@0.3.2(zod@4.1.8):
+  comline@0.3.2(zod@4.1.9):
     dependencies:
       picocolors: 1.1.1
       treetrunks: 0.1.5
-      zod: 4.1.8
+      zod: 4.1.9
 
   comment-parser@1.4.1: {}
 
@@ -7131,4 +7131,4 @@ snapshots:
 
   zod@3.25.76: {}
 
-  zod@4.1.8: {}
+  zod@4.1.9: {}
