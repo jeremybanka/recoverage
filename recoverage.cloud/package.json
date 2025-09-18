@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"go": "concurrently \"bun:setup:*\" && wrangler deploy --minify",
-		"setup:deps": "bun -w build --filter=recoverage.cloud",
+		"setup:deps": "bun run --filter=* build",
 		"setup:scripts": "bun __scripts__/gen-scripts.bun.ts",
 		"setup:types": "wrangler types",
 		"setup:db": "bun db:up --remote",
