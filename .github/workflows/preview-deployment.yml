@@ -75,7 +75,7 @@ jobs:
           DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
           WORKER_NAME: ${{ steps.vars.outputs.worker_name }}
         run: |
-          bun -F recoverage.cloud run preview:config
+          bun run --filter="recoverage.cloud" preview:config
           cat recoverage.cloud/wrangler-preview.jsonc
 
       - name: deploy preview worker
@@ -85,7 +85,7 @@ jobs:
         run: |
           printenv > recoverage.cloud/.env
           chmod +x recoverage.cloud/.env
-          bun -F recoverage.cloud run preview
+          bun run --filter="recoverage.cloud" preview
 
   Teardown:
     runs-on: ubuntu-latest
