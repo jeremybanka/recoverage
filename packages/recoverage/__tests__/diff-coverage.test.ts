@@ -9,7 +9,7 @@ import tmp from "tmp"
 import * as Yalc from "yalc"
 
 beforeAll(async () => {
-	const build = spawn(`pnpm`, [`build`], {
+	const build = spawn(`bun`, [`run`, `build`], {
 		stdio: `inherit`,
 		env: { ...process.env, FORCE_COLOR: `1` },
 	})

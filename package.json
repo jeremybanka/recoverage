@@ -3,6 +3,10 @@
 	"version": "1.0.0",
 	"description": "",
 	"main": "index.js",
+	"workspaces": [
+		"packages/*",
+		"recoverage.cloud"
+	],
 	"scripts": {
 		"gen": "turbo run gen",
 		"lint": "turbo run lint",
@@ -22,13 +26,11 @@
 		"test:semver": "cross-env CI=true turbo run test:semver",
 		"release": "bun run build && changeset publish",
 		"notes": "changeset",
-		"nuke": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && rm pnpm-lock.yaml",
-		"nv": "fnm use $(pnpm list -w --json | jq -r '.[0].path')"
+		"nuke": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && rm bun.lock"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "BSD-3-Clause",
-	"packageManager": "pnpm@10.17.0",
 	"devDependencies": {
 		"@biomejs/biome": "2.2.4",
 		"@changesets/cli": "2.29.7",
@@ -48,5 +50,15 @@
 		"typescript": "5.9.2",
 		"vite-tsconfig-paths": "5.1.4",
 		"vitest": "3.2.4"
-	}
+	},
+	"packageManager": "bun@1.2.22",
+	"trustedDependencies": [
+		"@biomejs/biome",
+		"bun",
+		"esbuild",
+		"rolldown",
+		"sharp",
+		"unrs-resolver",
+		"workerd"
+	]
 }
