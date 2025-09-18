@@ -32,7 +32,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           cd recoverage.cloud
-          pnpm wrangler d1 delete "recoverage-preview-db-pr-${{ github.event.number }}" -y || true
+          bun wrangler d1 delete "recoverage-preview-db-pr-${{ github.event.number }}" -y || true
 
       - name: create preview database
         id: create_db
@@ -43,7 +43,7 @@ jobs:
           ls
           cd recoverage.cloud
           echo "DATABASE_NAME: $DATABASE_NAME"
-          output=$(pnpm wrangler d1 create "$DATABASE_NAME" 2>&1) || {
+          output=$(bun wrangler d1 create "$DATABASE_NAME" 2>&1) || {
             echo "Failed to create database:"
             echo "$output"
             exit 1
@@ -75,7 +75,7 @@ jobs:
           DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
           WORKER_NAME: ${{ steps.vars.outputs.worker_name }}
         run: |
-          pnpm -F recoverage.cloud run preview:config
+          bun -F recoverage.cloud run preview:config
           cat recoverage.cloud/wrangler-preview.jsonc
 
       - name: deploy preview worker
@@ -85,7 +85,7 @@ jobs:
         run: |
           printenv > recoverage.cloud/.env
           chmod +x recoverage.cloud/.env
-          pnpm -F recoverage.cloud run preview
+          bun -F recoverage.cloud run preview
 
   Teardown:
     runs-on: ubuntu-latest
@@ -101,5 +101,5 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           cd recoverage.cloud
-          pnpm wrangler delete --name recoverage-preview-pr-${{ github.event.number }}
-          pnpm wrangler d1 delete recoverage-preview-db-pr-${{ github.event.number }}
+          bun wrangler delete --name recoverage-preview-pr-${{ github.event.number }}
+          bun wrangler d1 delete recoverage-preview-db-pr-${{ github.event.number }}
