@@ -51,7 +51,7 @@
 		"@typescript/native-preview": "7.0.0-dev.20250926.1",
 		"cloudflare": "5.1.0",
 		"concurrently": "9.2.1",
-		"drizzle-kit": "0.31.4",
+		"drizzle-kit": "0.31.5",
 		"eslint": "9.36.0",
 		"fast-xml-parser": "5.2.5",
 		"recoverage": "workspace:*",
