@@ -31,7 +31,7 @@
 	},
 	"dependencies": {
 		"arktype": "2.1.22",
-		"bun": "1.2.22",
+		"bun": "1.2.23",
 		"drizzle-orm": "0.44.5",
 		"hono": "4.9.9",
 		"htmx.org": "2.0.7",
@@ -45,7 +45,7 @@
 		"@hono/vite-build": "1.7.0",
 		"@hono/vite-dev-server": "0.21.1",
 		"@octokit/types": "15.0.0",
-		"@types/bun": "npm:bun-types@1.2.22",
+		"@types/bun": "npm:bun-types@1.2.23",
 		"@types/istanbul-lib-coverage": "2.0.6",
 		"@types/node": "24.5.2",
 		"@typescript/native-preview": "7.0.0-dev.20250928.1",
