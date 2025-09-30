@@ -19,7 +19,7 @@
         "jiti": "2.6.0",
         "pin-dependencies-checker": "2.7.1",
         "turbo": "2.5.8",
-        "typescript": "5.9.2",
+        "typescript": "5.9.3",
         "vite-tsconfig-paths": "5.1.4",
         "vitest": "3.2.4",
       },
@@ -54,7 +54,7 @@
         "eslint": "9.36.0",
         "nyc": "17.1.0",
         "tsdown": "0.15.6",
-        "typescript": "5.9.2",
+        "typescript": "5.9.3",
         "vite": "7.1.7",
         "vite-tsconfig-paths": "5.1.4",
         "vitest": "3.2.4",
@@ -1361,7 +1361,7 @@
 
     "typedarray-to-buffer": ["typedarray-to-buffer@3.1.5", "", { "dependencies": { "is-typedarray": "^1.0.0" } }, "sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q=="],
 
-    "typescript": ["typescript@5.9.2", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A=="],
+    "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
     "ufo": ["ufo@1.6.1", "", {}, "sha512-9a4/uxlTWJ4+a5i0ooc1rU7C7YOw3wT+UGqdeNNHWnOF9qcMBgLRS+4IYUqbczewFx4mLEig6gawh7X6mFlEkA=="],
 
