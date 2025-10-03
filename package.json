@@ -35,7 +35,7 @@
 		"@biomejs/biome": "2.2.5",
 		"@changesets/cli": "2.29.7",
 		"@eslint/eslintrc": "3.3.1",
-		"@eslint/js": "9.36.0",
+		"@eslint/js": "9.37.0",
 		"@types/eslint": "9.6.1",
 		"@typescript-eslint/eslint-plugin": "8.45.0",
 		"@typescript-eslint/parser": "8.45.0",
