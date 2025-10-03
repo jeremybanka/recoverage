@@ -43,7 +43,7 @@
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "0.9.10",
 		"@hono/vite-build": "1.7.0",
-		"@hono/vite-dev-server": "0.21.1",
+		"@hono/vite-dev-server": "0.22.0",
 		"@octokit/types": "15.0.0",
 		"@types/bun": "npm:bun-types@1.2.23",
 		"@types/istanbul-lib-coverage": "2.0.6",
