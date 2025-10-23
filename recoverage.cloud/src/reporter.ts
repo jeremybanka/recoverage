@@ -211,7 +211,7 @@ export type V8Function = {
 export type V8Branch = {
 	line: number
 	type: string
-	locations: V8Range[]
+	locations: (Empty | V8Range)[]
 	loc: V8Range
 }
 export type V8FileCoverageEntry = {
@@ -229,6 +229,8 @@ export type V8FileCoverageEntry = {
 		seen: { [key: string]: number }
 	}
 }
+export type Empty = Record<never, never>
+export const emptyType: Type<Empty> = type({})
 export const v8CoverageFileEntryType: Type<V8FileCoverageEntry> = type({
 	path: `string`,
 	statementMap: { "[string]": v8RangeType },
@@ -244,7 +246,7 @@ export const v8CoverageFileEntryType: Type<V8FileCoverageEntry> = type({
 		"[string]": {
 			line: `number.integer`,
 			type: `string`,
-			locations: type(v8RangeType, `[]`),
+			locations: type([v8RangeType, `|`, emptyType], `[]`),
 			loc: v8RangeType,
 		},
 	},
