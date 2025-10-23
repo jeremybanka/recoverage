@@ -2,7 +2,10 @@
 
 import { ArkErrors, type } from "arktype"
 
-import { jsonSummaryFixture, reportFixture } from "../__tests__/report-fixture"
+import {
+	istanbulReportFixture,
+	jsonSummaryFixture,
+} from "../__tests__/report-fixture"
 
 export default null
 
@@ -20,7 +23,7 @@ await fetch(`http://localhost:8787/reporter/thingy`, {
 		Authorization: `Bearer ${ENV.RECOVERAGE_CLOUD_TOKEN}`,
 	},
 	body: JSON.stringify({
-		mapData: reportFixture,
+		mapData: istanbulReportFixture,
 		jsonSummary: jsonSummaryFixture,
 	}),
 })

@@ -8,7 +8,7 @@ import {
 
 import app from "../src"
 import { GITHUB_CALLBACK_ENDPOINT } from "../src/env"
-import { jsonSummaryFixture, reportFixture } from "./report-fixture"
+import { istanbulReportFixture, jsonSummaryFixture } from "./report-fixture"
 
 afterEach(() => {
 	vi.restoreAllMocks()
@@ -125,7 +125,7 @@ test(`authentication flow`, async () => {
 				Authorization: `Bearer ${code}`,
 			},
 			body: JSON.stringify({
-				mapData: reportFixture,
+				mapData: istanbulReportFixture,
 				jsonSummary: jsonSummaryFixture,
 			}),
 		},
@@ -135,7 +135,7 @@ test(`authentication flow`, async () => {
 	expect(reportPut.status).toBe(200)
 	const reportPutLibJson = await uploadCoverageReportToCloud(
 		reportRef,
-		createCoverageMap(reportFixture),
+		createCoverageMap(istanbulReportFixture),
 		jsonSummaryFixture,
 		code,
 	)
@@ -152,8 +152,8 @@ test(`authentication flow`, async () => {
 	)
 	expect(reportGet.status).toBe(200)
 	const reportGetJson = await reportGet.json()
-	expect(reportGetJson).toEqual(reportFixture)
+	expect(reportGetJson).toEqual(istanbulReportFixture)
 	const reportGetLib = await downloadCoverageReportFromCloud(reportRef, code)
 	assert(typeof reportGetLib === `string`)
-	expect(JSON.parse(reportGetLib)).toEqual(reportFixture)
+	expect(JSON.parse(reportGetLib)).toEqual(istanbulReportFixture)
 })
