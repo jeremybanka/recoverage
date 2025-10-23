@@ -4,13 +4,7 @@ import { and, eq } from "drizzle-orm"
 import type { DrizzleD1Database } from "drizzle-orm/d1"
 import type { MiddlewareHandler } from "hono"
 import { Hono } from "hono"
-import type {
-	CoverageMapData,
-	FileCoverageData,
-	Location,
-	Range,
-} from "istanbul-lib-coverage"
-import { createCoverageMap } from "istanbul-lib-coverage"
+import type * as Istanbul from "istanbul-lib-coverage"
 import type { CoverageEval, CoverageSummary, JsonSummary } from "recoverage"
 
 import { createDatabase } from "./db"
@@ -125,7 +119,7 @@ reporterRoutes.put(`/:reportRef`, reporterAuth, async (c) => {
 		return c.json({ error: `Bad request`, typeErrors: payloadOut.summary }, 400)
 	}
 
-	const coverageMapString = stringify(createCoverageMap(payloadOut.mapData))
+	const coverageMapString = stringify(payloadOut.mapData as any)
 	const summaryReportString = stringify(payloadOut.jsonSummary)
 
 	await db
@@ -147,35 +141,35 @@ reporterRoutes.put(`/:reportRef`, reporterAuth, async (c) => {
 	return c.json({ success: true })
 })
 
-const locationSchema: Type<Location> = type({
+const locationType: Type<Istanbul.Location> = type({
 	line: `number.integer`,
 	column: `number.integer`,
 })
 
 // Reusable schema for a source code location (start/end)
-const rangeSchema: Type<Range> = type({
-	start: locationSchema,
-	end: locationSchema,
+const rangeType: Type<Istanbul.Range> = type({
+	start: locationType,
+	end: locationType,
 })
 
 // Coverage data for one file
-const coverageMapEntrySchema: Type<FileCoverageData> = type({
+const istanbulCoverageFileEntryType: Type<Istanbul.FileCoverageData> = type({
 	path: `string`,
-	statementMap: { "[string]": rangeSchema },
+	statementMap: { "[string]": rangeType },
 	fnMap: {
 		"[string]": {
 			name: `string`,
 			line: `number.integer`,
-			decl: rangeSchema,
-			loc: rangeSchema,
+			decl: rangeType,
+			loc: rangeType,
 		},
 	},
 	branchMap: {
 		"[string]": {
 			line: `number.integer`,
 			type: `string`,
-			locations: type(rangeSchema, `[]`),
-			loc: rangeSchema,
+			locations: type(rangeType, `[]`),
+			loc: rangeType,
 		},
 	},
 	// s, f, and b track how many times statements/functions/branches were hit
@@ -184,9 +178,89 @@ const coverageMapEntrySchema: Type<FileCoverageData> = type({
 	b: { "[string]": `number.integer[]` },
 })
 
+export type IstanbulCoverageMap = {
+	[key: string]: Istanbul.FileCoverageData
+}
 // A coverage map is a record keyed by file path
-export const istanbulCoverageMapDataType: Type<CoverageMapData> = type({
-	"[string]": coverageMapEntrySchema,
+export const istanbulCoverageMapDataType: Type<IstanbulCoverageMap> = type({
+	"[string]": istanbulCoverageFileEntryType,
+})
+
+export type V8EndLocation = {
+	start: number
+	end: number | null
+}
+export const v8EndLocationType: Type<V8EndLocation> = type({
+	start: `number.integer`,
+	end: `null | number.integer`,
+})
+export type V8Range = {
+	start: Istanbul.Location
+	end: V8EndLocation
+}
+export const v8RangeType: Type<V8Range> = type({
+	start: locationType,
+	end: v8EndLocationType,
+})
+export type V8Function = {
+	name: string
+	decl: V8Range
+	loc: V8Range
+	line: number
+}
+export type V8Branch = {
+	line: number
+	type: string
+	locations: V8Range[]
+	loc: V8Range
+}
+export type V8FileCoverageEntry = {
+	path: string
+	statementMap: { [key: string]: V8Range }
+	fnMap: { [key: string]: V8Function }
+	branchMap: { [key: string]: V8Branch }
+	s: { [key: string]: number }
+	f: { [key: string]: number }
+	b: { [key: string]: number[] }
+	meta: {
+		lastBranch: number
+		lastFunction: number
+		lastStatement: number
+		seen: { [key: string]: number }
+	}
+}
+export const v8CoverageFileEntryType: Type<V8FileCoverageEntry> = type({
+	path: `string`,
+	statementMap: { "[string]": v8RangeType },
+	fnMap: {
+		"[string]": {
+			name: `string`,
+			decl: v8RangeType,
+			loc: v8RangeType,
+			line: `number.integer`,
+		},
+	},
+	branchMap: {
+		"[string]": {
+			line: `number.integer`,
+			type: `string`,
+			locations: type(v8RangeType, `[]`),
+			loc: v8RangeType,
+		},
+	},
+	s: { "[string]": `number.integer` },
+	f: { "[string]": `number.integer` },
+	b: { "[string]": `number.integer[]` },
+	meta: {
+		lastBranch: `number.integer`,
+		lastFunction: `number.integer`,
+		lastStatement: `number.integer`,
+		seen: { "[string]": `number.integer` },
+	},
+})
+export type V8CoverageMap = { [key: string]: V8FileCoverageEntry }
+export const v8CoverageMapType: Type<V8CoverageMap> = type({
+	"[string]": v8CoverageFileEntryType,
 })
 
 export const coverageEvalType: Type<CoverageEval> = type({
@@ -209,6 +283,6 @@ export const jsonSummaryReportType: Type<JsonSummary> = type({
 })
 
 export const reporterPutType = type({
-	mapData: istanbulCoverageMapDataType,
+	mapData: [istanbulCoverageMapDataType, `|`, v8CoverageMapType],
 	jsonSummary: jsonSummaryReportType,
 })
