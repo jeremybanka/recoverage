@@ -182,17 +182,17 @@ export type IstanbulCoverageMap = {
 	[key: string]: Istanbul.FileCoverageData
 }
 // A coverage map is a record keyed by file path
-export const istanbulCoverageMapDataType: Type<IstanbulCoverageMap> = type({
+export const istanbulCoverageMapType: Type<IstanbulCoverageMap> = type({
 	"[string]": istanbulCoverageFileEntryType,
 })
 
 export type V8EndLocation = {
-	start: number
-	end: number | null
+	line: number
+	column: number | null
 }
 export const v8EndLocationType: Type<V8EndLocation> = type({
-	start: `number.integer`,
-	end: `null | number.integer`,
+	line: `number.integer`,
+	column: `null | number.integer`,
 })
 export type V8Range = {
 	start: Istanbul.Location
@@ -283,6 +283,6 @@ export const jsonSummaryReportType: Type<JsonSummary> = type({
 })
 
 export const reporterPutType = type({
-	mapData: [istanbulCoverageMapDataType, `|`, v8CoverageMapType],
+	mapData: [istanbulCoverageMapType, `|`, v8CoverageMapType],
 	jsonSummary: jsonSummaryReportType,
 })
