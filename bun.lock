@@ -33,7 +33,7 @@
       "dependencies": {
         "@t3-oss/env-core": "0.13.8",
         "colors": "1.4.0",
-        "comline": "0.3.2",
+        "comline": "0.3.3",
         "diff": "8.0.2",
         "istanbul-lib-coverage": "3.2.2",
         "istanbul-lib-report": "3.0.1",
@@ -787,7 +787,7 @@
 
     "combined-stream": ["combined-stream@1.0.8", "", { "dependencies": { "delayed-stream": "~1.0.0" } }, "sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg=="],
 
-    "comline": ["comline@0.3.2", "", { "dependencies": { "picocolors": "1.1.1", "treetrunks": "0.1.5" }, "peerDependencies": { "zod": "^3.25.0" } }, "sha512-L9ccRs1L6bcxufpPE6rqwztNHqJKFCwV/OWkrZTzP94cqfibDp9sDUwJnWPJPXlcM/jvbK8dfW7/b6/3fJmKvg=="],
+    "comline": ["comline@0.3.3", "", { "dependencies": { "picocolors": "1.1.1", "treetrunks": "0.1.5" }, "peerDependencies": { "zod": "^3.25.0" } }, "sha512-66QMd8h96k1oVJsYfsiid8cAkF/GEIXgfm6s3zDUZ/LCGt31y1+XBBZ3r3skaF//mDTPUtuuJGAnerKGNz3N1A=="],
 
     "comment-parser": ["comment-parser@1.4.1", "", {}, "sha512-buhp5kePrmda3vhc5B9t7pUQXAb2Tnd0qgpkIhPhkHXxJpiPJ11H0ZEU0oBpJ2QztSbzG/ZxMj/CHsYJqRHmyg=="],
 
