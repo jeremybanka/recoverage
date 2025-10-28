@@ -3,6 +3,6 @@
 	"main": "index.ts",
 	"type": "module",
 	"dependencies": {
-		"istanbul-lib-coverage": "3.2.2"
+		"@types/istanbul-lib-coverage": "2.0.6"
 	}
 }

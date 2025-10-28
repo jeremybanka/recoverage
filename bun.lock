@@ -27,7 +27,7 @@
     "packages/fixtures": {
       "name": "recoverage-fixtures",
       "dependencies": {
-        "istanbul-lib-coverage": "3.2.2",
+        "@types/istanbul-lib-coverage": "2.0.6",
       },
     },
     "packages/recoverage": {
