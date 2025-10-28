@@ -71,6 +71,7 @@
 		"concurrently": "9.2.1",
 		"eslint": "9.38.0",
 		"nyc": "17.1.0",
+		"recoverage-fixtures": "workspace:*",
 		"tsdown": "0.15.11",
 		"typescript": "5.9.3",
 		"vite": "7.1.12",

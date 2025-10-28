@@ -1,0 +1,8 @@
+{
+	"name": "recoverage-fixtures",
+	"main": "index.ts",
+	"type": "module",
+	"dependencies": {
+		"@types/istanbul-lib-coverage": "2.0.6"
+	}
+}
