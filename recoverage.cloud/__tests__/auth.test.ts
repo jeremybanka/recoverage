@@ -5,10 +5,10 @@ import {
 	downloadCoverageReportFromCloud,
 	uploadCoverageReportToCloud,
 } from "recoverage/lib"
+import { istanbulReportFixture, jsonSummaryFixture } from "recoverage-fixtures"
 
 import app from "../src"
 import { GITHUB_CALLBACK_ENDPOINT } from "../src/env"
-import { istanbulReportFixture, jsonSummaryFixture } from "./report-fixture"
 
 afterEach(() => {
 	vi.restoreAllMocks()

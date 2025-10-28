@@ -24,6 +24,12 @@
         "vitest": "3.2.4",
       },
     },
+    "packages/fixtures": {
+      "name": "recoverage-fixtures",
+      "dependencies": {
+        "istanbul-lib-coverage": "3.2.2",
+      },
+    },
     "packages/recoverage": {
       "name": "recoverage",
       "version": "0.1.11",
@@ -53,6 +59,7 @@
         "concurrently": "9.2.1",
         "eslint": "9.38.0",
         "nyc": "17.1.0",
+        "recoverage-fixtures": "workspace:*",
         "tsdown": "0.15.11",
         "typescript": "5.9.3",
         "vite": "7.1.12",
@@ -89,6 +96,7 @@
         "eslint": "9.38.0",
         "fast-xml-parser": "5.3.0",
         "recoverage": "workspace:*",
+        "recoverage-fixtures": "workspace:*",
         "vite": "7.1.12",
         "vitest": "3.2.4",
         "wrangler": "4.45.0",
@@ -1222,6 +1230,8 @@
     "readdirp": ["readdirp@4.1.2", "", {}, "sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg=="],
 
     "recoverage": ["recoverage@workspace:packages/recoverage"],
+
+    "recoverage-fixtures": ["recoverage-fixtures@workspace:packages/fixtures"],
 
     "recoverage.cloud": ["recoverage.cloud@workspace:recoverage.cloud"],
 
