@@ -1,11 +1,7 @@
 #!/usr/bin/env bun
 
 import { ArkErrors, type } from "arktype"
-
-import {
-	istanbulReportFixture,
-	jsonSummaryFixture,
-} from "../__tests__/report-fixture"
+import { istanbulReportFixture, jsonSummaryFixture } from "recoverage-fixtures"
 
 export default null
 
