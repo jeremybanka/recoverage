@@ -46,8 +46,8 @@ export const istanbulReportFixture: CoverageMapData = {
 }
 
 export const v8ReportFixture = {
-	"/Users/jem/dojo/wayforge/packages/atom.io/src/react/use-loadable.ts": {
-		path: `/Users/jem/dojo/wayforge/packages/atom.io/src/react/use-loadable.ts`,
+	"/some/file.ts": {
+		path: `/some/file.ts`,
 		statementMap: {
 			"0": { start: { line: 35, column: 7 }, end: { line: 35, column: null } },
 			"1": { start: { line: 41, column: 17 }, end: { line: 41, column: null } },
