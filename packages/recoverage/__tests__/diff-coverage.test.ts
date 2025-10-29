@@ -1,5 +1,6 @@
 import type { ChildProcess } from "node:child_process"
 import { spawn } from "node:child_process"
+import { readdirSync } from "node:fs"
 import { copyFile, readdir, rename } from "node:fs/promises"
 import * as path from "node:path"
 
@@ -16,8 +17,7 @@ beforeAll(async () => {
 	const buildCode = await new Promise((resolve) => build.on(`exit`, resolve))
 	expect(buildCode).toBe(0)
 	await Yalc.publishPackage({ workingDir: `.` })
-	await Yalc.publishPackage({ workingDir: `../comline` })
-	await Yalc.publishPackage({ workingDir: `../treetrunks` })
+	// await Yalc.publishPackage({ workingDir: `../comline` })
 }, 60_000)
 
 let phase = 0
@@ -64,12 +64,13 @@ async function loadSample(packageName: string) {
 		),
 	)
 	if (phase === 0) {
-		await Yalc.addPackages([`recoverage`, `comline`, `treetrunks`], {
+		await Yalc.addPackages([`recoverage`], {
 			workingDir: `.`,
 		})
 		await rename(`.yalc`, `packages`)
 		const install = await runScript(`install`)
 		expect(install.exitCode).toBe(0)
+		console.log(readdirSync(`node_modules/.bun`))
 	}
 	phase++
 }

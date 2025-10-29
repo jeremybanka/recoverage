@@ -1,5 +1,5 @@
 import { createEnv } from "@t3-oss/env-core"
-import { z } from "zod"
+import { type } from "arktype"
 
 export const env: Readonly<{
 	S3_ACCESS_KEY_ID?: string | undefined
@@ -11,16 +11,15 @@ export const env: Readonly<{
 	CI: boolean
 }> = createEnv({
 	server: {
-		S3_ACCESS_KEY_ID: z.string().optional(),
-		S3_BUCKET: z.string().optional(),
-		S3_ENDPOINT: z.string().optional(),
-		S3_SECRET_ACCESS_KEY: z.string().optional(),
-		RECOVERAGE_CLOUD_TOKEN: z.string().optional(),
-		RECOVERAGE_CLOUD_URL: z.string().optional(),
-		CI: z
-			.string()
-			.optional()
-			.transform((v) => Boolean(v) && v !== `false` && v !== `0`),
+		S3_ACCESS_KEY_ID: type(`string | undefined`),
+		S3_BUCKET: type(`string | undefined`),
+		S3_ENDPOINT: type(`string | undefined`),
+		S3_SECRET_ACCESS_KEY: type(`string | undefined`),
+		RECOVERAGE_CLOUD_TOKEN: type(`string | undefined`),
+		RECOVERAGE_CLOUD_URL: type(`string | undefined`),
+		CI: type(`string | undefined`).pipe(
+			(v) => Boolean(v) && v !== `false` && v !== `0`,
+		),
 	},
 	runtimeEnv: import.meta.env as Record<string, string>,
 	emptyStringAsUndefined: true,

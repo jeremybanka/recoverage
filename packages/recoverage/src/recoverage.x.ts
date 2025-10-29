@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
-import { cli, help, noOptions, optional } from "comline"
-import { z } from "zod/v4"
+import { type } from "arktype"
+import { cli, help, noOptions, optional, options } from "comline"
 
 import { logger } from "./logger.ts"
 import * as Recoverage from "./recoverage.ts"
@@ -15,9 +15,11 @@ const parse = cli({
 		help: null,
 	}),
 	routeOptions: {
-		"": {
-			description: `capture and diff the current state of your coverage.`,
-			options: {
+		"": options(
+			`capture and diff the current state of your coverage.`,
+
+			type({ "defaultBranch?": `string` }),
+			{
 				defaultBranch: {
 					flag: `b`,
 					required: false,
@@ -25,14 +27,12 @@ const parse = cli({
 					example: `--defaultBranch=trunk`,
 				},
 			},
-			optionsSchema: z.object({
-				defaultBranch: z.string().optional(),
-			}),
-		},
+		),
 		capture: noOptions(`capture the current state of your coverage.`),
-		diff: {
-			description: `diff the current state of your coverage.`,
-			options: {
+		diff: options(
+			`diff the current state of your coverage.`,
+			type({ "defaultBranch?": `string` }),
+			{
 				defaultBranch: {
 					flag: `b`,
 					required: false,
@@ -40,10 +40,7 @@ const parse = cli({
 					example: `--defaultBranch=trunk`,
 				},
 			},
-			optionsSchema: z.object({
-				defaultBranch: z.string().optional(),
-			}),
-		},
+		),
 		help: noOptions(`show this help text.`),
 	},
 })
