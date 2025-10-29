@@ -40,7 +40,7 @@
         "@t3-oss/env-core": "0.13.8",
         "arktype": "2.1.25",
         "colors": "1.4.0",
-        "comline": "0.4.0",
+        "comline": "0.4.2",
         "diff": "8.0.2",
         "istanbul-lib-coverage": "3.2.2",
         "istanbul-lib-report": "3.0.1",
@@ -795,7 +795,7 @@
 
     "combined-stream": ["combined-stream@1.0.8", "", { "dependencies": { "delayed-stream": "~1.0.0" } }, "sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg=="],
 
-    "comline": ["comline@0.4.0", "", { "dependencies": { "picocolors": "1.1.1", "treetrunks": "0.1.5" }, "peerDependencies": { "arktype": "^2.1.25", "zod": "^4.1.12" }, "optionalPeers": ["arktype", "zod"] }, "sha512-0sbjY46ZFbb/+hw79irJVt5A9RHBZ85hN5YrvVjTxMT820lzHK5EZ5XEPQOlx1aD2kuI2WxBILFt2sSyQ2hUMw=="],
+    "comline": ["comline@0.4.2", "", { "dependencies": { "picocolors": "1.1.1", "treetrunks": "0.1.5" }, "peerDependencies": { "arktype": "^2.1.25", "zod": "^4.1.12" }, "optionalPeers": ["arktype", "zod"] }, "sha512-7vUbXnbzebwi8d260u6dE5EMyGBmQdQZUUaSlmml2Lc2illQ9Sp7iSGePvl08pAQXseBE4TTDmmXGYGQSrgiuQ=="],
 
     "comment-parser": ["comment-parser@1.4.1", "", {}, "sha512-buhp5kePrmda3vhc5B9t7pUQXAb2Tnd0qgpkIhPhkHXxJpiPJ11H0ZEU0oBpJ2QztSbzG/ZxMj/CHsYJqRHmyg=="],
 
