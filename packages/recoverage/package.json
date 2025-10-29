@@ -72,7 +72,7 @@
 		"eslint": "9.38.0",
 		"nyc": "17.1.0",
 		"recoverage-fixtures": "workspace:*",
-		"tsdown": "0.15.11",
+		"tsdown": "0.15.12",
 		"typescript": "5.9.3",
 		"vite": "7.1.12",
 		"vite-tsconfig-paths": "5.1.4",
