@@ -1,5 +1,6 @@
 {
 	"name": "recoverage-fixtures",
+	"private": true,
 	"main": "index.ts",
 	"type": "module",
 	"dependencies": {
