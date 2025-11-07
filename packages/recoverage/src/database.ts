@@ -1,7 +1,7 @@
 import type { Statement } from "bun:sqlite"
 import Database from "bun:sqlite"
+import logger from "takua"
 
-import { logger } from "./logger.ts"
 import { downloadCoverageDatabaseFromS3 } from "./persist-s3.ts"
 import { S3_CREDENTIALS } from "./recoverage.env.ts"
 import { BranchCoverage } from "./recoverage.ts"
@@ -13,14 +13,14 @@ export async function initDatabase(): Promise<Database> {
 		return database
 	}
 	if (S3_CREDENTIALS) {
-		logger.mark?.(`downloading coverage database from S3`)
+		logger.chronicle?.mark(`downloading coverage database from S3`)
 		await downloadCoverageDatabaseFromS3(S3_CREDENTIALS)
 	}
 	database = new Database(`./coverage.sqlite`)
 	database.run(
 		`create table if not exists coverage (git_ref text, coverage text, last_updated text default current_timestamp);`,
 	)
-	logger.mark?.(`spawn database`)
+	logger.chronicle?.mark(`spawn database`)
 	return database
 }
 

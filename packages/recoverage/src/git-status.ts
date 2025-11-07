@@ -3,8 +3,8 @@ import path from "node:path"
 
 import { file } from "bun"
 import { type SimpleGit, simpleGit } from "simple-git"
+import logger from "takua"
 
-import { logger } from "./logger.ts"
 import { env } from "./recoverage.env.ts"
 
 export type GitToolkit = {
@@ -23,7 +23,7 @@ export const gitToolkit: GitToolkit = {
 			return this._client
 		}
 		this._client = simpleGit(import.meta.dir)
-		logger.mark?.(`spawn git`)
+		logger.chronicle?.mark(`spawn git`)
 		return this._client
 	},
 }
@@ -39,7 +39,7 @@ export async function getBaseGitRef(defaultBranch: string): Promise<string> {
 			defaultBranch,
 			env.CI ? { "--depth": `1` } : undefined,
 		)
-		logger.mark?.(`fetched origin/${defaultBranch}`)
+		logger.chronicle?.mark(`fetched origin/${defaultBranch}`)
 		const sha = await git.revparse([`origin/${defaultBranch}`])
 		const baseGitRef = sha.slice(0, 7)
 		gitToolkit.baseRef = baseGitRef
@@ -47,7 +47,7 @@ export async function getBaseGitRef(defaultBranch: string): Promise<string> {
 	}
 	const sha = await git.revparse([defaultBranch])
 	const baseGitRef = sha.slice(0, 7)
-	logger.mark?.(`base git ref: ${baseGitRef}`)
+	logger.chronicle?.mark(`base git ref: ${baseGitRef}`)
 	gitToolkit.baseRef = baseGitRef
 	return baseGitRef
 }
@@ -60,7 +60,7 @@ export async function getCurrentGitRef(): Promise<string> {
 	const { current, branches } = await git.branch()
 	const gitStatus = await git.status()
 	const gitIsClean = gitStatus.isClean()
-	logger.mark?.(`git status is clean: ${gitIsClean}`)
+	logger.chronicle?.mark(`git status is clean: ${gitIsClean}`)
 	let currentGitRef = branches[current].commit.slice(0, 7)
 	if (!gitIsClean) {
 		const gitDiff = await git.diff()
@@ -81,9 +81,9 @@ export async function getCurrentGitRef(): Promise<string> {
 		const diffHash = gitStatusHash.digest(`hex`).slice(0, currentGitRef.length)
 		currentGitRef = `${currentGitRef}+${diffHash}`
 
-		logger.mark?.(`git status hash created: ${diffHash}`)
+		logger.chronicle?.mark(`git status hash created: ${diffHash}`)
 	}
-	logger.mark?.(`current git ref: ${currentGitRef}`)
+	logger.chronicle?.mark(`current git ref: ${currentGitRef}`)
 	gitToolkit.currentRef = currentGitRef
 	return currentGitRef
 }

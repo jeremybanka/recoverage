@@ -70,7 +70,7 @@ async function loadSample(packageName: string) {
 		await rename(`.yalc`, `packages`)
 		const install = await runScript(`install`)
 		expect(install.exitCode).toBe(0)
-		console.log(readdirSync(`node_modules/.bun`))
+		// console.log(readdirSync(`node_modules/.bun`))
 	}
 	phase++
 }

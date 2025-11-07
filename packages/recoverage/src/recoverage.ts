@@ -1,5 +1,6 @@
 import { file } from "bun"
 import { createCoverageMap } from "istanbul-lib-coverage"
+import logger from "takua"
 
 import {
 	deleteAllButLast10Reports,
@@ -13,7 +14,7 @@ import {
 	getCoverageTextReport,
 } from "./istanbul-reports.ts"
 import { stringify } from "./json.ts"
-import { logDiff, logger, useMarks } from "./logger.ts"
+import { logDiff } from "./logger.ts"
 import {
 	downloadCoverageReportFromCloud,
 	uploadCoverageReportToCloud,
@@ -52,11 +53,11 @@ export type RecoverageOptions = {
 
 export async function capture(options: RecoverageOptions = {}): Promise<0 | 1> {
 	const { defaultBranch = `main`, silent = false } = options
-	if (!silent && !logger.mark) {
-		Object.assign(logger, useMarks({ inline: true }))
+	if (!silent && !logger.chronicle) {
+		logger.makeChronicle({ inline: true })
 	}
-	logger.mark?.(`start`)
-	logger.mark?.(`called recoverage capture`)
+	logger.chronicle?.mark(`start`)
+	logger.chronicle?.mark(`called recoverage capture`)
 
 	const currentGitRef = await getCurrentGitRef()
 
@@ -72,23 +73,23 @@ export async function capture(options: RecoverageOptions = {}): Promise<0 | 1> {
 		$coverage: coverageMapStringified,
 	})
 
-	logger.mark?.(`saved local coverage for ${currentGitRef}`)
+	logger.chronicle?.mark(`saved local coverage for ${currentGitRef}`)
 
 	const defaultGitRef = await getBaseGitRef(defaultBranch)
 
 	deleteAllButLast10Reports(db).run(defaultGitRef)
 
 	if (currentGitRef === defaultGitRef) {
-		logger.mark?.(`we're on the default branch`)
+		logger.chronicle?.mark(`we're on the default branch`)
 		if (S3_CREDENTIALS) {
-			logger.mark?.(`uploading coverage database to S3`)
+			logger.chronicle?.mark(`uploading coverage database to S3`)
 			await uploadCoverageDatabaseToS3(S3_CREDENTIALS)
-			logger.mark?.(`uploaded coverage database to S3`)
+			logger.chronicle?.mark(`uploaded coverage database to S3`)
 		}
 		if (env.RECOVERAGE_CLOUD_TOKEN) {
 			// biome-ignore lint/style/noNonNullAssertion: there's always an element here
 			const packageName = process.cwd().split(`/`).at(-1)!
-			logger.mark?.(
+			logger.chronicle?.mark(
 				`uploading coverage report "${packageName}" to recoverage.cloud`,
 			)
 			const cloudResponse = await uploadCoverageReportToCloud(
@@ -99,20 +100,22 @@ export async function capture(options: RecoverageOptions = {}): Promise<0 | 1> {
 				env.RECOVERAGE_CLOUD_URL,
 			)
 			if (cloudResponse instanceof Error) {
-				logger.mark?.(
+				logger.chronicle?.mark(
 					`failed to upload report "${packageName}" to recoverage.cloud`,
 				)
 				console.error(cloudResponse)
 				return 1
 			}
-			logger.mark?.(
+			logger.chronicle?.mark(
 				`uploaded coverage report "${packageName}" to recoverage.cloud`,
 			)
 		} else {
-			logger.mark?.(`RECOVERAGE_CLOUD_TOKEN not set; skipping upload`)
+			logger.chronicle?.mark(`RECOVERAGE_CLOUD_TOKEN not set; skipping upload`)
 		}
 	} else {
-		logger.mark?.(`we're not on the default branch; no need to persist coverage`)
+		logger.chronicle?.mark(
+			`we're not on the default branch; no need to persist coverage`,
+		)
 	}
 
 	return 0
@@ -122,11 +125,11 @@ export async function diff(
 	defaultBranch = `main`,
 	silent = false,
 ): Promise<0 | 1> {
-	if (!silent && !logger.mark) {
-		Object.assign(logger, useMarks({ inline: true }))
+	if (!silent && !logger.chronicle) {
+		logger.makeChronicle({ inline: true })
 	}
 
-	logger.mark?.(`called recoverage diff`)
+	logger.chronicle?.mark(`called recoverage diff`)
 
 	const baseGitRef = await getBaseGitRef(defaultBranch)
 	const currentGitRef = await getCurrentGitRef()
@@ -136,9 +139,9 @@ export async function diff(
 	const [currentCoverage] = getCoverage(db).all(currentGitRef)
 
 	if (!baseCoverage) {
-		logger.mark?.(`no coverage found for the target branch`)
+		logger.chronicle?.mark(`no coverage found for the target branch`)
 		if (!env.RECOVERAGE_CLOUD_TOKEN) {
-			logger.mark?.(
+			logger.chronicle?.mark(
 				`RECOVERAGE_CLOUD_TOKEN not set; cannot download coverage report`,
 			)
 			return 1
@@ -146,7 +149,9 @@ export async function diff(
 
 		// biome-ignore lint/style/noNonNullAssertion: there's always an element here
 		const packageName = process.cwd().split(`/`).at(-1)!
-		logger.mark?.(`getting report "${packageName}" from recoverage.cloud`)
+		logger.chronicle?.mark(
+			`getting report "${packageName}" from recoverage.cloud`,
+		)
 		const cloudCoverage = await downloadCoverageReportFromCloud(
 			packageName,
 			env.RECOVERAGE_CLOUD_TOKEN,
@@ -154,7 +159,9 @@ export async function diff(
 		)
 
 		if (cloudCoverage instanceof Error) {
-			logger.mark?.(`failed to download coverage report "${packageName}"`)
+			logger.chronicle?.mark(
+				`failed to download coverage report "${packageName}"`,
+			)
 			console.error(cloudCoverage)
 			return 1
 		}
@@ -162,20 +169,22 @@ export async function diff(
 			git_ref: baseGitRef,
 			coverage: cloudCoverage,
 		}
-		logger.mark?.(`downloaded report "${packageName}" from recoverage.cloud`)
+		logger.chronicle?.mark(
+			`downloaded report "${packageName}" from recoverage.cloud`,
+		)
 		saveCoverage(db).run({
 			$git_ref: baseGitRef,
 			$coverage: cloudCoverage,
 		})
-		logger.mark?.(`saved report "${packageName}" to local database`)
+		logger.chronicle?.mark(`saved report "${packageName}" to local database`)
 	}
 
 	if (!currentCoverage) {
-		logger.mark?.(`no coverage found for the current ref`)
+		logger.chronicle?.mark(`no coverage found for the current ref`)
 		return 1
 	}
 	if (baseGitRef === currentGitRef) {
-		logger.mark?.(`no diff (we're already on the target branch)`)
+		logger.chronicle?.mark(`no diff (we're already on the target branch)`)
 		return 0
 	}
 
@@ -185,13 +194,13 @@ export async function diff(
 	)
 
 	const baseCoverageJsonSummary = getCoverageJsonSummary(baseCoverageMap)
-	logger.mark?.(`got json summary for ${baseGitRef}`)
+	logger.chronicle?.mark(`got json summary for ${baseGitRef}`)
 	const currentCoverageJsonSummary = getCoverageJsonSummary(currentCoverageMap)
-	logger.mark?.(`got json summary for ${currentGitRef}`)
+	logger.chronicle?.mark(`got json summary for ${currentGitRef}`)
 	const baseCoverageTextReport = getCoverageTextReport(baseCoverageMap)
-	logger.mark?.(`got text report for ${baseGitRef}`)
+	logger.chronicle?.mark(`got text report for ${baseGitRef}`)
 	const currentCoverageTextReport = getCoverageTextReport(currentCoverageMap)
-	logger.mark?.(`got text report for ${currentGitRef}`)
+	logger.chronicle?.mark(`got text report for ${currentGitRef}`)
 
 	const coverageDifference =
 		currentCoverageJsonSummary.total.statements.pct -
@@ -204,7 +213,7 @@ export async function diff(
 			baseCoverageTextReport,
 			currentCoverageTextReport,
 		)
-		logger.mark?.(`coverage decreased by ${-coverageDifference}%`)
+		logger.chronicle?.mark(`coverage decreased by ${-coverageDifference}%`)
 		return 1
 	}
 
@@ -215,9 +224,9 @@ export async function diff(
 			baseCoverageTextReport,
 			currentCoverageTextReport,
 		)
-		logger.mark?.(`coverage increased by ${coverageDifference}%`)
+		logger.chronicle?.mark(`coverage increased by ${coverageDifference}%`)
 		return 0
 	}
-	logger.mark?.(`coverage is the same`)
+	logger.chronicle?.mark(`coverage is the same`)
 	return 0
 }
