@@ -2,8 +2,8 @@
 
 import { type } from "arktype"
 import { cli, help, noOptions, optional, options } from "comline"
+import logger from "takua"
 
-import { logger } from "./logger.ts"
 import * as Recoverage from "./recoverage.ts"
 
 const parse = cli({
@@ -51,19 +51,19 @@ switch (inputs.case) {
 		{
 			const captureCode = await Recoverage.capture()
 			if (captureCode === 1) {
-				logger.logMarks?.()
+				logger.chronicle?.logMarks()
 				process.exit(1)
 			}
 			try {
 				const diffCode = await Recoverage.diff(
 					inputs.opts.defaultBranch ?? `main`,
 				)
-				logger.logMarks?.()
+				logger.chronicle?.logMarks()
 				if (diffCode === 1) {
 					process.exit(1)
 				}
 			} catch (thrown) {
-				logger.logMarks?.()
+				logger.chronicle?.logMarks()
 				console.error(thrown)
 				process.exit(1)
 			}
