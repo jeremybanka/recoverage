@@ -1,5 +1,11 @@
 # recoverage
 
+## 0.1.13
+
+### Patch Changes
+
+- 541face: ✨ Outsourced logging to the `takua` package.
+
 ## 0.1.12
 
 ### Patch Changes
