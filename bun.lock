@@ -45,6 +45,7 @@
         "istanbul-lib-report": "3.0.1",
         "istanbul-reports": "3.2.0",
         "simple-git": "3.30.0",
+        "takua": "0.1.1",
         "tmp": "0.2.5",
       },
       "devDependencies": {
@@ -1308,6 +1309,8 @@
     "strnum": ["strnum@2.1.1", "", {}, "sha512-7ZvoFTiCnGxBtDqJ//Cu6fWtZtc7Y3x+QOirG15wztbdngGSkht27o2pyGWrVy0b4WAy3jbKmnoK6g5VlVNUUw=="],
 
     "supports-color": ["supports-color@8.1.1", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q=="],
+
+    "takua": ["takua@0.1.1", "", { "dependencies": { "picocolors": "1.1.1" } }, "sha512-0BZ8xPR+MgaNam5kQEhiwPpjdI6MRS6Q0uqGp5Jn7NXhvkw2qcfu9wEzcqhM+Q6Lvwu6qMlQN77vTTZKD+suvQ=="],
 
     "term-size": ["term-size@2.2.1", "", {}, "sha512-wK0Ri4fOGjv/XPy8SBHZChl8CM7uMc5VML7SqiQ0zG7+J5Vr+RMQDoHa2CNT6KHUnTGIXH34UDMkPzAUyapBZg=="],
 
