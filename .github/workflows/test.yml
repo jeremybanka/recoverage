@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 9
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v5.0.1
       - uses: ./.github/actions/setup
       - run: bun run test
 
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 9
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v5.0.1
       - uses: ./.github/actions/setup
       - run: bun run build
 
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 9
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v5.0.1
       - uses: ./.github/actions/setup
       - run: git rev-parse HEAD > git.sha
       - run: bun test:coverage:increased
@@ -49,6 +49,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 9
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v5.0.1
       - uses: ./.github/actions/setup
       - run: bun test:semver
