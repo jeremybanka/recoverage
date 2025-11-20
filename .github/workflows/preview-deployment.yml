@@ -16,7 +16,7 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v5.0.1
+      - uses: actions/checkout@v6.0.0
       - uses: ./.github/actions/setup
 
       - name: set variables from PR number
@@ -94,7 +94,7 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v5.0.1
+      - uses: actions/checkout@v6.0.0
       - uses: ./.github/actions/setup
       - name: teardown all
         env:
