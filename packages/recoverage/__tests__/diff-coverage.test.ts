@@ -1,6 +1,5 @@
 import type { ChildProcess } from "node:child_process"
 import { spawn } from "node:child_process"
-import { readdirSync } from "node:fs"
 import { copyFile, readdir, rename } from "node:fs/promises"
 import * as path from "node:path"
 
