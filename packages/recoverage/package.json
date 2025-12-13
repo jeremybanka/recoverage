@@ -50,7 +50,7 @@
 	},
 	"dependencies": {
 		"@t3-oss/env-core": "0.13.8",
-		"arktype": "2.1.28",
+		"arktype": "2.1.29",
 		"colors": "1.4.0",
 		"comline": "0.4.3",
 		"diff": "8.0.2",
