@@ -4,7 +4,7 @@ runs:
   using: composite
   steps:
     - name: Set up Bun
-      uses: oven-sh/setup-bun@v2.1.0
+      uses: oven-sh/setup-bun@v2.1.1
       with:
         bun-version-file: .bun-version
 
