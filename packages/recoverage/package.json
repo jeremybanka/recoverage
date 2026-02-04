@@ -73,7 +73,7 @@
 		"eslint": "9.39.2",
 		"nyc": "17.1.0",
 		"recoverage-fixtures": "workspace:*",
-		"tsdown": "0.20.1",
+		"tsdown": "0.20.2",
 		"typescript": "5.9.3",
 		"vite": "7.3.1",
 		"vitest": "3.2.4",
