@@ -94,7 +94,7 @@
         "concurrently": "9.2.1",
         "drizzle-kit": "0.31.9",
         "eslint": "10.0.2",
-        "fast-xml-parser": "5.3.7",
+        "fast-xml-parser": "5.3.8",
         "recoverage": "workspace:*",
         "recoverage-fixtures": "workspace:*",
         "vite": "7.3.1",
@@ -925,7 +925,7 @@
 
     "fast-levenshtein": ["fast-levenshtein@2.0.6", "", {}, "sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw=="],
 
-    "fast-xml-parser": ["fast-xml-parser@5.3.7", "", { "dependencies": { "strnum": "^2.1.2" }, "bin": { "fxparser": "src/cli/cli.js" } }, "sha512-JzVLro9NQv92pOM/jTCR6mHlJh2FGwtomH8ZQjhFj/R29P2Fnj38OgPJVtcvYw6SuKClhgYuwUZf5b3rd8u2mA=="],
+    "fast-xml-parser": ["fast-xml-parser@5.3.8", "", { "dependencies": { "strnum": "^2.1.2" }, "bin": { "fxparser": "src/cli/cli.js" } }, "sha512-53jIF4N6u/pxvaL1eb/hEZts/cFLWZ92eCfLrNyCI0k38lettCG/Bs40W9pPwoPXyHQlKu2OUbQtiEIZK/J6Vw=="],
 
     "fastq": ["fastq@1.20.1", "", { "dependencies": { "reusify": "^1.0.4" } }, "sha512-GGToxJ/w1x32s/D2EKND7kTil4n8OVk/9mycTc4VDza13lOvpUZTGX3mFSCtV9ksdGBVzvsyAVLM6mHFThxXxw=="],
 
