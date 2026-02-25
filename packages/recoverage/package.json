@@ -71,7 +71,7 @@
 		"@typescript/native-preview": "7.0.0-dev.20260225.1",
 		"concurrently": "9.2.1",
 		"eslint": "10.0.2",
-		"nyc": "17.1.0",
+		"nyc": "18.0.0",
 		"recoverage-fixtures": "workspace:*",
 		"tsdown": "0.20.3",
 		"typescript": "5.9.3",
