@@ -77,7 +77,7 @@
         "hono": "4.12.4",
         "htmx.org": "2.0.8",
         "istanbul-lib-coverage": "3.2.2",
-        "jurist": "0.0.7",
+        "jurist": "0.0.8",
         "nanoid": "5.1.6",
         "octokit": "5.0.5",
       },
@@ -1075,7 +1075,7 @@
 
     "jsonfile": ["jsonfile@4.0.0", "", { "optionalDependencies": { "graceful-fs": "^4.1.6" } }, "sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg=="],
 
-    "jurist": ["jurist@0.0.7", "", { "dependencies": { "treetrunks": "0.1.5" } }, "sha512-dMm/IooJ/RfN8dnYF4AvOg4SmnAbxGQPWNJ+Zc5IKcXZ2YM4IU8DQa1LjimB9Ks3al/+PzmB8HX98tLWH5PvHQ=="],
+    "jurist": ["jurist@0.0.8", "", { "dependencies": { "treetrunks": "0.1.6" } }, "sha512-vSRyCIb72sJEcAZzDTvKG1EimzuWqZ9Sx9mjDbsbHg8Aii2C4DxLSxIGCpF6CYOjG0wtOqcgzV4YlMLmTAQTig=="],
 
     "keyv": ["keyv@4.5.4", "", { "dependencies": { "json-buffer": "3.0.1" } }, "sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw=="],
 
@@ -1538,8 +1538,6 @@
     "istanbul-lib-report/make-dir": ["make-dir@4.0.0", "", { "dependencies": { "semver": "^7.5.3" } }, "sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw=="],
 
     "istanbul-lib-report/supports-color": ["supports-color@7.2.0", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw=="],
-
-    "jurist/treetrunks": ["treetrunks@0.1.5", "", {}, "sha512-X3zX+yYdW9mrzoZE5f1e2CLSAEUbS5Crw9D2JSL0EFt6rb8Jih95ZkP76oUZKR+EHnlZZEO/x9oVhXKccznYKw=="],
 
     "make-dir/semver": ["semver@6.3.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA=="],
 
