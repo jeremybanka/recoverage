@@ -70,7 +70,7 @@
 		"@types/tmp": "0.2.6",
 		"@typescript/native-preview": "7.0.0-dev.20260309.1",
 		"concurrently": "9.2.1",
-		"eslint": "10.0.2",
+		"eslint": "10.0.3",
 		"nyc": "18.0.0",
 		"recoverage-fixtures": "workspace:*",
 		"tsdown": "0.21.0",
