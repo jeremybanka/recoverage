@@ -1,7 +1,6 @@
-import type { UserConfig } from "vite"
 import { defineConfig } from "vitest/config"
 
-const config: UserConfig = defineConfig({
+const config = defineConfig({
 	test: {
 		globals: true,
 		coverage: {

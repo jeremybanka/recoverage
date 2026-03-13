@@ -1,7 +1,7 @@
-import type { UserConfig } from "vite"
+import type { ViteUserConfigExport } from "vitest/config"
 import { defineConfig } from "vitest/config"
 
-const config: UserConfig = defineConfig({
+const config: ViteUserConfigExport = defineConfig({
 	test: { globals: true, include: [`__tests__/*.test.ts`] },
 })
 
