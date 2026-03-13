@@ -54,8 +54,8 @@ Then, update your package.json with the following scripts and devDependencies:
   },
   "devDependencies": {
     "typescript": "^5.x",
-    "vitest": "^3.x",
-    "@vitest/coverage-v8": "^3.x",
+    "vitest": "^4.x",
+    "@vitest/coverage-v8": "^4.x",
     "recoverage": "^0.1.x"
   }
 }
