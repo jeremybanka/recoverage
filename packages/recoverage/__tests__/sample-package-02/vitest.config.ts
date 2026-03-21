@@ -1,6 +1,7 @@
+import type { UserProjectConfigExport } from "vitest/config"
 import { defineConfig } from "vitest/config"
 
-const config = defineConfig({
+const config: UserProjectConfigExport = defineConfig({
 	test: {
 		globals: true,
 		coverage: {
