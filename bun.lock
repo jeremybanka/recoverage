@@ -20,7 +20,7 @@
         "jiti": "2.6.1",
         "pin-dependencies-checker": "2.7.1",
         "turbo": "2.8.20",
-        "typescript": "5.9.3",
+        "typescript": "6.0.2",
       },
     },
     "packages/fixtures": {
@@ -61,7 +61,7 @@
         "nyc": "18.0.0",
         "recoverage-fixtures": "workspace:*",
         "tsdown": "0.21.4",
-        "typescript": "5.9.3",
+        "typescript": "6.0.2",
         "vite": "8.0.2",
         "vitest": "4.1.1",
         "yalc": "1.0.0-pre.53",
@@ -1314,7 +1314,7 @@
 
     "typedarray-to-buffer": ["typedarray-to-buffer@3.1.5", "", { "dependencies": { "is-typedarray": "^1.0.0" } }, "sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q=="],
 
-    "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
+    "typescript": ["typescript@6.0.2", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-bGdAIrZ0wiGDo5l8c++HWtbaNCWTS4UTv7RaTH/ThVIgjkveJt83m74bBHMJkuCbslY8ixgLBVZJIOiQlQTjfQ=="],
 
     "unconfig-core": ["unconfig-core@7.5.0", "", { "dependencies": { "@quansync/fs": "^1.0.0", "quansync": "^1.0.0" } }, "sha512-Su3FauozOGP44ZmKdHy2oE6LPjk51M/TRRjHv2HNCWiDvfvCoxC2lno6jevMA91MYAdCdwP05QnWdWpSbncX/w=="],
 
