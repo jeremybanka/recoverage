@@ -53,7 +53,7 @@
 		"concurrently": "9.2.1",
 		"drizzle-kit": "0.31.10",
 		"eslint": "10.1.0",
-		"fast-xml-parser": "5.5.9",
+		"fast-xml-parser": "5.5.10",
 		"recoverage": "workspace:*",
 		"recoverage-fixtures": "workspace:*",
 		"vite": "8.0.3",
