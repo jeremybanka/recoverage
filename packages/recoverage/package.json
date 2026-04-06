@@ -75,7 +75,7 @@
 		"recoverage-fixtures": "workspace:*",
 		"tsdown": "0.21.7",
 		"typescript": "6.0.2",
-		"vite": "8.0.3",
+		"vite": "8.0.5",
 		"vitest": "4.1.2",
 		"yalc": "1.0.0-pre.53"
 	}
