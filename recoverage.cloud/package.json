@@ -58,6 +58,6 @@
 		"recoverage-fixtures": "workspace:*",
 		"vite": "8.0.7",
 		"vitest": "4.1.3",
-		"wrangler": "4.80.0"
+		"wrangler": "4.81.0"
 	}
 }
