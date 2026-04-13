@@ -39,7 +39,7 @@
         "@t3-oss/env-core": "0.13.11",
         "arktype": "2.2.0",
         "colors": "1.4.0",
-        "comline": "0.4.4",
+        "comline": "0.4.5",
         "diff": "9.0.0",
         "istanbul-lib-coverage": "3.2.2",
         "istanbul-lib-report": "3.0.1",
@@ -764,7 +764,7 @@
 
     "combined-stream": ["combined-stream@1.0.8", "", { "dependencies": { "delayed-stream": "~1.0.0" } }, "sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg=="],
 
-    "comline": ["comline@0.4.4", "", { "dependencies": { "picocolors": "1.1.1", "treetrunks": "0.1.6" }, "peerDependencies": { "arktype": "^2.1.25", "zod": "^4.1.12" }, "optionalPeers": ["arktype", "zod"] }, "sha512-tNQP7KH2FCLKqXZtekUmayBs+qRoMNEaDqi5m8zE/RVPRJuQbPKkNBsTrGXVGXy0bCZKF0wiAEITGmTcycK4ZQ=="],
+    "comline": ["comline@0.4.5", "", { "dependencies": { "picocolors": "1.1.1", "treetrunks": "0.1.7" }, "peerDependencies": { "arktype": "^2.1.25", "zod": "^4.1.12" }, "optionalPeers": ["arktype", "zod"] }, "sha512-UrgoSNg1RhuiZ5Obz8Adkiw5iR6rNeoEbAv5dBLcvK5mQFVQAL7bg7LSjMeKsi460R4x8lRW2dJfuBQMzhI9rA=="],
 
     "comment-parser": ["comment-parser@1.4.5", "", {}, "sha512-aRDkn3uyIlCFfk5NUA+VdwMmMsh8JGhc4hapfV4yxymHGQ3BVskMQfoXGpCo5IoBuQ9tS5iiVKhCpTcB4pW4qw=="],
 
@@ -1300,7 +1300,7 @@
 
     "tree-kill": ["tree-kill@1.2.2", "", { "bin": { "tree-kill": "cli.js" } }, "sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A=="],
 
-    "treetrunks": ["treetrunks@0.1.6", "", {}, "sha512-B8fk0BmozRf0cwPUmSM7snwZMtyavDgUhngt/jZgwnYwReuG0bOJE/RDMGNyDBCixKzTxV/0XLTGbFBMke5ySw=="],
+    "treetrunks": ["treetrunks@0.1.7", "", {}, "sha512-QpS2El77DaQYyN9Hwyeaswaa8v1mfeMnRif1ayzV4lyMNnhnbwHbVKoZyheA35OZJJm88yhkyKExXG2tyWlqDQ=="],
 
     "ts-api-utils": ["ts-api-utils@2.5.0", "", { "peerDependencies": { "typescript": ">=4.8.4" } }, "sha512-OJ/ibxhPlqrMM0UiNHJ/0CKQkoKF243/AEmplt3qpRgkW8VG7IfOS41h7V8TjITqdByHzrjcS/2si+y4lIh8NA=="],
 
@@ -1505,6 +1505,8 @@
     "istanbul-lib-report/make-dir": ["make-dir@4.0.0", "", { "dependencies": { "semver": "^7.5.3" } }, "sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw=="],
 
     "istanbul-lib-report/supports-color": ["supports-color@7.2.0", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw=="],
+
+    "jurist/treetrunks": ["treetrunks@0.1.6", "", {}, "sha512-B8fk0BmozRf0cwPUmSM7snwZMtyavDgUhngt/jZgwnYwReuG0bOJE/RDMGNyDBCixKzTxV/0XLTGbFBMke5ySw=="],
 
     "make-dir/semver": ["semver@6.3.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA=="],
 
