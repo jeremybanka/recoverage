@@ -36,7 +36,7 @@
 		"hono": "4.12.12",
 		"htmx.org": "2.0.8",
 		"istanbul-lib-coverage": "3.2.2",
-		"jurist": "0.0.8",
+		"jurist": "0.0.9",
 		"nanoid": "5.1.7",
 		"octokit": "5.0.5"
 	},
