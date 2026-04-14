@@ -24,6 +24,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6.0.2
+        with:
+          token: ${{ secrets.CHANGESETS_GITHUB_PAT }}
       - uses: ./.github/actions/setup
       - name: Create Release Pull Request or Publish to npm
         id: changesets
