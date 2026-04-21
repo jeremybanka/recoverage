@@ -21,7 +21,7 @@ export const env: Readonly<{
 			(v) => Boolean(v) && v !== `false` && v !== `0`,
 		),
 	},
-	runtimeEnv: import.meta.env as Record<string, string>,
+	runtimeEnv: import.meta.env,
 	emptyStringAsUndefined: true,
 })
 
