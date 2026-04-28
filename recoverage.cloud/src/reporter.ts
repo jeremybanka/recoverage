@@ -1,6 +1,6 @@
 import type { Type } from "arktype"
 import { type } from "arktype"
-import { and, eq } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 import type { DrizzleD1Database } from "drizzle-orm/d1"
 import type { MiddlewareHandler } from "hono"
 import { Hono } from "hono"
@@ -12,7 +12,7 @@ import type { Bindings } from "./env"
 import { computeHash } from "./hash"
 import { stringify } from "./json"
 import type { Role } from "./roles-permissions"
-import { reportsAllowed } from "./roles-permissions"
+import { hostedReportsAllowed, reportBytesAllowed } from "./roles-permissions"
 import * as schema from "./schema"
 
 type ReporterEnv = {
@@ -20,6 +20,7 @@ type ReporterEnv = {
 	Variables: {
 		drizzle: DrizzleD1Database<typeof schema>
 		projectScope: string
+		userId: number
 		userRole: Role
 	}
 }
@@ -63,6 +64,7 @@ const reporterAuth: MiddlewareHandler<ReporterEnv> = async (c, next) => {
 	}
 	c.set(`drizzle`, db)
 	c.set(`projectScope`, projectId)
+	c.set(`userId`, tokenRecord.project.user.id)
 	c.set(`userRole`, tokenRecord.project.user.role)
 	await next()
 }
@@ -99,19 +101,59 @@ reporterRoutes.put(`/:reportRef`, reporterAuth, async (c) => {
 	}
 
 	const userRole = c.get(`userRole`)
-	const numberOfReportsAllowed = reportsAllowed.get(userRole)
-
-	const db = c.get(`drizzle`)
-
-	const currentReports = await db.query.reports.findMany({
-		where: eq(schema.reports.projectId, projectScope),
-	})
-
-	if (currentReports.length >= numberOfReportsAllowed) {
-		return c.json({ error: `You may not create more reports` }, 401)
+	const numberOfReportsAllowed = hostedReportsAllowed.get(userRole)
+	const numberOfReportBytesAllowed = reportBytesAllowed.get(userRole)
+	const requestText = await c.req.text()
+	const suppliedReportByteLength = new TextEncoder().encode(requestText).length
+	if (suppliedReportByteLength > numberOfReportBytesAllowed) {
+		return c.json(
+			{
+				error: `Report is too large, at ${suppliedReportByteLength} bytes. Max size is ${numberOfReportBytesAllowed} bytes for your account tier.`,
+			},
+			413,
+		)
 	}
 
-	const jsonPayload = await c.req.json()
+	const db = c.get(`drizzle`)
+	const existingReport = await db.query.reports.findFirst({
+		where: and(
+			eq(schema.reports.projectId, projectScope),
+			eq(schema.reports.ref, reportRef),
+		),
+		columns: {
+			ref: true,
+		},
+	})
+
+	if (!existingReport) {
+		const userId = c.get(`userId`)
+		const reportCountRow = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(schema.reports)
+			.innerJoin(
+				schema.projects,
+				eq(schema.reports.projectId, schema.projects.id),
+			)
+			.where(eq(schema.projects.userId, userId))
+			.get()
+		const currentReportCount = reportCountRow?.count ?? 0
+
+		if (currentReportCount >= numberOfReportsAllowed) {
+			return c.json(
+				{
+					error: `You may not create more hosted reports. Your account tier allows ${numberOfReportsAllowed}.`,
+				},
+				401,
+			)
+		}
+	}
+
+	let jsonPayload: unknown
+	try {
+		jsonPayload = JSON.parse(requestText)
+	} catch {
+		return c.json({ error: `Bad request`, typeErrors: `Invalid JSON` }, 400)
+	}
 	console.log({ jsonPayload })
 	const payloadOut = reporterPutType(jsonPayload)
 
