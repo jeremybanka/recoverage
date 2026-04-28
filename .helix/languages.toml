@@ -1,0 +1,108 @@
+[language-server.vscode-eslint-language-server]
+command = "bun"
+args = [
+	"/Users/jem/dojo/recoverage/.helix/language-servers/helix-lsp-orchestrator.ts",
+]
+
+[language-server.vscode-eslint-language-server.config]
+validate = "on"
+packageManager = "bun"
+useFlatConfig = true
+experimental = { useFlatConfig = false }
+rulesCustomizations = []
+run = "onType"
+problems = { shortenToSingleLine = false }
+nodePath = ""
+options = {}
+codeActionOnSave = { mode = "all" }
+format = true
+
+[language-server.vscode-eslint-language-server.config.codeAction.disableRuleComment]
+enable = true
+location = "separateLine"
+
+[language-server.vscode-eslint-language-server.config.codeAction.showDocumentation]
+enable = true
+
+[language-server.vscode-eslint-language-server.config.workingDirectory]
+directory = "/Users/jem/dojo/recoverage"
+
+[language-server.typescript-language-server]
+command = "./node_modules/.bin/typescript-language-server"
+args = ["--stdio"]
+
+[language-server.biome]
+command = "./node_modules/.bin/biome"
+args = ["lsp-proxy"]
+
+[[language]]
+name = "javascript"
+auto-format = true
+language-servers = [
+	{ name = "vscode-eslint-language-server", only-features = [
+		"diagnostics",
+		"code-action",
+		"format",
+		"workspace-command",
+	] },
+	{ name = "biome", only-features = ["diagnostics", "code-action"] },
+	{ name = "typescript-language-server", except-features = ["format"] },
+]
+
+[[language]]
+name = "jsx"
+auto-format = true
+language-servers = [
+	{ name = "vscode-eslint-language-server", only-features = [
+		"diagnostics",
+		"code-action",
+		"format",
+		"workspace-command",
+	] },
+	{ name = "biome", only-features = ["diagnostics", "code-action"] },
+	{ name = "typescript-language-server", except-features = ["format"] },
+]
+
+[[language]]
+name = "typescript"
+auto-format = true
+language-servers = [
+	{ name = "vscode-eslint-language-server", only-features = [
+		"diagnostics",
+		"code-action",
+		"format",
+		"workspace-command",
+	] },
+	{ name = "biome", only-features = ["diagnostics", "code-action"] },
+	{ name = "typescript-language-server", except-features = ["format"] },
+]
+
+[[language]]
+name = "tsx"
+auto-format = true
+language-servers = [
+	{ name = "vscode-eslint-language-server", only-features = [
+		"diagnostics",
+		"code-action",
+		"format",
+		"workspace-command",
+	] },
+	{ name = "biome", only-features = ["diagnostics", "code-action"] },
+	{ name = "typescript-language-server", except-features = ["format"] },
+]
+
+[[language]]
+name = "json"
+auto-format = true
+language-servers = [
+	{ name = "vscode-eslint-language-server", only-features = ["format"] },
+	{ name = "biome", only-features = ["diagnostics", "code-action"] },
+]
+
+[[language]]
+name = "jsonc"
+auto-format = true
+language-servers = [
+	{ name = "vscode-eslint-language-server", only-features = ["format"] },
+	{ name = "biome", only-features = ["diagnostics", "code-action"] },
+]
