@@ -8,7 +8,8 @@ import * as h4 from "./h4"
 import * as header from "./header"
 import type { Json } from "./json"
 import type { Loadable } from "./loadable"
-import { reportsAllowed, type Role, tokensAllowed } from "./roles-permissions"
+import type { Role } from "./roles-permissions"
+import { tokensAllowed } from "./roles-permissions"
 import { when } from "./when"
 
 export type ProjectProps =
@@ -18,7 +19,6 @@ export type ProjectProps =
 			tokens: CompleteProjectTokenProps[]
 			reports: {
 				ref: string
-				// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 				jsonSummary: Json.stringified<JsonSummary> | null
 			}[]
 			mode: `deleted` | `existing`
@@ -117,24 +117,20 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 								gap: 10px;
 							`}
 						>
-							{Array.from({ length: reportsAllowed.get(userRole) }).map(
-								(_, idx) => {
-									const report = reports[idx]
-									if (!report) {
-										return (
-											<span
-												class={css`
-												background: transparent;
-												border: 1px solid var(--color-fg-faint);
-												padding: 5px;
-												box-sizing: border-box;
-												height: 46px;
-												width: 80px;
-												box-shadow: inset 0 1px 0 1px #0002;
-											`}
-											/>
-										)
-									}
+							{reports.length === 0 ? (
+								<span
+									class={css`
+										background: transparent;
+										border: 1px solid var(--color-fg-faint);
+										padding: 5px;
+										box-sizing: border-box;
+										height: 46px;
+										width: 80px;
+										box-shadow: inset 0 1px 0 1px #0002;
+									`}
+								/>
+							) : (
+								reports.map((report) => {
 									let coveragePercent: number | undefined
 									if (report?.jsonSummary) {
 										const summary = JSON.parse(report.jsonSummary)
@@ -142,7 +138,7 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 									}
 									return (
 										<span
-											key={report?.ref ?? idx}
+											key={report.ref}
 											class={css`
 												display: flex;
 												box-sizing: border-box;
@@ -199,7 +195,7 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 											</span>
 										</span>
 									)
-								},
+								})
 							)}
 						</div>
 					</section>
