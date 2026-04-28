@@ -142,5 +142,4 @@ app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
 		</Page>,
 	)
 })
-
 export default app
