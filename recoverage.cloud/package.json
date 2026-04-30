@@ -37,7 +37,7 @@
 		"htmx.org": "2.0.10",
 		"istanbul-lib-coverage": "3.2.2",
 		"jurist": "0.0.9",
-		"nanoid": "5.1.9",
+		"nanoid": "5.1.11",
 		"octokit": "5.0.5"
 	},
 	"devDependencies": {
