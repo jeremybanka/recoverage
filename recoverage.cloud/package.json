@@ -10,7 +10,7 @@
 		"setup:db": "bun db:up --remote",
 		"gen": "concurrently \"bun:gen:*\"",
 		"gen:scripts": "bun __scripts__/gen-scripts.bun.ts",
-		"gen:types": "wrangler types",
+		"gen:types": "bun --bun run wrangler types",
 		"dev": "wrangler dev --live-reload",
 		"test": "vitest",
 		"test:once": "vitest run",
