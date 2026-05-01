@@ -40,30 +40,22 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
         run: |
-          ls
           cd recoverage.cloud
           echo "DATABASE_NAME: $DATABASE_NAME"
-          output=$(bun --bun wrangler d1 create "$DATABASE_NAME" 2>&1) || {
+          bun --bun wrangler d1 create "$DATABASE_NAME" || {
             echo "Failed to create database:"
-            echo "$output"
             exit 1
           }
 
-          echo "Command output:"
-          echo "$output"
-
-          json_part=$(echo "$output" | perl -0777 -ne 'print $1 if /({.*})/s') || {
-            echo "Failed to extract JSON from output"
+          database_id=$(bun --bun wrangler d1 list --json | jq -r --arg name "$DATABASE_NAME" '.[] | select(.name == $name) | .uuid // .database_id') || {
+            echo "Failed to find database_id for $DATABASE_NAME"
             exit 1
           }
 
-          echo "Parsed JSON:"
-          echo "$json_part"
-
-          database_id=$(echo "$json_part" | jq -r '.d1_databases[0].database_id') || {
-            echo "Failed to parse database_id from JSON"
+          if [ -z "$database_id" ] || [ "$database_id" = "null" ]; then
+            echo "Failed to find database_id for $DATABASE_NAME"
             exit 1
-          }
+          fi
 
           echo "Database ID: $database_id"
           echo "database_id=$database_id" >> $GITHUB_OUTPUT
