@@ -1,12 +1,19 @@
 #!/usr/bin/env bun
 
-import { assert } from "node:console"
 import * as fs from "node:fs"
 import * as path from "node:path"
 
-assert(process.env[`DATABASE_ID`], `DATABASE_ID is required`)
-assert(process.env[`DATABASE_NAME`], `DATABASE_NAME is required`)
-assert(process.env[`WORKER_NAME`], `WORKER_NAME is required`)
+function requiredEnv(name: string): string {
+	const value = process.env[name]
+	if (!value) {
+		throw new Error(`${name} is required`)
+	}
+	return value
+}
+
+const databaseId = requiredEnv(`DATABASE_ID`)
+const databaseName = requiredEnv(`DATABASE_NAME`)
+const workerName = requiredEnv(`WORKER_NAME`)
 
 const projectRootPath = path.join(import.meta.dir, `..`)
 const wranglerConfigPath = path.join(projectRootPath, `wrangler.jsonc`)
@@ -16,10 +23,11 @@ content = content.replace(/\/\/.*$/gm, ``)
 const config = JSON.parse(content)
 
 // Update worker name
-config.name = process.env[`WORKER_NAME`]
+config.name = workerName
+config.preview_urls = true
 // Update database name and ID (assuming single database at index 0)
-config.d1_databases[0].database_name = process.env[`DATABASE_NAME`]
-config.d1_databases[0].database_id = process.env[`DATABASE_ID`]
+config.d1_databases[0].database_name = databaseName
+config.d1_databases[0].database_id = databaseId
 
 const wranglerPreviewConfigPath = path.join(
 	projectRootPath,

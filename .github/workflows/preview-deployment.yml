@@ -27,30 +27,50 @@ jobs:
           echo "database_name=$database_name" >> $GITHUB_OUTPUT
           echo "worker_name=$worker_name" >> $GITHUB_OUTPUT
 
-      - name: teardown preview database
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: |
-          cd recoverage.cloud
-          bun --bun wrangler d1 delete "recoverage-preview-db-pr-${{ github.event.number }}" -y || true
-
-      - name: create preview database
+      - name: create or reuse preview database
         id: create_db
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
         run: |
+          set -o pipefail
           cd recoverage.cloud
           echo "DATABASE_NAME: $DATABASE_NAME"
-          bun --bun wrangler d1 create "$DATABASE_NAME" || {
-            echo "Failed to create database:"
-            exit 1
+
+          resolve_database_id() {
+            local database_id
+
+            database_id="$(bun --bun wrangler d1 info "$DATABASE_NAME" --json 2>/dev/null \
+              | jq -r '.uuid // .database_id // .id // empty' || true)"
+
+            if [ -n "$database_id" ]; then
+              echo "$database_id"
+              return
+            fi
+
+            bun --bun wrangler d1 list --json \
+              | jq -r --arg name "$DATABASE_NAME" '.[] | select(.name == $name) | .uuid // .database_id // .id // empty'
           }
 
-          database_id=$(bun --bun wrangler d1 list --json | jq -r --arg name "$DATABASE_NAME" '.[] | select(.name == $name) | .uuid // .database_id') || {
-            echo "Failed to find database_id for $DATABASE_NAME"
-            exit 1
-          }
+          database_id="$(resolve_database_id)"
+
+          if [ -z "$database_id" ] || [ "$database_id" = "null" ]; then
+            echo "Creating preview database $DATABASE_NAME"
+            bun --bun wrangler d1 create "$DATABASE_NAME"
+          else
+            echo "Reusing preview database $DATABASE_NAME"
+          fi
+
+          for attempt in 1 2 3 4 5; do
+            database_id="$(resolve_database_id)"
+
+            if [ -n "$database_id" ] && [ "$database_id" != "null" ]; then
+              break
+            fi
+
+            echo "Waiting for database_id for $DATABASE_NAME (attempt $attempt/5)"
+            sleep 3
+          done
 
           if [ -z "$database_id" ] || [ "$database_id" = "null" ]; then
             echo "Failed to find database_id for $DATABASE_NAME"
@@ -75,8 +95,6 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
         run: |
-          printenv > recoverage.cloud/.env
-          chmod +x recoverage.cloud/.env
           bun --bun run --filter="recoverage.cloud" preview
 
   Teardown:
@@ -93,5 +111,5 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           cd recoverage.cloud
-          bun --bun wrangler delete --name recoverage-preview-pr-${{ github.event.number }}
-          bun --bun wrangler d1 delete recoverage-preview-db-pr-${{ github.event.number }}
+          bun --bun wrangler delete --name recoverage-preview-pr-${{ github.event.number }} || true
+          bun --bun wrangler d1 delete recoverage-preview-db-pr-${{ github.event.number }} -y || true
