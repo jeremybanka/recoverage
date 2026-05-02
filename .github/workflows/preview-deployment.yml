@@ -31,6 +31,7 @@ jobs:
         id: create_db
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
           WORKER_NAME: ${{ steps.vars.outputs.worker_name }}
         run: |
@@ -38,19 +39,24 @@ jobs:
           cd recoverage.cloud
           echo "DATABASE_NAME: $DATABASE_NAME"
 
+          account_id="$CLOUDFLARE_ACCOUNT_ID"
+          if [ -z "$account_id" ]; then
+            account_id="$(bun --bun wrangler whoami --json | jq -r '.accounts[0].id // empty')"
+          fi
+
+          if [ -z "$account_id" ]; then
+            echo "Failed to resolve Cloudflare account id"
+            exit 1
+          fi
+
+          api_base="https://api.cloudflare.com/client/v4/accounts/$account_id/d1/database"
+
           resolve_database_id() {
-            local database_id
-
-            database_id="$(bun --bun wrangler d1 info "$DATABASE_NAME" --json 2>/dev/null \
-              | jq -r '.uuid // .database_id // .id // empty' || true)"
-
-            if [ -n "$database_id" ]; then
-              echo "$database_id"
-              return
-            fi
-
-            bun --bun wrangler d1 list --json \
-              | jq -r --arg name "$DATABASE_NAME" '.[] | select(.name == $name) | .uuid // .database_id // .id // empty'
+            curl --fail --silent --show-error \
+              --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              "$api_base?name=$DATABASE_NAME" \
+              | jq -r --arg name "$DATABASE_NAME" '.result[]? | select(.name == $name) | .uuid // .database_id // .id // empty' \
+              | head -n 1
           }
 
           parse_database_id() {
@@ -66,14 +72,22 @@ jobs:
 
           if [ -z "$database_id" ] || [ "$database_id" = "null" ]; then
             echo "Creating preview database $DATABASE_NAME"
-            placeholder_database_id="00000000-0000-0000-0000-000000000000"
-            DATABASE_ID="$placeholder_database_id" bun __scripts__/configure-preview.bun.ts
-            create_output="$(bun --bun wrangler d1 create "$DATABASE_NAME" --config wrangler-preview.jsonc --binding DB --use-remote --update-config 2>&1)"
-            echo "$create_output"
-            database_id="$(echo "$create_output" | parse_database_id)"
+            create_response="$(jq -n --arg name "$DATABASE_NAME" '{name: $name}' \
+              | curl --silent --show-error \
+                --request POST \
+                --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                --header "Content-Type: application/json" \
+                --data @- \
+                "$api_base")"
+            echo "$create_response" | jq .
+            database_id="$(echo "$create_response" | jq -r '.result.uuid // .result.database_id // .result.id // empty')"
 
             if [ -z "$database_id" ] || [ "$database_id" = "null" ]; then
-              database_id="$(jq -r --arg name "$DATABASE_NAME" --arg placeholder "$placeholder_database_id" '.d1_databases[] | select(.database_name == $name) | .database_id // empty | select(. != $placeholder)' wrangler-preview.jsonc)"
+              database_id="$(echo "$create_response" | parse_database_id)"
+            fi
+
+            if [ -z "$database_id" ] || [ "$database_id" = "null" ]; then
+              database_id="$(resolve_database_id)"
             fi
           else
             echo "Reusing preview database $DATABASE_NAME"
