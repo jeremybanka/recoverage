@@ -27,7 +27,7 @@
 		"preview:config": "bun __scripts__/configure-preview.bun.ts",
 		"preview:setup:deps": "bun setup:deps",
 		"preview:setup:scripts": "bun setup:scripts",
-		"preview:setup:db": "./.env && wrangler d1 migrations apply $DATABASE_NAME --remote --config wrangler-preview.jsonc"
+		"preview:setup:db": "wrangler d1 migrations apply \"$DATABASE_NAME\" --remote --config wrangler-preview.jsonc"
 	},
 	"dependencies": {
 		"arktype": "2.2.0",
