@@ -32,6 +32,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
+          WORKER_NAME: ${{ steps.vars.outputs.worker_name }}
         run: |
           set -o pipefail
           cd recoverage.cloud
@@ -65,23 +66,31 @@ jobs:
 
           if [ -z "$database_id" ] || [ "$database_id" = "null" ]; then
             echo "Creating preview database $DATABASE_NAME"
-            create_output="$(bun --bun wrangler d1 create "$DATABASE_NAME" 2>&1)"
+            placeholder_database_id="00000000-0000-0000-0000-000000000000"
+            DATABASE_ID="$placeholder_database_id" bun __scripts__/configure-preview.bun.ts
+            create_output="$(bun --bun wrangler d1 create "$DATABASE_NAME" --config wrangler-preview.jsonc --binding DB --use-remote --update-config 2>&1)"
             echo "$create_output"
             database_id="$(echo "$create_output" | parse_database_id)"
+
+            if [ -z "$database_id" ] || [ "$database_id" = "null" ]; then
+              database_id="$(jq -r --arg name "$DATABASE_NAME" --arg placeholder "$placeholder_database_id" '.d1_databases[] | select(.database_name == $name) | .database_id // empty | select(. != $placeholder)' wrangler-preview.jsonc)"
+            fi
           else
             echo "Reusing preview database $DATABASE_NAME"
           fi
 
-          for attempt in 1 2 3 4 5; do
-            database_id="$(resolve_database_id)"
+          if [ -z "$database_id" ] || [ "$database_id" = "null" ]; then
+            for attempt in 1 2 3 4 5; do
+              database_id="$(resolve_database_id)"
 
-            if [ -n "$database_id" ] && [ "$database_id" != "null" ]; then
-              break
-            fi
+              if [ -n "$database_id" ] && [ "$database_id" != "null" ]; then
+                break
+              fi
 
-            echo "Waiting for database_id for $DATABASE_NAME (attempt $attempt/5)"
-            sleep 3
-          done
+              echo "Waiting for database_id for $DATABASE_NAME (attempt $attempt/5)"
+              sleep 3
+            done
+          fi
 
           if [ -z "$database_id" ] || [ "$database_id" = "null" ]; then
             echo "Failed to find database_id for $DATABASE_NAME"
