@@ -52,11 +52,22 @@ jobs:
               | jq -r --arg name "$DATABASE_NAME" '.[] | select(.name == $name) | .uuid // .database_id // .id // empty'
           }
 
+          parse_database_id() {
+            sed -nE \
+              -e 's/.*"database_id"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p' \
+              -e 's/.*database_id[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/p' \
+              -e 's/.*"uuid"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p' \
+              -e 's/.*"id"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p' \
+              | head -n 1
+          }
+
           database_id="$(resolve_database_id)"
 
           if [ -z "$database_id" ] || [ "$database_id" = "null" ]; then
             echo "Creating preview database $DATABASE_NAME"
-            bun --bun wrangler d1 create "$DATABASE_NAME"
+            create_output="$(bun --bun wrangler d1 create "$DATABASE_NAME" 2>&1)"
+            echo "$create_output"
+            database_id="$(echo "$create_output" | parse_database_id)"
           else
             echo "Reusing preview database $DATABASE_NAME"
           fi
