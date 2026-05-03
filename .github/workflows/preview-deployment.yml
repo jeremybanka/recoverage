@@ -31,7 +31,6 @@ jobs:
         id: create_db
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
           DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
         run: |
           bun --bun run --filter="recoverage.cloud" preview:d1
@@ -62,10 +61,19 @@ jobs:
     steps:
       - uses: actions/checkout@v6.0.2
       - uses: ./.github/actions/setup
-      - name: teardown all
+
+      - name: set variables from PR number
+        id: vars
+        run: |
+          database_name="recoverage-preview-db-pr-${{ github.event.number }}"
+          worker_name="recoverage-preview-pr-${{ github.event.number }}"
+          echo "database_name=$database_name" >> $GITHUB_OUTPUT
+          echo "worker_name=$worker_name" >> $GITHUB_OUTPUT
+
+      - name: teardown preview resources
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
+          WORKER_NAME: ${{ steps.vars.outputs.worker_name }}
         run: |
-          cd recoverage.cloud
-          bun --bun wrangler delete --name recoverage-preview-pr-${{ github.event.number }} || true
-          bun --bun wrangler d1 delete recoverage-preview-db-pr-${{ github.event.number }} -y || true
+          bun --bun run --filter="recoverage.cloud" preview:teardown

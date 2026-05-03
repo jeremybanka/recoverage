@@ -3,10 +3,14 @@
 import { appendFile } from "node:fs/promises"
 
 import Cloudflare from "cloudflare"
-import type { Account } from "cloudflare/resources/accounts/accounts"
 import type { D1 } from "cloudflare/resources/d1/d1"
 import logger from "takua"
 
+import {
+	apiErrorCode,
+	requiredEnv,
+	resolvePreviewAccountId,
+} from "./preview-cloudflare.ts"
 import { getPreviewD1Env, type PreviewD1Env } from "./preview-env.ts"
 
 const LOG_PREFIX = `preview-d1`
@@ -38,49 +42,6 @@ export function parseDatabaseIdFromText(text: string): string | undefined {
 
 function databaseId(database: D1 | undefined): string | undefined {
 	return database?.uuid
-}
-
-function requiredEnv(env: PreviewD1Env, name: keyof PreviewD1Env): string {
-	const value = env[name]
-	if (!value) {
-		throw new Error(`${name} is required`)
-	}
-	return value
-}
-
-async function resolveAccountId(
-	env: PreviewD1Env,
-	cloudflare: Cloudflare,
-): Promise<string> {
-	if (env.CLOUDFLARE_ACCOUNT_ID) {
-		logger.info(LOG_PREFIX, `account_id resolved`, { source: `env` })
-		return env.CLOUDFLARE_ACCOUNT_ID
-	}
-
-	logger.info(LOG_PREFIX, `account_id missing from env; listing accounts`)
-	const accounts: Account[] = []
-	for await (const account of cloudflare.accounts.list()) {
-		accounts.push(account)
-	}
-
-	logger.info(LOG_PREFIX, `cloudflare account lookup completed`, {
-		accountCount: accounts.length,
-		accountNames: accounts.map((account) => account.name),
-	})
-
-	if (accounts.length !== 1) {
-		throw new Error(
-			`Failed to resolve Cloudflare account id: expected exactly one accessible account, found ${accounts.length}. Set CLOUDFLARE_ACCOUNT_ID explicitly.`,
-		)
-	}
-
-	const accountId = accounts[0]?.id
-	if (!accountId) {
-		throw new Error(`Failed to resolve Cloudflare account id from accounts list`)
-	}
-
-	logger.info(LOG_PREFIX, `account_id resolved`, { source: `accounts.list` })
-	return accountId
 }
 
 async function findD1Database(
@@ -136,10 +97,7 @@ async function createD1Database(
 		})
 		return database
 	} catch (error) {
-		const code =
-			typeof error === `object` && error && `code` in error
-				? error.code
-				: undefined
+		const code = apiErrorCode(error)
 		if (code === 7502) {
 			logger.warn(
 				LOG_PREFIX,
@@ -182,7 +140,7 @@ export async function ensurePreviewD1Database({
 	logger.makeChronicle({ inline: true })
 	logger.info(LOG_PREFIX, `starting preview d1 setup`, { databaseName })
 
-	const accountId = await resolveAccountId(env, cloudflare)
+	const accountId = await resolvePreviewAccountId(cloudflare, LOG_PREFIX)
 	logger.chronicle?.mark(`resolved account id`)
 
 	const existing = await findD1Database(cloudflare, accountId, databaseName)
