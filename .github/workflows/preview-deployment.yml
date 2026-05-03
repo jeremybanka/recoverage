@@ -31,65 +31,10 @@ jobs:
         id: create_db
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
           DATABASE_NAME: ${{ steps.vars.outputs.database_name }}
         run: |
-          set -o pipefail
-          cd recoverage.cloud
-          echo "DATABASE_NAME: $DATABASE_NAME"
-
-          resolve_database_id() {
-            local database_id
-
-            database_id="$(bun --bun wrangler d1 info "$DATABASE_NAME" --json 2>/dev/null \
-              | jq -r '.uuid // .database_id // .id // empty' || true)"
-
-            if [ -n "$database_id" ]; then
-              echo "$database_id"
-              return
-            fi
-
-            bun --bun wrangler d1 list --json \
-              | jq -r --arg name "$DATABASE_NAME" '.[] | select(.name == $name) | .uuid // .database_id // .id // empty'
-          }
-
-          parse_database_id() {
-            sed -nE \
-              -e 's/.*"database_id"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p' \
-              -e 's/.*database_id[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/p' \
-              -e 's/.*"uuid"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p' \
-              -e 's/.*"id"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p' \
-              | head -n 1
-          }
-
-          database_id="$(resolve_database_id)"
-
-          if [ -z "$database_id" ] || [ "$database_id" = "null" ]; then
-            echo "Creating preview database $DATABASE_NAME"
-            create_output="$(bun --bun wrangler d1 create "$DATABASE_NAME" 2>&1)"
-            echo "$create_output"
-            database_id="$(echo "$create_output" | parse_database_id)"
-          else
-            echo "Reusing preview database $DATABASE_NAME"
-          fi
-
-          for attempt in 1 2 3 4 5; do
-            database_id="$(resolve_database_id)"
-
-            if [ -n "$database_id" ] && [ "$database_id" != "null" ]; then
-              break
-            fi
-
-            echo "Waiting for database_id for $DATABASE_NAME (attempt $attempt/5)"
-            sleep 3
-          done
-
-          if [ -z "$database_id" ] || [ "$database_id" = "null" ]; then
-            echo "Failed to find database_id for $DATABASE_NAME"
-            exit 1
-          fi
-
-          echo "Database ID: $database_id"
-          echo "database_id=$database_id" >> $GITHUB_OUTPUT
+          bun --bun run --filter="recoverage.cloud" preview:d1
 
       - name: configure preview worker
         env:
