@@ -6,7 +6,7 @@ import Cloudflare from "cloudflare"
 import type { D1 } from "cloudflare/resources/d1/d1"
 import logger from "takua"
 
-import { getPreviewEnv, type PreviewEnv } from "./preview-env.ts"
+import { getPreviewD1Env, type PreviewD1Env } from "./preview-env.ts"
 
 const LOG_PREFIX = `preview-d1`
 
@@ -20,7 +20,7 @@ type Env = Record<string, string | undefined>
 
 type EnsurePreviewD1Options = {
 	databaseName: string
-	env?: PreviewEnv
+	env?: PreviewD1Env
 	cloudflare?: Cloudflare
 	runCommand?: typeof runCommand
 	writeGithubOutput?: boolean
@@ -48,7 +48,7 @@ function databaseId(database: D1 | undefined): string | undefined {
 	return database?.uuid
 }
 
-function requiredEnv(env: PreviewEnv, name: keyof PreviewEnv): string {
+function requiredEnv(env: PreviewD1Env, name: keyof PreviewD1Env): string {
 	const value = env[name]
 	if (!value) {
 		throw new Error(`${name} is required`)
@@ -77,7 +77,7 @@ async function runCommand(
 }
 
 async function resolveAccountId(
-	env: PreviewEnv,
+	env: PreviewD1Env,
 	run: typeof runCommand,
 ): Promise<string> {
 	if (env.CLOUDFLARE_ACCOUNT_ID) {
@@ -190,7 +190,7 @@ async function createD1Database(
 }
 
 async function writeGithubOutput(
-	env: PreviewEnv,
+	env: PreviewD1Env,
 	databaseIdValue: string,
 ): Promise<void> {
 	if (!env.GITHUB_OUTPUT) {
@@ -204,7 +204,7 @@ async function writeGithubOutput(
 
 export async function ensurePreviewD1Database({
 	databaseName,
-	env = getPreviewEnv(),
+	env = getPreviewD1Env(),
 	cloudflare = new Cloudflare({
 		apiToken: requiredEnv(env, `CLOUDFLARE_API_TOKEN`),
 	}),
@@ -241,7 +241,7 @@ export async function ensurePreviewD1Database({
 	return id
 }
 
-function databaseNameFromArgs(args: string[], env: PreviewEnv): string {
+function databaseNameFromArgs(args: string[], env: PreviewD1Env): string {
 	const arg = args.find((value) => value.startsWith(`--database-name=`))
 	const fromArg = arg?.slice(`--database-name=`.length)
 	return fromArg ?? requiredEnv(env, `DATABASE_NAME`)
@@ -284,7 +284,7 @@ if (import.meta.main) {
 	}
 
 	try {
-		const env = getPreviewEnv()
+		const env = getPreviewD1Env()
 		await ensurePreviewD1Database({
 			databaseName: databaseNameFromArgs(process.argv.slice(2), env),
 			env,

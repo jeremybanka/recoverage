@@ -3,23 +3,42 @@ import { type } from "arktype"
 
 export const optionalString = type(`string | undefined`)
 
-export type PreviewEnv = Readonly<{
+export type PreviewD1Env = Readonly<{
 	CLOUDFLARE_ACCOUNT_ID?: string | undefined
 	CLOUDFLARE_API_TOKEN?: string | undefined
-	DATABASE_ID?: string | undefined
 	DATABASE_NAME: string
 	GITHUB_OUTPUT?: string | undefined
-	WORKER_NAME: string
 }>
 
-export function getPreviewEnv(
+export type PreviewConfigEnv = PreviewD1Env &
+	Readonly<{
+		DATABASE_ID: string
+		WORKER_NAME: string
+	}>
+
+export function getPreviewD1Env(
 	runtimeEnv: Record<string, string | undefined> = process.env,
-): PreviewEnv {
+): PreviewD1Env {
 	return createEnv({
 		server: {
 			CLOUDFLARE_ACCOUNT_ID: optionalString,
 			CLOUDFLARE_API_TOKEN: optionalString,
-			DATABASE_ID: optionalString,
+			DATABASE_NAME: type(`string`),
+			GITHUB_OUTPUT: optionalString,
+		},
+		runtimeEnv,
+		emptyStringAsUndefined: true,
+	})
+}
+
+export function getPreviewConfigEnv(
+	runtimeEnv: Record<string, string | undefined> = process.env,
+): PreviewConfigEnv {
+	return createEnv({
+		server: {
+			CLOUDFLARE_ACCOUNT_ID: optionalString,
+			CLOUDFLARE_API_TOKEN: optionalString,
+			DATABASE_ID: type(`string`),
 			DATABASE_NAME: type(`string`),
 			GITHUB_OUTPUT: optionalString,
 			WORKER_NAME: type(`string`),

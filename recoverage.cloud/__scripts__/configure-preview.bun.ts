@@ -3,9 +3,9 @@
 import * as fs from "node:fs"
 import * as path from "node:path"
 
-import { getPreviewEnv } from "./preview-env.ts"
+import { getPreviewConfigEnv } from "./preview-env.ts"
 
-const previewEnv = getPreviewEnv()
+const previewEnv = getPreviewConfigEnv()
 
 const projectRootPath = path.join(import.meta.dir, `..`)
 const wranglerConfigPath = path.join(projectRootPath, `wrangler.jsonc`)
