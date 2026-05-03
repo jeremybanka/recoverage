@@ -3,6 +3,7 @@
 import { appendFile } from "node:fs/promises"
 
 import Cloudflare from "cloudflare"
+import type { Account } from "cloudflare/resources/accounts/accounts"
 import type { D1 } from "cloudflare/resources/d1/d1"
 import logger from "takua"
 
@@ -10,19 +11,10 @@ import { getPreviewD1Env, type PreviewD1Env } from "./preview-env.ts"
 
 const LOG_PREFIX = `preview-d1`
 
-type CommandResult = {
-	exitCode: number
-	stderr: string
-	stdout: string
-}
-
-type Env = Record<string, string | undefined>
-
 type EnsurePreviewD1Options = {
 	databaseName: string
 	env?: PreviewD1Env
 	cloudflare?: Cloudflare
-	runCommand?: typeof runCommand
 	writeGithubOutput?: boolean
 }
 
@@ -56,61 +48,38 @@ function requiredEnv(env: PreviewD1Env, name: keyof PreviewD1Env): string {
 	return value
 }
 
-async function runCommand(
-	command: string,
-	args: string[],
-	env: Env = process.env,
-): Promise<CommandResult> {
-	const proc = Bun.spawn([command, ...args], {
-		env,
-		stderr: `pipe`,
-		stdout: `pipe`,
-	})
-
-	const [stdout, stderr, exitCode] = await Promise.all([
-		new Response(proc.stdout).text(),
-		new Response(proc.stderr).text(),
-		proc.exited,
-	])
-
-	return { exitCode, stdout, stderr }
-}
-
 async function resolveAccountId(
 	env: PreviewD1Env,
-	run: typeof runCommand,
+	cloudflare: Cloudflare,
 ): Promise<string> {
 	if (env.CLOUDFLARE_ACCOUNT_ID) {
 		logger.info(LOG_PREFIX, `account_id resolved`, { source: `env` })
 		return env.CLOUDFLARE_ACCOUNT_ID
 	}
 
-	logger.info(LOG_PREFIX, `account_id missing from env; asking wrangler`)
-	const whoami = await run(`bun`, [`--bun`, `wrangler`, `whoami`, `--json`], env)
-	logger.info(LOG_PREFIX, `wrangler whoami completed`, {
-		exitCode: whoami.exitCode,
-		stderr: whoami.stderr.trim(),
-		stdoutLength: whoami.stdout.length,
+	logger.info(LOG_PREFIX, `account_id missing from env; listing accounts`)
+	const accounts: Account[] = []
+	for await (const account of cloudflare.accounts.list()) {
+		accounts.push(account)
+	}
+
+	logger.info(LOG_PREFIX, `cloudflare account lookup completed`, {
+		accountCount: accounts.length,
+		accountNames: accounts.map((account) => account.name),
 	})
 
-	if (whoami.exitCode !== 0) {
+	if (accounts.length !== 1) {
 		throw new Error(
-			`Failed to resolve Cloudflare account id with wrangler whoami`,
+			`Failed to resolve Cloudflare account id: expected exactly one accessible account, found ${accounts.length}. Set CLOUDFLARE_ACCOUNT_ID explicitly.`,
 		)
 	}
 
-	const parsed = JSON.parse(whoami.stdout) as {
-		accounts?: Array<{ id?: string }>
-	}
-	const accountId = parsed.accounts?.find((account) => account.id)?.id
-
+	const accountId = accounts[0]?.id
 	if (!accountId) {
-		throw new Error(
-			`Failed to resolve Cloudflare account id from wrangler whoami`,
-		)
+		throw new Error(`Failed to resolve Cloudflare account id from accounts list`)
 	}
 
-	logger.info(LOG_PREFIX, `account_id resolved`, { source: `wrangler` })
+	logger.info(LOG_PREFIX, `account_id resolved`, { source: `accounts.list` })
 	return accountId
 }
 
@@ -208,13 +177,12 @@ export async function ensurePreviewD1Database({
 	cloudflare = new Cloudflare({
 		apiToken: requiredEnv(env, `CLOUDFLARE_API_TOKEN`),
 	}),
-	runCommand: run = runCommand,
 	writeGithubOutput: shouldWriteGithubOutput = true,
 }: EnsurePreviewD1Options): Promise<string> {
 	logger.makeChronicle({ inline: true })
 	logger.info(LOG_PREFIX, `starting preview d1 setup`, { databaseName })
 
-	const accountId = await resolveAccountId(env, run)
+	const accountId = await resolveAccountId(env, cloudflare)
 	logger.chronicle?.mark(`resolved account id`)
 
 	const existing = await findD1Database(cloudflare, accountId, databaseName)
