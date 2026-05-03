@@ -3,17 +3,9 @@
 import * as fs from "node:fs"
 import * as path from "node:path"
 
-function requiredEnv(name: string): string {
-	const value = process.env[name]
-	if (!value) {
-		throw new Error(`${name} is required`)
-	}
-	return value
-}
+import { getPreviewEnv } from "./preview-env.ts"
 
-const databaseId = requiredEnv(`DATABASE_ID`)
-const databaseName = requiredEnv(`DATABASE_NAME`)
-const workerName = requiredEnv(`WORKER_NAME`)
+const previewEnv = getPreviewEnv()
 
 const projectRootPath = path.join(import.meta.dir, `..`)
 const wranglerConfigPath = path.join(projectRootPath, `wrangler.jsonc`)
@@ -23,11 +15,11 @@ content = content.replace(/\/\/.*$/gm, ``)
 const config = JSON.parse(content)
 
 // Update worker name
-config.name = workerName
+config.name = previewEnv.WORKER_NAME
 config.preview_urls = true
 // Update database name and ID (assuming single database at index 0)
-config.d1_databases[0].database_name = databaseName
-config.d1_databases[0].database_id = databaseId
+config.d1_databases[0].database_name = previewEnv.DATABASE_NAME
+config.d1_databases[0].database_id = previewEnv.DATABASE_ID
 
 const wranglerPreviewConfigPath = path.join(
 	projectRootPath,
