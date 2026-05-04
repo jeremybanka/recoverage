@@ -16,7 +16,6 @@ import { computeHash } from "./hash"
 import { Project, ProjectToken } from "./project"
 import { projectsAllowed, type Role, tokensAllowed } from "./roles-permissions"
 import * as schema from "./schema"
-import { isoNow } from "./temporal"
 
 type GithubUserData = Endpoints[`GET /user`][`response`][`data`] & {
 	id: number
@@ -175,7 +174,7 @@ uiRoutes.post(`/project`, uiAuth, async (c) => {
 	const project = (
 		await db
 			.insert(schema.projects)
-			.values({ userId, name, id: nanoid(), createdAt: isoNow() })
+			.values({ userId, name, id: nanoid() })
 			.returning()
 	)[0]
 	return c.html(
@@ -267,7 +266,6 @@ uiRoutes.post(`/token/:projectId`, uiAuth, async (c) => {
 				hash,
 				salt,
 				projectId,
-				createdAt: isoNow(),
 			})
 			.returning()
 	)[0]
