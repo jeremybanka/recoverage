@@ -13,6 +13,7 @@ import {
 	tokensAllowed,
 } from "../src/roles-permissions"
 import * as schema from "../src/schema"
+import { isoNow } from "../src/temporal"
 
 let nextId = 800_000
 
@@ -29,13 +30,22 @@ async function createProjectToken(role: Role, projectId = uniqueId(`project`)) {
 	const salt = uniqueId(`salt`)
 	const hash = await computeHash(secret, salt)
 
-	await db.insert(schema.users).values({ id: userId, role })
+	await db.insert(schema.users).values({
+		id: userId,
+		manualRoleOverride: role === `free` ? null : role,
+		createdAt: isoNow(),
+	})
 	await db
 		.insert(schema.projects)
-		.values({ id: projectId, userId, name: projectId })
-	await db
-		.insert(schema.tokens)
-		.values({ id: tokenId, name: tokenId, projectId, hash, salt })
+		.values({ id: projectId, userId, name: projectId, createdAt: isoNow() })
+	await db.insert(schema.tokens).values({
+		id: tokenId,
+		name: tokenId,
+		projectId,
+		hash,
+		salt,
+		createdAt: isoNow(),
+	})
 
 	return {
 		db,
@@ -55,10 +65,15 @@ async function createAdditionalProjectToken(userId: number) {
 
 	await db
 		.insert(schema.projects)
-		.values({ id: projectId, userId, name: projectId })
-	await db
-		.insert(schema.tokens)
-		.values({ id: tokenId, name: tokenId, projectId, hash, salt })
+		.values({ id: projectId, userId, name: projectId, createdAt: isoNow() })
+	await db.insert(schema.tokens).values({
+		id: tokenId,
+		name: tokenId,
+		projectId,
+		hash,
+		salt,
+		createdAt: isoNow(),
+	})
 
 	return {
 		projectId,

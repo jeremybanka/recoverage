@@ -7,6 +7,7 @@ import { Hono } from "hono"
 import type * as Istanbul from "istanbul-lib-coverage"
 import type { CoverageEval, CoverageSummary, JsonSummary } from "recoverage"
 
+import { getUserRole } from "./billing"
 import { createDatabase } from "./db"
 import type { Bindings } from "./env"
 import { computeHash } from "./hash"
@@ -62,10 +63,19 @@ const reporterAuth: MiddlewareHandler<ReporterEnv> = async (c, next) => {
 	if (suppliedHash !== realHash) {
 		return c.json({ error: `Invalid token` }, 401)
 	}
+	const userId = tokenRecord.project.user.id
+	const userRole = await getUserRole({
+		db,
+		stripeSupporterPriceId: c.env.STRIPE_SUPPORTER_PRICE_ID,
+		userId,
+	})
+	if (!userRole) {
+		return c.json({ error: `Token owner did not have a resolvable role.` }, 500)
+	}
 	c.set(`drizzle`, db)
 	c.set(`projectScope`, projectId)
-	c.set(`userId`, tokenRecord.project.user.id)
-	c.set(`userRole`, tokenRecord.project.user.role)
+	c.set(`userId`, userId)
+	c.set(`userRole`, userRole)
 	await next()
 }
 
