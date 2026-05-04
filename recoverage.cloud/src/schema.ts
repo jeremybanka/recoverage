@@ -22,11 +22,12 @@ export function iso8601(): $Type<
 	return text().$type<ISO8601>()
 }
 
-export const ISO_NOW: SQL<ISO8601> = sql<ISO8601>`strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`
+export const ISO_NOW: SQL<ISO8601> = sql<ISO8601>`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`
 
 export const users = sqliteTable(`users`, {
 	id: integer().primaryKey(),
 	manualRoleOverride: text().$type<Role>(),
+	createdAt: iso8601().notNull().default(ISO_NOW),
 })
 
 export const stripeCustomers = sqliteTable(
@@ -114,6 +115,7 @@ export const projects = sqliteTable(`projects`, {
 		.references(() => users.id, { onDelete: `cascade` })
 		.notNull(),
 	name: text().notNull(),
+	createdAt: iso8601().notNull().default(ISO_NOW),
 })
 export const projectsRelations = relations(projects, ({ many, one }) => ({
 	tokens: many(tokens),
@@ -132,6 +134,7 @@ export const tokens = sqliteTable(`tokens`, {
 	projectId: text()
 		.references(() => projects.id, { onDelete: `cascade` })
 		.notNull(),
+	createdAt: iso8601().notNull().default(ISO_NOW),
 })
 export const tokensRelations = relations(tokens, ({ one }) => ({
 	project: one(projects, {
@@ -149,6 +152,7 @@ export const reports = sqliteTable(
 			.notNull(),
 		data: text().notNull().$type<Json.stringified<CoverageMap>>(),
 		jsonSummary: text().$type<Json.stringified<JsonSummary>>(),
+		createdAt: iso8601().notNull().default(ISO_NOW),
 	},
 	(table) => [
 		primaryKey({
