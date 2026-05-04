@@ -8,6 +8,7 @@ import { deleteCookie, getSignedCookie } from "hono/cookie"
 import { nanoid } from "nanoid"
 import { Octokit } from "octokit"
 
+import { getUserRole } from "./billing"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
 import type { Bindings } from "./env"
@@ -15,6 +16,7 @@ import { computeHash } from "./hash"
 import { Project, ProjectToken } from "./project"
 import { projectsAllowed, type Role, tokensAllowed } from "./roles-permissions"
 import * as schema from "./schema"
+import { isoNow } from "./temporal"
 
 type GithubUserData = Endpoints[`GET /user`][`response`][`data`] & {
 	id: number
@@ -62,7 +64,7 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 
 	const maybeUser = await db.query.users.findFirst({
 		where: eq(schema.users.id, data.id),
-		columns: { role: true },
+		columns: { id: true },
 	})
 
 	if (!maybeUser) {
@@ -72,7 +74,14 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 			500,
 		)
 	}
-	const userRole = maybeUser.role
+	const userRole = await getUserRole({
+		db,
+		stripeSupporterPriceId: c.env.STRIPE_SUPPORTER_PRICE_ID,
+		userId: maybeUser.id,
+	})
+	if (!userRole) {
+		return c.json({ error: `User did not have a resolvable role.` }, 500)
+	}
 
 	c.set(`drizzle`, db)
 	c.set(`githubUserData`, data)
@@ -166,7 +175,7 @@ uiRoutes.post(`/project`, uiAuth, async (c) => {
 	const project = (
 		await db
 			.insert(schema.projects)
-			.values({ userId, name, id: nanoid() })
+			.values({ userId, name, id: nanoid(), createdAt: isoNow() })
 			.returning()
 	)[0]
 	return c.html(
@@ -258,6 +267,7 @@ uiRoutes.post(`/token/:projectId`, uiAuth, async (c) => {
 				hash,
 				salt,
 				projectId,
+				createdAt: isoNow(),
 			})
 			.returning()
 	)[0]
