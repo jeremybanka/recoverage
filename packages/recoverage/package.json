@@ -37,8 +37,8 @@
 		"recoverage": "bin/recoverage.bin.js"
 	},
 	"scripts": {
-		"dev": "tsdown --watch",
-		"build": "tsdown && rm -f dist/*.x.d.ts",
+		"dev": "bun --bun tsdown --watch",
+		"build": "bun --bun tsdown && rm -f dist/*.x.d.ts",
 		"lint:biome": "biome check -- .",
 		"lint:eslint": "eslint -- .",
 		"lint:types": "tsgo --noEmit",
@@ -73,7 +73,7 @@
 		"eslint": "10.3.0",
 		"nyc": "18.0.0",
 		"recoverage-fixtures": "workspace:*",
-		"tsdown": "0.21.10",
+		"tsdown": "0.22.0",
 		"typescript": "6.0.3",
 		"vite": "8.0.11",
 		"vitest": "4.1.5",
