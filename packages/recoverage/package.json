@@ -37,8 +37,8 @@
 		"recoverage": "bin/recoverage.bin.js"
 	},
 	"scripts": {
-		"dev": "tsdown --watch",
-		"build": "tsdown && rm -f dist/*.x.d.ts",
+		"dev": "bun --bun tsdown --watch",
+		"build": "bun --bun tsdown && rm -f dist/*.x.d.ts",
 		"lint:biome": "biome check -- .",
 		"lint:eslint": "eslint -- .",
 		"lint:types": "tsgo --noEmit",
