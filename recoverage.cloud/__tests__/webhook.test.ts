@@ -99,10 +99,8 @@ test(`signed Stripe subscription webhooks sync billing state`, async () => {
 		stripeCustomerId,
 		userId,
 	})
-	expect(syncedSubscription?.latestInvoicePaidAt).toBe(
-		`2026-05-11T13:46:40.000Z`,
-	)
-	expect(syncedSubscription?.currentPeriodEnd).toBe(`2026-06-10T13:46:40.000Z`)
+	expect(syncedSubscription?.latestInvoicePaidAt).toBe(`2026-05-11 13:46:40`)
+	expect(syncedSubscription?.currentPeriodEnd).toBe(`2026-06-10 13:46:40`)
 
 	const userRole = await getUserRole({
 		db,

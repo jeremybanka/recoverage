@@ -1,7 +1,7 @@
 CREATE TABLE `stripeCustomers` (
 	`userId` integer PRIMARY KEY NOT NULL,
 	`stripeCustomerId` text NOT NULL,
-	`createdAt` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
+	`createdAt` text DEFAULT (current_timestamp) NOT NULL,
 	FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -25,7 +25,7 @@ CREATE TABLE `stripeWebhookEvents` (
 	`stripeEventId` text PRIMARY KEY NOT NULL,
 	`type` text NOT NULL,
 	`mode` text NOT NULL,
-	`createdAt` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
+	`createdAt` text DEFAULT (current_timestamp) NOT NULL,
 	`receivedAt` text NOT NULL,
 	`processedAt` text,
 	`payload` text NOT NULL,
@@ -33,8 +33,4 @@ CREATE TABLE `stripeWebhookEvents` (
 );
 --> statement-breakpoint
 ALTER TABLE `users` ADD `manualRoleOverride` text;--> statement-breakpoint
-ALTER TABLE `users` DROP COLUMN `role`;--> statement-breakpoint
-ALTER TABLE `users` DROP COLUMN `createdAt`;--> statement-breakpoint
-ALTER TABLE `projects` DROP COLUMN `createdAt`;--> statement-breakpoint
-ALTER TABLE `reports` DROP COLUMN `createdAt`;--> statement-breakpoint
-ALTER TABLE `tokens` DROP COLUMN `createdAt`;
+ALTER TABLE `users` DROP COLUMN `role`;

@@ -13,21 +13,21 @@ import type { JsonSummary } from "recoverage"
 
 import type { Json } from "./json"
 import type { Role } from "./roles-permissions"
-import type { ISO8601 } from "./temporal"
+import type { SQLTimestamp } from "./temporal"
 
-export function iso8601(): $Type<
+export function sqlTimestamp(): $Type<
 	SQLiteTextBuilderInitial<``, [string, ...string[]], undefined>,
-	ISO8601
+	SQLTimestamp
 > {
-	return text().$type<ISO8601>()
+	return text().$type<SQLTimestamp>()
 }
 
-export const ISO_NOW: SQL<ISO8601> = sql<ISO8601>`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+export const SQL_NOW: SQL<SQLTimestamp> = sql<SQLTimestamp>`(current_timestamp)`
 
 export const users = sqliteTable(`users`, {
 	id: integer().primaryKey(),
 	manualRoleOverride: text().$type<Role>(),
-	createdAt: iso8601().notNull().default(ISO_NOW),
+	createdAt: sqlTimestamp().notNull().default(SQL_NOW),
 })
 
 export const stripeCustomers = sqliteTable(
@@ -37,7 +37,7 @@ export const stripeCustomers = sqliteTable(
 			.references(() => users.id, { onDelete: `cascade` })
 			.primaryKey(),
 		stripeCustomerId: text().notNull(),
-		createdAt: iso8601().notNull().default(ISO_NOW),
+		createdAt: sqlTimestamp().notNull().default(SQL_NOW),
 	},
 	(table) => [
 		uniqueIndex(`stripeCustomers_stripeCustomerId_unique`).on(
@@ -76,11 +76,11 @@ export const stripeSubscriptions = sqliteTable(`stripeSubscriptions`, {
 		.notNull(),
 	priceId: text().notNull(),
 	status: text().$type<StripeSubscriptionStatus>().notNull(),
-	currentPeriodEnd: iso8601().notNull(),
+	currentPeriodEnd: sqlTimestamp().notNull(),
 	latestInvoiceId: text(),
-	latestInvoicePaidAt: iso8601(),
+	latestInvoicePaidAt: sqlTimestamp(),
 	cancelAtPeriodEnd: integer({ mode: `boolean` }).default(false).notNull(),
-	updatedAt: iso8601().notNull(),
+	updatedAt: sqlTimestamp().notNull(),
 })
 export const stripeSubscriptionsRelations = relations(
 	stripeSubscriptions,
@@ -102,9 +102,9 @@ export const stripeWebhookEvents = sqliteTable(`stripeWebhookEvents`, {
 	stripeEventId: text().primaryKey(),
 	type: text().notNull(),
 	mode: text().$type<StripeWebhookEventMode>().notNull(),
-	createdAt: iso8601().notNull().default(ISO_NOW),
-	receivedAt: iso8601().notNull(),
-	processedAt: iso8601(),
+	createdAt: sqlTimestamp().notNull().default(SQL_NOW),
+	receivedAt: sqlTimestamp().notNull(),
+	processedAt: sqlTimestamp(),
 	payload: text().notNull().$type<Json.stringified<Json.Val>>(),
 	processingError: text(),
 })
@@ -115,7 +115,7 @@ export const projects = sqliteTable(`projects`, {
 		.references(() => users.id, { onDelete: `cascade` })
 		.notNull(),
 	name: text().notNull(),
-	createdAt: iso8601().notNull().default(ISO_NOW),
+	createdAt: sqlTimestamp().notNull().default(SQL_NOW),
 })
 export const projectsRelations = relations(projects, ({ many, one }) => ({
 	tokens: many(tokens),
@@ -134,7 +134,7 @@ export const tokens = sqliteTable(`tokens`, {
 	projectId: text()
 		.references(() => projects.id, { onDelete: `cascade` })
 		.notNull(),
-	createdAt: iso8601().notNull().default(ISO_NOW),
+	createdAt: sqlTimestamp().notNull().default(SQL_NOW),
 })
 export const tokensRelations = relations(tokens, ({ one }) => ({
 	project: one(projects, {
@@ -152,7 +152,7 @@ export const reports = sqliteTable(
 			.notNull(),
 		data: text().notNull().$type<Json.stringified<CoverageMap>>(),
 		jsonSummary: text().$type<Json.stringified<JsonSummary>>(),
-		createdAt: iso8601().notNull().default(ISO_NOW),
+		createdAt: sqlTimestamp().notNull().default(SQL_NOW),
 	},
 	(table) => [
 		primaryKey({

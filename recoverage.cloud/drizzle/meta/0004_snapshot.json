@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d4c02563-016c-4011-baf8-92c2e2b112b1",
+  "id": "f240b33b-83bf-4b7e-a17d-2de44439d184",
   "prevId": "817a2f12-10a0-4499-a7b5-74a2b9cf3535",
   "tables": {
     "projects": {
@@ -27,6 +27,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(current_timestamp)"
         }
       },
       "indexes": {},
@@ -79,6 +87,14 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(current_timestamp)"
         }
       },
       "indexes": {},
@@ -132,7 +148,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+          "default": "(current_timestamp)"
         }
       },
       "indexes": {
@@ -301,7 +317,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+          "default": "(current_timestamp)"
         },
         "receivedAt": {
           "name": "receivedAt",
@@ -375,6 +391,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(current_timestamp)"
         }
       },
       "indexes": {},
@@ -413,6 +437,14 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(current_timestamp)"
         }
       },
       "indexes": {},

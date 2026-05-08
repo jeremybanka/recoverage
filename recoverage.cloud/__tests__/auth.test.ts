@@ -62,6 +62,20 @@ test(`authentication flow`, async () => {
 		},
 	})
 	expect(response2.status).toBe(200)
+	const response2Text = await response2.text()
+	expect(response2Text).toContain(`Logged in as testuser (12345)`)
+	expect(response2Text).toContain(`href="/ui/upgrade"`)
+
+	const upgradeResponse = await fetch(`https://recoverage.cloud/ui/upgrade`, {
+		method: `GET`,
+		headers: {
+			Cookie: githubAccessTokenCookie,
+		},
+	})
+	expect(upgradeResponse.status).toBe(200)
+	const upgradeText = await upgradeResponse.text()
+	expect(upgradeText).toContain(`Upgrade to Supporter`)
+	expect(upgradeText).toContain(`action="/billing/checkout"`)
 
 	const project = await fetch(`https://recoverage.cloud/ui/project`, {
 		method: `POST`,

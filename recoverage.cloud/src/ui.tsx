@@ -13,6 +13,8 @@ import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
 import { type Bindings, getEnv } from "./env"
 import { computeHash } from "./hash"
+import { Page } from "./page"
+import { PricingPage } from "./pricing"
 import { Project, ProjectToken } from "./project"
 import { projectsAllowed, type Role, tokensAllowed } from "./roles-permissions"
 import * as schema from "./schema"
@@ -82,6 +84,14 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 
 	await next()
 }
+
+uiRoutes.get(`/upgrade`, uiAuth, async (c) => {
+	return c.html(
+		<Page>
+			<PricingPage currentRole={c.get(`userRole`)} />
+		</Page>,
+	)
+})
 
 uiRoutes.get(`/project`, uiAuth, async (c) => {
 	const db = c.get(`drizzle`)

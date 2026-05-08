@@ -5,11 +5,13 @@ import { css } from "hono/css"
 import { Octokit } from "octokit"
 
 import { assetsRoutes } from "./assets"
+import { getUserRole } from "./billing"
 import { billingRoutes } from "./billing-routes"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
 import { getEnv, GITHUB_CALLBACK_ENDPOINT } from "./env"
 import { Page, SplashPage } from "./page"
+import { RoleBadge } from "./pricing"
 import { reporterRoutes } from "./reporter"
 import * as schema from "./schema"
 import { shieldsRoutes } from "./shields"
@@ -65,6 +67,15 @@ app.get(`/`, async (c) => {
 		)[0]
 
 		console.log(`User`, user)
+		const userRole = await getUserRole({
+			db,
+			stripeSupporterPriceId: env.STRIPE_SUPPORTER_PRICE_ID,
+			userId: user.id,
+		})
+		if (!userRole) {
+			return c.json({ error: `User did not have a resolvable role.` }, 500)
+		}
+		const billingState = url.searchParams.get(`billing`)
 
 		return await c.html(
 			<Page>
@@ -80,8 +91,32 @@ app.get(`/`, async (c) => {
 				/>
 				<h1>Recoverage</h1>
 				<p>
-					Logged in as {data.login} ({data.id})
+					Logged in as {data.login} ({data.id}){` `}
+					{RoleBadge({
+						href: `/ui/upgrade`,
+						role: userRole,
+					})}
 				</p>
+				{billingState === `success` ? (
+					<p
+						class={css`
+							margin-top: -4px;
+							color: var(--success);
+						`}
+					>
+						Supporter checkout completed. Your account will refresh as Stripe
+						events arrive.
+					</p>
+				) : billingState === `cancel` ? (
+					<p
+						class={css`
+							margin-top: -4px;
+							color: var(--color-fg-light);
+						`}
+					>
+						Checkout cancelled.
+					</p>
+				) : null}
 				<h2>Your Projects</h2>
 				<div
 					hx-get="/ui/project"
