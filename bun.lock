@@ -73,6 +73,7 @@
       "name": "recoverage.cloud",
       "dependencies": {
         "@js-temporal/polyfill": "0.5.1",
+        "@t3-oss/env-core": "0.13.11",
         "arkregex": "0.0.5",
         "arktype": "2.2.3",
         "drizzle-orm": "0.45.3",
@@ -82,6 +83,7 @@
         "jurist": "0.0.14",
         "nanoid": "6.0.1",
         "octokit": "5.0.5",
+        "stripe": "22.1.0",
       },
       "devDependencies": {
         "@cloudflare/vitest-plugin": "1.2.0",
@@ -1321,6 +1323,8 @@
     "strip-bom": ["strip-bom@4.0.0", "", {}, "sha512-3xurFv5tEgii33Zi8Jtp55wEIILR9eh34FAW00PZf+JnSsTmV/ioewSgQl97JHvgjoRGwPShsWm+IdrxB35d0w=="],
 
     "strip-json-comments": ["strip-json-comments@3.1.1", "", {}, "sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig=="],
+
+    "stripe": ["stripe@22.1.0", "", { "peerDependencies": { "@types/node": ">=18" }, "optionalPeers": ["@types/node"] }, "sha512-w/xHyJGxXWnLPbNHG13sz/fae0MrFGC80Oz7YbICQymbfpqfEcsoG+6yG+9BWb81PWc4rrkeSO4wmTcmefmbLw=="],
 
     "strnum": ["strnum@2.4.2", "", { "dependencies": { "anynum": "^1.0.1" } }, "sha512-rDG3Ah4TV0k1hWvLSzkZtMmLN9+eS+h3knq4MP6A42Y3Yh5qGNnOUs1jJkoSr8FG5dsL28c7KgkIBzSEykqtuw=="],
 

@@ -11,7 +11,7 @@ import { Octokit } from "octokit"
 import { getUserRole } from "./billing"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
-import type { Bindings } from "./env"
+import { type Bindings, getEnv } from "./env"
 import { computeHash } from "./hash"
 import { Project, ProjectToken } from "./project"
 import { projectsAllowed, type Role, tokensAllowed } from "./roles-permissions"
@@ -33,9 +33,10 @@ export type UiEnv = {
 export const uiRoutes = new Hono<UiEnv>()
 
 const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
+	const env = getEnv(c.env)
 	const githubAccessTokenCookie = await getSignedCookie(
 		c,
-		c.env.COOKIE_SECRET,
+		env.COOKIE_SECRET,
 		`github-access-token`,
 	)
 
@@ -75,7 +76,7 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 	}
 	const userRole = await getUserRole({
 		db,
-		stripeSupporterPriceId: c.env.STRIPE_SUPPORTER_PRICE_ID,
+		stripeSupporterPriceId: env.STRIPE_SUPPORTER_PRICE_ID,
 		userId: maybeUser.id,
 	})
 	if (!userRole) {

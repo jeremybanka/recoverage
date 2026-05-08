@@ -25,6 +25,14 @@ export function isoNow(): ISO8601 {
 	return iso8601FromInstant(Temporal.Now.instant())
 }
 
+export function iso8601FromUnixSeconds(seconds: number): ISO8601
+export function iso8601FromUnixSeconds(seconds: number | null): ISO8601 | null
+export function iso8601FromUnixSeconds(seconds: number | null): ISO8601 | null {
+	return seconds === null
+		? null
+		: iso8601FromInstant(Temporal.Instant.fromEpochMilliseconds(seconds * 1000))
+}
+
 export const iso8601 = regex.as<ISO8601>(
 	`^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$`,
 )
