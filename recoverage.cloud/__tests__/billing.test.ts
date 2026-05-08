@@ -10,9 +10,9 @@ function subscription(
 ): BillingSubscription {
 	return {
 		currentPeriodEnd:
-			`2026-06-03T12:00:00.000Z` as BillingSubscription[`currentPeriodEnd`],
+			`2026-06-03 12:00:00` as BillingSubscription[`currentPeriodEnd`],
 		latestInvoicePaidAt:
-			`2026-05-03T12:00:00.000Z` as BillingSubscription[`latestInvoicePaidAt`],
+			`2026-05-03 12:00:00` as BillingSubscription[`latestInvoicePaidAt`],
 		priceId: supporterPriceId,
 		status: `active`,
 		...overrides,
@@ -80,7 +80,7 @@ test(`subscription must be active and current`, () => {
 			subscriptions: [
 				subscription({
 					currentPeriodEnd:
-						`2026-05-03T11:59:59.000Z` as BillingSubscription[`currentPeriodEnd`],
+						`2026-05-03 11:59:59` as BillingSubscription[`currentPeriodEnd`],
 				}),
 			],
 		}),

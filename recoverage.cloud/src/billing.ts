@@ -7,7 +7,11 @@ import type { Json } from "./json"
 import { stringify } from "./json"
 import type { Role } from "./roles-permissions"
 import * as schema from "./schema"
-import { instantFromISO8601, iso8601FromUnixSeconds, isoNow } from "./temporal"
+import {
+	instantFromSQLTimestamp,
+	sqlNow,
+	sqlTimestampFromUnixSeconds,
+} from "./temporal"
 
 export type BillingSubscription = Pick<
 	typeof schema.stripeSubscriptions.$inferSelect,
@@ -36,7 +40,7 @@ export function deriveRole(input: DeriveRoleInput): Role {
 			subscription.status === `active` &&
 			Boolean(subscription.latestInvoicePaidAt) &&
 			Temporal.Instant.compare(
-				instantFromISO8601(subscription.currentPeriodEnd),
+				instantFromSQLTimestamp(subscription.currentPeriodEnd),
 				now,
 			) > 0,
 	)
@@ -45,7 +49,7 @@ export function deriveRole(input: DeriveRoleInput): Role {
 
 export async function getUserRole({
 	db,
-	now = instantFromISO8601(isoNow()),
+	now = instantFromSQLTimestamp(sqlNow()),
 	stripeSupporterPriceId,
 	userId,
 }: {
@@ -120,7 +124,7 @@ function latestInvoicePaidAtFromSubscription(subscription: Stripe.Subscription) 
 	) {
 		return null
 	}
-	return iso8601FromUnixSeconds(
+	return sqlTimestampFromUnixSeconds(
 		subscription.latest_invoice.status_transitions.paid_at,
 	)
 }
@@ -167,7 +171,7 @@ export async function upsertStripeSubscription({
 		)
 	}
 
-	const currentPeriodEnd = iso8601FromUnixSeconds(
+	const currentPeriodEnd = sqlTimestampFromUnixSeconds(
 		subscription.items.data[0]?.current_period_end ?? null,
 	)
 	if (!currentPeriodEnd) {
@@ -203,7 +207,7 @@ export async function upsertStripeSubscription({
 			status: subscription.status,
 			stripeCustomerId,
 			stripeSubscriptionId: subscription.id,
-			updatedAt: isoNow(),
+			updatedAt: sqlNow(),
 			userId,
 		})
 		.onConflictDoUpdate({
@@ -216,7 +220,7 @@ export async function upsertStripeSubscription({
 				priceId,
 				status: subscription.status,
 				stripeCustomerId,
-				updatedAt: isoNow(),
+				updatedAt: sqlNow(),
 				userId,
 			},
 		})
@@ -249,10 +253,10 @@ export async function applyInvoicePaidToStripeSubscription({
 		.update(schema.stripeSubscriptions)
 		.set({
 			latestInvoiceId: invoice.id,
-			latestInvoicePaidAt: iso8601FromUnixSeconds(
+			latestInvoicePaidAt: sqlTimestampFromUnixSeconds(
 				invoice.status_transitions.paid_at,
 			),
-			updatedAt: isoNow(),
+			updatedAt: sqlNow(),
 		})
 		.where(
 			eq(schema.stripeSubscriptions.stripeSubscriptionId, stripeSubscriptionId),
@@ -279,10 +283,10 @@ export async function recordStripeWebhookEvent({
 	}
 	if (!existingEvent) {
 		await db.insert(schema.stripeWebhookEvents).values({
-			createdAt: iso8601FromUnixSeconds(event.created),
+			createdAt: sqlTimestampFromUnixSeconds(event.created),
 			mode: event.livemode ? `live` : `test`,
 			payload: payload as Json.stringified<Json.Val>,
-			receivedAt: isoNow(),
+			receivedAt: sqlNow(),
 			stripeEventId: event.id,
 			type: event.type,
 		})
@@ -301,7 +305,7 @@ export async function markStripeWebhookEventProcessed({
 	await db
 		.update(schema.stripeWebhookEvents)
 		.set({
-			processedAt: isoNow(),
+			processedAt: sqlNow(),
 			processingError: null,
 		})
 		.where(eq(schema.stripeWebhookEvents.stripeEventId, eventId))
