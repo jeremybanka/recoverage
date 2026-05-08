@@ -9,7 +9,7 @@ import type { CoverageEval, CoverageSummary, JsonSummary } from "recoverage"
 
 import { getUserRole } from "./billing"
 import { createDatabase } from "./db"
-import type { Bindings } from "./env"
+import { type Bindings, getEnv } from "./env"
 import { computeHash } from "./hash"
 import { stringify } from "./json"
 import type { Role } from "./roles-permissions"
@@ -28,6 +28,7 @@ type ReporterEnv = {
 export const reporterRoutes = new Hono<ReporterEnv>()
 
 const reporterAuth: MiddlewareHandler<ReporterEnv> = async (c, next) => {
+	const env = getEnv(c.env)
 	const authHeader = c.req.header(`Authorization`)
 	if (!authHeader?.startsWith(`Bearer `)) {
 		return c.json({ error: `Unauthorized` }, 401)
@@ -66,7 +67,7 @@ const reporterAuth: MiddlewareHandler<ReporterEnv> = async (c, next) => {
 	const userId = tokenRecord.project.user.id
 	const userRole = await getUserRole({
 		db,
-		stripeSupporterPriceId: c.env.STRIPE_SUPPORTER_PRICE_ID,
+		stripeSupporterPriceId: env.STRIPE_SUPPORTER_PRICE_ID,
 		userId,
 	})
 	if (!userRole) {

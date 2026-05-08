@@ -1,0 +1,3 @@
+[tools]
+bun = "1.3.13"
+stripe-cli = "1.40.9"

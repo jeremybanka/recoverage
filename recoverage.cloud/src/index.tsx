@@ -5,9 +5,10 @@ import { css } from "hono/css"
 import { Octokit } from "octokit"
 
 import { assetsRoutes } from "./assets"
+import { billingRoutes } from "./billing-routes"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
-import { GITHUB_CALLBACK_ENDPOINT } from "./env"
+import { getEnv, GITHUB_CALLBACK_ENDPOINT } from "./env"
 import { Page, SplashPage } from "./page"
 import { reporterRoutes } from "./reporter"
 import * as schema from "./schema"
@@ -23,20 +24,22 @@ app.use(`*`, async (c, next) => {
 })
 
 app.route(`assets`, assetsRoutes)
+app.route(`billing`, billingRoutes)
 app.route(`reporter`, reporterRoutes)
 app.route(`ui`, uiRoutes)
 app.route(`shields`, shieldsRoutes)
 
 app.get(`/`, async (c) => {
+	const env = getEnv(c.env)
 	const url = new URL(c.req.url)
 	const githubAccessTokenCookie = await getSignedCookie(
 		c,
-		c.env.COOKIE_SECRET,
+		env.COOKIE_SECRET,
 		`github-access-token`,
 	)
 	if (!githubAccessTokenCookie) {
 		return c.html(
-			<SplashPage currentUrl={url} githubClientId={c.env.GITHUB_CLIENT_ID} />,
+			<SplashPage currentUrl={url} githubClientId={env.GITHUB_CLIENT_ID} />,
 		)
 	}
 
@@ -95,19 +98,20 @@ app.get(`/`, async (c) => {
 		console.error(thrown)
 		deleteCookie(c, `github-access-token`)
 		return c.html(
-			<SplashPage currentUrl={url} githubClientId={c.env.GITHUB_CLIENT_ID} />,
+			<SplashPage currentUrl={url} githubClientId={env.GITHUB_CLIENT_ID} />,
 		)
 	}
 })
 
 app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
+	const env = getEnv(c.env)
 	const code = c.req.query(`code`)
 	if (!code) {
 		return c.json({ error: `No code provided` }, 400)
 	}
 	const accessTokenUrl = new URL(`https://github.com/login/oauth/access_token`)
-	accessTokenUrl.searchParams.set(`client_id`, c.env.GITHUB_CLIENT_ID)
-	accessTokenUrl.searchParams.set(`client_secret`, c.env.GITHUB_CLIENT_SECRET)
+	accessTokenUrl.searchParams.set(`client_id`, env.GITHUB_CLIENT_ID)
+	accessTokenUrl.searchParams.set(`client_secret`, env.GITHUB_CLIENT_SECRET)
 	accessTokenUrl.searchParams.set(`code`, code)
 
 	const accessTokenResponse = await cachedFetch(accessTokenUrl)
@@ -128,7 +132,7 @@ app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
 		c,
 		`github-access-token`,
 		accessToken,
-		c.env.COOKIE_SECRET,
+		env.COOKIE_SECRET,
 		{
 			sameSite: `strict`,
 			httpOnly: true,

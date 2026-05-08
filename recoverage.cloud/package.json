@@ -11,6 +11,9 @@
 		"gen": "concurrently \"bun:gen:*\"",
 		"gen:scripts": "bun __scripts__/gen-scripts.bun.ts",
 		"gen:types": "bun --bun run wrangler types",
+		"dev:stripe": "bun __scripts__/dev-stripe.bun.ts",
+		"fix:stripe-sourcemaps": "bun __scripts__/strip-stripe-broken-sourcemaps.bun.ts",
+		"postinstall": "bun fix:stripe-sourcemaps",
 		"dev": "wrangler dev --live-reload",
 		"test": "vitest",
 		"test:once": "vitest run",
@@ -33,6 +36,7 @@
 		"preview:setup:db": "wrangler d1 migrations apply \"$DATABASE_NAME\" --remote --config wrangler-preview.jsonc"
 	},
 	"dependencies": {
+		"@t3-oss/env-core": "0.13.11",
 		"@js-temporal/polyfill": "0.5.1",
 		"arkregex": "0.0.5",
 		"arktype": "2.2.0",
@@ -43,7 +47,8 @@
 		"istanbul-lib-coverage": "3.2.2",
 		"jurist": "0.0.9",
 		"nanoid": "5.1.11",
-		"octokit": "5.0.5"
+		"octokit": "5.0.5",
+		"stripe": "22.1.0"
 	},
 	"devDependencies": {
 		"@t3-oss/env-core": "0.13.11",
