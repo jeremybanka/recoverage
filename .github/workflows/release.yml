@@ -1,9 +1,12 @@
 name: Release
 
+permissions:
+  contents: read
+  id-token: write
+
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -13,27 +16,29 @@ env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
-permissions:
-  contents: write
-  id-token: write
-
 jobs:
   Release:
     runs-on: ubuntu-latest
     timeout-minutes: 9
 
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
         with:
-          token: ${{ secrets.CHANGESETS_GITHUB_PAT }}
+          client-id: ${{ vars.CHANGESETS_APP_CLIENT_ID }}
+          private-key: ${{ secrets.CHANGESETS_APP_PRIVATE_KEY }}
+          owner: jeremybanka
+          repositories: recoverage
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          token: ${{ steps.app-token.outputs.token }}
       - uses: ./.github/actions/setup
-      - name: Create Release Pull Request or Publish to npm
-        id: changesets
-        uses: changesets/action@v1.8.0
+      - uses: changesets/action@63a615b9cd06ba9a3e6d13796c7fbcb080a60a0b # v1.8.0
         with:
           # This expects you to have a script called release which does a build for your packages and calls changeset publish
           publish: bun release
           version: ./version.sh
         env:
-          GITHUB_TOKEN: ${{ secrets.CHANGESETS_GITHUB_PAT }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
