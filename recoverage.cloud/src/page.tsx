@@ -25,7 +25,6 @@ export function Page(
 				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 				{/* <link rel="preload" href="/noise.svg" as="image" type="image/svg+xml" /> */}
 				<script
-					// biome-ignore lint/security/noDangerouslySetInnerHtml: This is a trusted script
 					dangerouslySetInnerHTML={{ __html: JSON.parse(Script.htmxMinJS) }}
 				/>
 				<title>Recoverage</title>
