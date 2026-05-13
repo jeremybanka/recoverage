@@ -41,7 +41,7 @@ jobs:
         env:
           LOG_LEVEL: info
           RENOVATE_ALLOW_PLUGINS: false
-          RENOVATE_REPOSITORIES: recoverage
+          RENOVATE_REPOSITORIES: jeremybanka/recoverage
         with:
           configurationFile: renovate.json
           token: ${{ steps.app-token.outputs.token }}
