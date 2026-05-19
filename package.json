@@ -26,7 +26,8 @@
 		"test:semver": "cross-env CI=true turbo run test:semver",
 		"release": "bun run build && changeset publish",
 		"notes": "changeset",
-		"nuke": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && rm bun.lock"
+		"nuke": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && rm bun.lock",
+		"update-workflows": "bun ./scripts/update-workflows.bun.ts"
 	},
 	"keywords": [],
 	"author": "",

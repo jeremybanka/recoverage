@@ -3,5 +3,11 @@
 	"extends": ["config:recommended", "customManagers:biomeVersions"],
 	"minimumReleaseAge": "1 day",
 	"prHourlyLimit": 10,
-	"branchConcurrentLimit": 1
+	"branchConcurrentLimit": 1,
+	"packageRules": [
+		{
+			"matchManagers": ["github-actions"],
+			"dependencyDashboardApproval": true
+		}
+	]
 }
