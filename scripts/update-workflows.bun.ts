@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 import path from "node:path"
+
 import { $ } from "bun"
 
 type WorkflowUse = {
@@ -69,9 +70,9 @@ const MISE_VERSION_PATTERN =
 	/^(?<prefix>\s*version:\s+)(?<version>\d+\.\d+\.\d+)\s*$/
 const ANSI = {
 	reset: `\x1b[0m`,
-	white: `\x1b[97m`,
+	white: `\x1b[37m`,
 	green: `\x1b[32m`,
-	grey: `\x1b[90m`,
+	cyan: `\x1b[36m`,
 }
 
 async function main(): Promise<void> {
@@ -94,11 +95,11 @@ async function main(): Promise<void> {
 	for (const update of updates) {
 		if (update.hasUpdate) {
 			console.log(
-				`${colorWhite(update.depName)} ${colorGreen(update.currentVersion)} ${colorGrey(`(${update.currentShortRef})`)} ${colorGrey(`->`)} ${colorGreen(update.targetVersion)} ${colorGrey(`(${shortSha(update.targetRef)})`)} ✨`,
+				`${colorWhite(update.depName)} ${colorGreen(update.currentVersion)} ${colorCyan(`(${update.currentShortRef})`)} ${colorCyan(`->`)} ${colorGreen(update.targetVersion)} ${colorCyan(`(${shortSha(update.targetRef)})`)} ✨`,
 			)
 		} else {
 			console.log(
-				`${colorWhite(update.depName)} ${colorGreen(update.currentVersion)} ${colorGrey(`(${update.currentShortRef})`)}`,
+				`${colorWhite(update.depName)} ${colorGreen(update.currentVersion)} ${colorCyan(`(${update.currentShortRef})`)}`,
 			)
 		}
 	}
@@ -106,7 +107,7 @@ async function main(): Promise<void> {
 	for (const update of miseUpdates) {
 		if (update.hasUpdate) {
 			console.log(
-				`${colorWhite(update.depName)} ${colorGreen(update.currentVersion)} ${colorGrey(`->`)} ${colorGreen(update.targetVersion)} ✨`,
+				`${colorWhite(update.depName)} ${colorGreen(update.currentVersion)} ${colorCyan(`->`)} ${colorGreen(update.targetVersion)} ✨`,
 			)
 		} else {
 			console.log(
@@ -164,7 +165,7 @@ async function main(): Promise<void> {
 	}
 
 	for (const [filePath, fileLines] of filesToWrite) {
-		await Bun.write(filePath, `${fileLines.join(`\n`)}\n`)
+		await Bun.write(filePath, fileLines.join(`\n`))
 	}
 
 	console.log(`Updated ${filesToWrite.size} file(s)`)
@@ -197,10 +198,10 @@ async function collectWorkflowInventory(
 				continue
 			}
 
-			const actionName = match.groups["action"]
-			const prefix = match.groups["prefix"]
-			const currentRef = match.groups["ref"]
-			const originalComment = match.groups["comment"]?.trim() ?? null
+			const actionName = match.groups[`action`]
+			const prefix = match.groups[`prefix`]
+			const currentRef = match.groups[`ref`]
+			const originalComment = match.groups[`comment`]?.trim() ?? null
 			if (!actionName || !originalComment || !currentRef || !prefix) {
 				continue
 			}
@@ -428,10 +429,10 @@ function parseVersion(value: string): ParsedVersion | null {
 	const segments = normalized.split(`-`)[0]?.split(`.`).length ?? 0
 
 	return {
-		major: Number(match.groups["major"]),
-		minor: Number(match.groups["minor"] ?? 0),
-		patch: Number(match.groups["patch"] ?? 0),
-		prerelease: match.groups["prerelease"] ?? null,
+		major: Number(match.groups[`major`]),
+		minor: Number(match.groups[`minor`] ?? 0),
+		patch: Number(match.groups[`patch`] ?? 0),
+		prerelease: match.groups[`prerelease`] ?? null,
 		segments,
 	}
 }
@@ -499,18 +500,18 @@ function findMiseVersionUse(
 		}
 
 		const currentIndent = leadingWhitespace(line).length
-		if (currentIndent <= actionIndent) {
+		if (currentIndent < actionIndent) {
 			return null
 		}
 
 		const versionMatch = MISE_VERSION_PATTERN.exec(line)
 
 		if (versionMatch?.groups) {
-			const prefix = versionMatch.groups["prefix"]
+			const prefix = versionMatch.groups[`prefix`]
 			if (!prefix) {
 				return null
 			}
-			const currentVersion = versionMatch.groups["version"]
+			const currentVersion = versionMatch.groups[`version`]
 			if (!currentVersion) {
 				return null
 			}
@@ -549,12 +550,12 @@ function colorGreen(value: string): string {
 	return colorize(ANSI.green, value)
 }
 
-function colorGrey(value: string): string {
-	return colorize(ANSI.grey, value)
+function colorCyan(value: string): string {
+	return colorize(ANSI.cyan, value)
 }
 
 function colorize(color: string, value: string): string {
-	if (process.env["NO_COLOR"]) {
+	if (process.env[`NO_COLOR`]) {
 		return value
 	}
 
