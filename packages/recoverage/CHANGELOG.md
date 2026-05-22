@@ -1,5 +1,11 @@
 # recoverage
 
+## 0.1.14
+
+### Patch Changes
+
+- fcb36fa: ⬆️ Updated dependencies, including `diff` to `9.0.0` and `simple-git` to `3.36.0`.
+
 ## 0.1.13
 
 ### Patch Changes
