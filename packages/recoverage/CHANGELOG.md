@@ -1,5 +1,11 @@
 # recoverage
 
+## 0.1.15
+
+### Patch Changes
+
+- a4e4952: ➖ Drop dependency `tmp`.
+
 ## 0.1.14
 
 ### Patch Changes
