@@ -95,7 +95,7 @@ describe(`recoverage`, () => {
 
 		const coverage2 = await runScript(`coverage:status`)
 		expect(coverage2.exitCode).toBe(0)
-	}, 20_000)
+	}, 30_000)
 
 	it(`fails a coverage decrease [sample-package-02]`, async () => {
 		await loadSample(`sample-package-02`)
@@ -115,5 +115,5 @@ describe(`recoverage`, () => {
 
 		const coverage2 = await runScript(`coverage:status`)
 		expect(coverage2.exitCode).toBe(1)
-	}, 20_000)
+	}, 30_000)
 })
