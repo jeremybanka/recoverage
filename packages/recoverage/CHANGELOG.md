@@ -1,5 +1,11 @@
 # recoverage
 
+## 0.1.16
+
+### Patch Changes
+
+- 6f9b8eb: ➖ Drop dependency `colors`.
+
 ## 0.1.15
 
 ### Patch Changes
