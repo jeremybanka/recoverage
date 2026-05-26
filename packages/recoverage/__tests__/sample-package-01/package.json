@@ -11,7 +11,7 @@
 		"vitest": "4.1.0"
 	},
 	"scripts": {
-		"test:coverage": "vitest run --coverage && recoverage capture",
+		"test:coverage": "node ./node_modules/vitest/vitest.mjs run --coverage && recoverage capture",
 		"coverage:status": "recoverage diff"
 	}
 }

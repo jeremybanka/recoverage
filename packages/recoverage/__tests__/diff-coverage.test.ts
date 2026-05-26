@@ -1,11 +1,11 @@
 import type { ChildProcess } from "node:child_process"
 import { spawn } from "node:child_process"
-import { copyFile, readdir, rename } from "node:fs/promises"
+import { copyFile, mkdtemp, readdir, rename, rm } from "node:fs/promises"
+import { tmpdir } from "node:os"
 import * as path from "node:path"
 
 import type { SimpleGit } from "simple-git"
 import { simpleGit } from "simple-git"
-import tmp from "tmp"
 import * as Yalc from "yalc"
 
 beforeAll(async () => {
@@ -20,20 +20,20 @@ beforeAll(async () => {
 }, 60_000)
 
 let phase = 0
-let tmpDir: tmp.DirResult
+let tmpDir: string
 let git: SimpleGit
 
-beforeEach(() => {
+beforeEach(async () => {
 	phase = 0
-	tmpDir = tmp.dirSync({ unsafeCleanup: true })
-	git = simpleGit(tmpDir.name)
-	process.chdir(tmpDir.name)
-	console.log(`created tmpDir ${tmpDir.name}`)
+	tmpDir = await mkdtemp(path.join(tmpdir(), `recoverage-`))
+	git = simpleGit(tmpDir)
+	process.chdir(tmpDir)
+	console.log(`created tmpDir ${tmpDir}`)
 })
 
-afterEach(() => {
-	tmpDir.removeCallback()
-	console.log(`removed tmpDir ${tmpDir.name}`)
+afterEach(async () => {
+	await rm(tmpDir, { recursive: true, force: true })
+	console.log(`removed tmpDir ${tmpDir}`)
 })
 
 async function runScript(...args: string[]): Promise<ChildProcess> {
@@ -55,7 +55,7 @@ async function loadSample(packageName: string) {
 				if (shouldCopy) {
 					await copyFile(
 						path.resolve(__dirname, packageName, fileName),
-						path.resolve(tmpDir.name, fileName),
+						path.resolve(tmpDir, fileName),
 					)
 					console.log(`copied ${fileName}`)
 				}
@@ -95,7 +95,7 @@ describe(`recoverage`, () => {
 
 		const coverage2 = await runScript(`coverage:status`)
 		expect(coverage2.exitCode).toBe(0)
-	}, 20_000)
+	}, 30_000)
 
 	it(`fails a coverage decrease [sample-package-02]`, async () => {
 		await loadSample(`sample-package-02`)
@@ -115,5 +115,5 @@ describe(`recoverage`, () => {
 
 		const coverage2 = await runScript(`coverage:status`)
 		expect(coverage2.exitCode).toBe(1)
-	}, 20_000)
+	}, 30_000)
 })

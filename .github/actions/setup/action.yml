@@ -1,16 +1,22 @@
 name: Setup
-description: Download and install 3rd party software.
+description: Install the requested mise tools and bun dependencies.
+inputs:
+  install_args:
+    description: Space-separated mise tools to install.
+    required: false
+    default: "bun node"
 runs:
   using: composite
   steps:
-    - name: Set up Bun
-      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+    - name: Install Mise tools
+      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
       with:
-        bun-version-file: .bun-version
+        version: 2026.5.15
+        install_args: ${{ inputs.install_args }}
 
     - name: Install Dependencies
       shell: bash
-      run: bun i --frozen-lockfile
+      run: bun install --frozen-lockfile
 
     - name: Configure Git
       shell: bash
