@@ -1,4 +1,5 @@
-import colors from "colors"
+import { styleText } from "node:util"
+
 import * as Diff from "diff"
 import logger from "takua"
 
@@ -29,10 +30,10 @@ export function logDiff(
 					return ``
 				}
 				if (chunk.added) {
-					return colors.green(`+ ${line}`)
+					return styleText(`green`, `+ ${line}`)
 				}
 				if (chunk.removed) {
-					return colors.red(`- ${line}`)
+					return styleText(`red`, `- ${line}`)
 				}
 				return `  ${line}`
 			})
