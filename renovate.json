@@ -12,6 +12,10 @@
 		{
 			"matchPackageNames": ["@typescript/*"],
 			"minimumReleaseAge": null
+		},
+		{
+			"matchPackageNames": ["wrangler", "@cloudflare/vitest-pool-workers"],
+			"groupName": "Cloudflare Workers tooling"
 		}
 	]
 }
