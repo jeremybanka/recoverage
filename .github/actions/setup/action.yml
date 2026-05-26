@@ -14,6 +14,10 @@ runs:
         version: 2026.5.15
         install_args: ${{ inputs.install_args }}
 
+    - name: Install Dependencies
+      shell: bash
+      run: bun install --frozen-lockfile
+
     - name: Configure Git
       shell: bash
       run: |
