@@ -12,7 +12,7 @@ The recoverage library and command line tool is free and open-source. You can ru
 
 Recoverage works smoothly `vitest` + `@vitest/coverage-v8`, as well as many other runners. Anything that creates an istanbul-style coverage report at `coverage/coverage-final.json` will work.
 
-> **Please Note:** Bun is required to run this tool. You can install Bun from [bun.sh](https://bun.sh).
+> **Please Note:** Bun is required to run this tool. You can install Bun from [bun.com/docs/installation](https://bun.com/docs/installation).
 
 ## Persisting Coverage Reports for CI
 
