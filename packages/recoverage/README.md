@@ -53,7 +53,7 @@ Then, update your package.json with the following scripts and devDependencies:
     "test:coverage": "vitest run --coverage && recoverage"
   },
   "devDependencies": {
-    "typescript": "^5.x",
+    "typescript": "^6.x",
     "vitest": "^4.x",
     "@vitest/coverage-v8": "^4.x",
     "recoverage": "^0.1.x"
