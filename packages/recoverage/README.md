@@ -161,7 +161,7 @@ This command runs Vitest (which generates coverage-final.json) and then runs rec
 
 1. **Modify the Test File:**
 
-   Comment out one of the tests so that only one case is covered. Update **tests**/demo.test.ts as follows:
+   Comment out one of the tests so that only one case is covered. Update `__tests__/demo.test.ts` as follows:
 
    ```ts
    import { demoSwitch } from "../src/demo";
@@ -193,7 +193,7 @@ This command runs Vitest (which generates coverage-final.json) and then runs rec
 
 1. **Modify the Test File:**
 
-   Uncomment all the tests so that all cases are covered. Update **tests**/demo.test.ts as follows:
+   Uncomment all the tests so that all cases are covered. Update `__tests__/demo.test.ts` as follows:
 
    ```ts
    import { demoSwitch } from "../src/demo";
