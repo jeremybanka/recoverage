@@ -12,7 +12,7 @@ The recoverage library and command line tool is free and open-source. You can ru
 
 Recoverage works smoothly `vitest` + `@vitest/coverage-v8`, as well as many other runners. Anything that creates an istanbul-style coverage report at `coverage/coverage-final.json` will work.
 
-> **Please Note:** Bun is required to run this tool. You can install Bun from [bun.sh](https://bun.sh).
+> **Please Note:** Bun is required to run this tool. You can install Bun from [bun.com/docs/installation](https://bun.com/docs/installation).
 
 ## Persisting Coverage Reports for CI
 
@@ -53,7 +53,7 @@ Then, update your package.json with the following scripts and devDependencies:
     "test:coverage": "vitest run --coverage && recoverage"
   },
   "devDependencies": {
-    "typescript": "^5.x",
+    "typescript": "^6.x",
     "vitest": "^4.x",
     "@vitest/coverage-v8": "^4.x",
     "recoverage": "^0.1.x"
@@ -161,7 +161,7 @@ This command runs Vitest (which generates coverage-final.json) and then runs rec
 
 1. **Modify the Test File:**
 
-   Comment out one of the tests so that only one case is covered. Update **tests**/demo.test.ts as follows:
+   Comment out one of the tests so that only one case is covered. Update `__tests__/demo.test.ts` as follows:
 
    ```ts
    import { demoSwitch } from "../src/demo";
@@ -193,7 +193,7 @@ This command runs Vitest (which generates coverage-final.json) and then runs rec
 
 1. **Modify the Test File:**
 
-   Uncomment all the tests so that all cases are covered. Update **tests**/demo.test.ts as follows:
+   Uncomment all the tests so that all cases are covered. Update `__tests__/demo.test.ts` as follows:
 
    ```ts
    import { demoSwitch } from "../src/demo";
