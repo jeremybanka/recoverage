@@ -34,10 +34,8 @@ export async function resolvePreviewAccountId(
 	logPrefix: string,
 ): Promise<string> {
 	logger.info(logPrefix, `resolving account_id from token accounts`)
-	const accounts: Account[] = []
-	for await (const account of cloudflare.accounts.list()) {
-		accounts.push(account)
-	}
+	const accountPage = await cloudflare.accounts.list({ per_page: 50 })
+	const accounts: Account[] = accountPage.result
 
 	logger.info(logPrefix, `cloudflare account lookup completed`, {
 		accountCount: accounts.length,
