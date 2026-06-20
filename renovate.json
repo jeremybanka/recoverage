@@ -2,9 +2,14 @@
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"extends": ["config:recommended", "customManagers:biomeVersions"],
 	"automerge": true,
+	"branchConcurrentLimit": 9,
+	"internalChecksFilter": "strict",
 	"minimumReleaseAge": "1 day",
-	"prHourlyLimit": 10,
-	"branchConcurrentLimit": 1,
+	"prConcurrentLimit": 3,
+	"prHourlyLimit": 9,
+	"pruneBranchAfterAutomerge": true,
+	"pruneStaleBranches": true,
+	"statusCheckWhen": { "minimumReleaseAge": "never" },
 	"packageRules": [
 		{
 			"matchManagers": ["github-actions"],
