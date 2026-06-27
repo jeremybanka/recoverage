@@ -67,7 +67,7 @@
 		"@types/node": "26.0.1",
 		"@typescript/native-preview": "7.0.0-dev.20260627.2",
 		"concurrently": "10.0.3",
-		"eslint": "10.5.0",
+		"eslint": "10.6.0",
 		"nyc": "18.0.0",
 		"recoverage-fixtures": "workspace:*",
 		"tsdown": "0.22.3",
