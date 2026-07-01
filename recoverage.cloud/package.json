@@ -61,7 +61,7 @@
 		"recoverage": "workspace:*",
 		"recoverage-fixtures": "workspace:*",
 		"takua": "0.2.1",
-		"vite": "8.1.0",
+		"vite": "8.1.1",
 		"vitest": "4.1.9",
 		"wrangler": "4.105.0"
 	}
