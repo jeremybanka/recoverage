@@ -65,7 +65,7 @@
 		"@types/istanbul-lib-report": "3.0.3",
 		"@types/istanbul-reports": "3.0.4",
 		"@types/node": "26.0.1",
-		"@typescript/native-preview": "7.0.0-dev.20260701.1",
+		"@typescript/native-preview": "7.0.0-dev.20260702.3",
 		"concurrently": "10.0.3",
 		"eslint": "10.6.0",
 		"nyc": "18.0.0",
