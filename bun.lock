@@ -47,7 +47,7 @@
         "istanbul-lib-report": "3.0.1",
         "istanbul-reports": "3.2.0",
         "simple-git": "3.36.0",
-        "takua": "0.2.1",
+        "takua": "0.2.2",
       },
       "devDependencies": {
         "@types/bun": "npm:bun-types@1.3.14",
@@ -97,7 +97,7 @@
         "fast-xml-parser": "5.9.3",
         "recoverage": "workspace:*",
         "recoverage-fixtures": "workspace:*",
-        "takua": "0.2.1",
+        "takua": "0.2.2",
         "vite": "8.1.3",
         "vitest": "4.1.10",
         "wrangler": "4.107.1",
@@ -1360,7 +1360,7 @@
 
     "supports-color": ["supports-color@10.2.2", "", {}, "sha512-SS+jx45GF1QjgEXQx4NJZV9ImqmO2NPz5FNsIHrsDjh2YsHnawpan7SNQ1o8NuhrbHZy9AZhIoCUiCeaW/C80g=="],
 
-    "takua": ["takua@0.2.1", "", {}, "sha512-dQYQrvPHjLfxe0D/Uu+D7ToPLrndukby7JAp8KnJ+mLumskA1AQCP9hxquHWarCNcd7Io33tzzAy2X2VwQJMMw=="],
+    "takua": ["takua@0.2.2", "", {}, "sha512-yjNZ/dE7vzzecyyMyzpV9IF74cirv8H1ci6U+1fICICOtsb/5Cstz86Hu4GK8IgO9HTlA6rgjg7d/ljq7RDNWQ=="],
 
     "term-size": ["term-size@2.2.1", "", {}, "sha512-wK0Ri4fOGjv/XPy8SBHZChl8CM7uMc5VML7SqiQ0zG7+J5Vr+RMQDoHa2CNT6KHUnTGIXH34UDMkPzAUyapBZg=="],
 
