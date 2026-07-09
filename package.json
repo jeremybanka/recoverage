@@ -17,7 +17,7 @@
 		"lint:types": "turbo run lint:types",
 		"watch:types": "turbo run watch:types --concurrency=30",
 		"lint:fix:biome": "biome check --write *",
-		"lint:fix:eslint": "eslint --fix .",
+		"lint:fix:eslint": "NODE_OPTIONS=--require=./scripts/eslint-typescript.cjs eslint --fix .",
 		"fmt": "biome format .",
 		"fmt:fix": "biome format --write .",
 		"build": "turbo run build",
@@ -41,7 +41,6 @@
 		"@types/eslint": "9.6.1",
 		"@typescript-eslint/eslint-plugin": "8.63.0",
 		"@typescript-eslint/parser": "8.63.0",
-		"@typescript/native-preview": "7.0.0-dev.20260707.2",
 		"c8": "11.0.0",
 		"cross-env": "10.1.0",
 		"eslint": "10.6.0",
@@ -51,6 +50,7 @@
 		"pin-dependencies-checker": "2.7.1",
 		"turbo": "2.10.4",
 		"typescript": "7.0.2",
+		"typescript-eslint-typescript": "npm:typescript@6.0.3",
 		"typescript-language-server": "5.3.0",
 		"vscode-langservers-extracted": "4.10.0"
 	},
@@ -63,5 +63,8 @@
 		"sharp",
 		"unrs-resolver",
 		"workerd"
-	]
+	],
+	"overrides": {
+		"rolldown-plugin-dts": "0.27.4"
+	}
 }
