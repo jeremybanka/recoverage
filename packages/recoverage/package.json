@@ -71,7 +71,7 @@
 		"nyc": "18.0.0",
 		"recoverage-fixtures": "workspace:*",
 		"tsdown": "0.22.4",
-		"typescript": "6.0.3",
+		"typescript": "7.0.2",
 		"vite": "8.1.4",
 		"vitest": "4.1.10",
 		"yalc": "1.0.0-pre.53"

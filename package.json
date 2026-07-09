@@ -50,7 +50,7 @@
 		"jiti": "2.7.0",
 		"pin-dependencies-checker": "2.7.1",
 		"turbo": "2.10.4",
-		"typescript": "6.0.3",
+		"typescript": "7.0.2",
 		"typescript-language-server": "5.3.0",
 		"vscode-langservers-extracted": "4.10.0"
 	},
