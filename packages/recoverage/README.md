@@ -30,6 +30,14 @@ To make a report representing your main branch available to your CI runners, you
   - `S3_ENDPOINT`
   - `S3_SECRET_ACCESS_KEY`
 
+When uploading to recoverage.cloud, recoverage names the report after your
+current directory by default. You can override that name with `--reportName`:
+
+```sh
+recoverage capture --reportName=my-package
+recoverage diff --reportName=my-package
+```
+
 ## Local Example
 
 Below is an example to set up a tiny project with Bun, TypeScript, Vitest, and @vitest/coverage-v8.
