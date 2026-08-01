@@ -45,7 +45,7 @@
 	},
 	"devDependencies": {
 		"@t3-oss/env-core": "0.13.11",
-		"@cloudflare/vitest-pool-workers": "0.20.0",
+		"@cloudflare/vitest-pool-workers": "0.20.1",
 		"@hono/vite-build": "1.11.1",
 		"@hono/vite-dev-server": "0.26.1",
 		"@octokit/types": "16.0.0",
@@ -62,6 +62,6 @@
 		"takua": "0.2.2",
 		"vite": "8.2.0",
 		"vitest": "4.1.10",
-		"wrangler": "4.117.0"
+		"wrangler": "4.118.0"
 	}
 }
