@@ -16,11 +16,15 @@ import { Project, ProjectToken } from "./project"
 import { projectsAllowed, type Role, tokensAllowed } from "./roles-permissions"
 import * as schema from "./schema"
 
+type GithubUserData = Endpoints[`GET /user`][`response`][`data`] & {
+	id: number
+}
+
 export type UiEnv = {
 	Bindings: Bindings
 	Variables: {
 		drizzle: DrizzleD1Database<typeof schema>
-		githubUserData: Endpoints[`GET /user`][`response`][`data`]
+		githubUserData: GithubUserData
 		userRole: Role
 		projectScope: string
 	}
@@ -49,6 +53,9 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 	if (status !== 200) {
 		deleteCookie(c, `github-access-token`)
 		return c.json({ error: `Unauthorized` }, 401)
+	}
+	if (typeof data.id !== `number` || !Number.isSafeInteger(data.id)) {
+		return c.json({ error: `GitHub returned an unsupported user ID.` }, 500)
 	}
 
 	const db = createDatabase(c.env.DB)
