@@ -24,20 +24,6 @@
 			"!**/worker-configuration.d.ts"
 		]
 	},
-	"javascript": {
-		"formatter": {
-			"semicolons": "asNeeded",
-			"trailingCommas": "all"
-		}
-	},
-	"formatter": {
-		"enabled": true,
-		"formatWithErrors": false,
-		"indentStyle": "tab",
-		"indentWidth": 2,
-		"lineWidth": 81,
-		"includes": ["**", "!**/*.gen.ts", "!**/*.cache.json"]
-	},
 	"linter": {
 		"enabled": true,
 		"rules": {

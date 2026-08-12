@@ -3,7 +3,7 @@
 		"TypeScript": {
 			"formatter": {
 				"language_server": {
-					"name": "biome"
+					"name": "dprint"
 				}
 			},
 			"code_actions_on_format": {
@@ -13,7 +13,7 @@
 		"TSX": {
 			"formatter": {
 				"language_server": {
-					"name": "biome"
+					"name": "dprint"
 				}
 			},
 			"code_actions_on_format": {
@@ -23,14 +23,14 @@
 		"JSON": {
 			"formatter": {
 				"language_server": {
-					"name": "biome"
+					"name": "dprint"
 				}
 			}
 		},
 		"JSONC": {
 			"formatter": {
 				"language_server": {
-					"name": "biome"
+					"name": "dprint"
 				}
 			}
 		}

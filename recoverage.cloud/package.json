@@ -16,7 +16,7 @@
 		"test:once": "vitest run",
 		"db:gen": "drizzle-kit generate",
 		"db:up": "wrangler d1 migrations apply recoverage-data",
-		"lint:biome": "biome check -- .",
+		"lint:biome": "biome lint -- .",
 		"lint:eslint": "NODE_OPTIONS=--require=../scripts/eslint-typescript.cjs eslint -- .",
 		"lint:types": "concurrently \"bun:lint:types:*\"",
 		"lint:types:main": "tsc --noEmit",
