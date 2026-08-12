@@ -8,7 +8,7 @@ export async function downloadCoverageReportFromCloud(
 	cloudToken: string,
 	cloudHost = `https://recoverage.cloud`,
 ): Promise<Error | string> {
-	const url = new URL(`/reporter/${reportName}`, cloudHost)
+	const url = new URL(`/reporter/${encodeURIComponent(reportName)}`, cloudHost)
 	try {
 		const response = await fetch(url, {
 			method: `GET`,
@@ -40,7 +40,7 @@ export async function uploadCoverageReportToCloud(
 	cloudToken: string,
 	cloudHost = `https://recoverage.cloud`,
 ): Promise<Error | { success: true }> {
-	const url = new URL(`/reporter/${reportName}`, cloudHost)
+	const url = new URL(`/reporter/${encodeURIComponent(reportName)}`, cloudHost)
 	try {
 		const response = await fetch(url, {
 			method: `PUT`,
