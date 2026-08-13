@@ -65,6 +65,6 @@
 		"workerd"
 	],
 	"overrides": {
-		"rolldown-plugin-dts": "0.28.1"
+		"rolldown-plugin-dts": "0.28.2"
 	}
 }
