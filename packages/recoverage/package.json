@@ -15,11 +15,7 @@
 		"directory": "packages/recoverage"
 	},
 	"type": "module",
-	"files": [
-		"bin",
-		"dist",
-		"src"
-	],
+	"files": ["bin", "dist", "src"],
 	"main": "dist/recoverage.js",
 	"types": "dist/recoverage.d.ts",
 	"exports": {
@@ -39,14 +35,14 @@
 	"scripts": {
 		"dev": "bun --bun tsdown --watch",
 		"build": "bun --bun tsdown && rm -f dist/*.x.d.ts",
-		"lint:biome": "biome check -- .",
+		"lint:biome": "biome lint -- .",
 		"lint:eslint": "NODE_OPTIONS=--require=../../scripts/eslint-typescript.cjs eslint -- .",
 		"lint:types": "tsc --noEmit",
 		"watch:types": "tsc --watch --noEmit",
 		"lint": "concurrently \"bun:lint:*\"",
 		"test": "vitest",
 		"test:once": "vitest run",
-		"postversion": "biome format --write package.json"
+		"postversion": "dprint fmt package.json"
 	},
 	"dependencies": {
 		"@t3-oss/env-core": "0.13.11",

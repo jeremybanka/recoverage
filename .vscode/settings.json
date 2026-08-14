@@ -2,9 +2,10 @@
 	// FILE FORMATTING ////////////////////////////////////////////////////////////
 	"editor.formatOnSave": true,
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"[json][jsonc][typescript][typescriptreact][css]": {
-		"editor.defaultFormatter": "biomejs.biome"
+	"[javascript][javascriptreact][json][jsonc][typescript][typescriptreact][css]": {
+		"editor.defaultFormatter": "dprint.dprint"
 	},
+	"dprint.path": "node_modules/.bin/dprint",
 	"editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"coverage-gutters.coverageBaseDir": "**/coverage/",
