@@ -39,10 +39,10 @@ jobs:
           node-version-file: .node_version
           registry-url: https://registry.npmjs.org
       - uses: ./.github/actions/setup
-      - uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
+      - uses: changesets/action@22ccf9aa43179fe9e27dc62e575971d28cce197c # v2.0.0
         with:
           # This expects you to have a script called release which does a build for your packages and calls changeset publish
-          publish: bun release
-          version: ./version.sh
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          publish-script: bun release
+          version-script: ./version.sh
+          github-token: ${{ steps.app-token.outputs.token }}
+          push-with-git-cli: true
