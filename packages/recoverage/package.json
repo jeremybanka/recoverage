@@ -62,7 +62,7 @@
 		"@types/istanbul-reports": "3.0.4",
 		"@types/node": "26.2.0",
 		"concurrently": "10.0.5",
-		"eslint": "10.8.1",
+		"eslint": "10.9.0",
 		"nyc": "18.0.0",
 		"recoverage-fixtures": "workspace:*",
 		"tsdown": "0.22.14",
