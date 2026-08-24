@@ -59,7 +59,7 @@
 		"fast-xml-parser": "5.11.0",
 		"recoverage": "workspace:*",
 		"recoverage-fixtures": "workspace:*",
-		"takua": "0.2.2",
+		"takua": "0.2.3",
 		"vite": "8.2.2",
 		"vitest": "4.1.11",
 		"wrangler": "4.125.0"
