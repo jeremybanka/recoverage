@@ -51,7 +51,7 @@
 		"@octokit/types": "17.0.0",
 		"@types/bun": "npm:bun-types@1.4.0",
 		"@types/istanbul-lib-coverage": "2.0.6",
-		"@types/node": "26.2.0",
+		"@types/node": "26.3.0",
 		"cloudflare": "7.1.0",
 		"concurrently": "10.0.5",
 		"drizzle-kit": "0.31.10",
