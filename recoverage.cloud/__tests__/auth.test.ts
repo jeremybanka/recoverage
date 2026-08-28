@@ -62,6 +62,12 @@ test(`authentication flow`, async () => {
 		},
 	})
 	expect(response2.status).toBe(200)
+	const response2Text = await response2.text()
+	const htmxConfig = `<meta name="htmx-config" content="{&quot;noSwap&quot;:[204,304,&quot;4xx&quot;,&quot;5xx&quot;]}"/>`
+	expect(response2Text).toContain(htmxConfig)
+	expect(response2Text.indexOf(htmxConfig)).toBeLessThan(
+		response2Text.indexOf(`<script>var htmx=`),
+	)
 
 	const project = await fetch(`https://recoverage.cloud/ui/project`, {
 		method: `POST`,
