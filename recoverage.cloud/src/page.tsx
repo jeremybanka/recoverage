@@ -23,6 +23,10 @@ export function Page(
 				)}
 				<meta charset="UTF-8" />
 				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+				<meta
+					name="htmx-config"
+					content='{"noSwap":[204,304,"4xx","5xx"]}'
+				/>
 				{/* <link rel="preload" href="/noise.svg" as="image" type="image/svg+xml" /> */}
 				<script
 					dangerouslySetInnerHTML={{ __html: JSON.parse(Script.htmxMinJS) }}
