@@ -48,11 +48,17 @@ export type JsonSummary = {
 
 export type RecoverageOptions = {
 	defaultBranch?: string
+	reportName?: string
 	silent?: boolean
 }
 
+function getDefaultReportName(): string {
+	// biome-ignore lint/style/noNonNullAssertion: there's always an element here
+	return process.cwd().split(`/`).at(-1)!
+}
+
 export async function capture(options: RecoverageOptions = {}): Promise<0 | 1> {
-	const { defaultBranch = `main`, silent = false } = options
+	const { defaultBranch = `main`, reportName, silent = false } = options
 	if (!silent && !logger.chronicle) {
 		logger.makeChronicle({ inline: true })
 	}
@@ -87,13 +93,12 @@ export async function capture(options: RecoverageOptions = {}): Promise<0 | 1> {
 			logger.chronicle?.mark(`uploaded coverage database to S3`)
 		}
 		if (env.RECOVERAGE_CLOUD_TOKEN) {
-			// biome-ignore lint/style/noNonNullAssertion: there's always an element here
-			const packageName = process.cwd().split(`/`).at(-1)!
+			const cloudReportName = reportName ?? getDefaultReportName()
 			logger.chronicle?.mark(
-				`uploading coverage report "${packageName}" to recoverage.cloud`,
+				`uploading coverage report "${cloudReportName}" to recoverage.cloud`,
 			)
 			const cloudResponse = await uploadCoverageReportToCloud(
-				packageName,
+				cloudReportName,
 				coverageMap,
 				coverageJsonSummary,
 				env.RECOVERAGE_CLOUD_TOKEN,
@@ -101,13 +106,13 @@ export async function capture(options: RecoverageOptions = {}): Promise<0 | 1> {
 			)
 			if (cloudResponse instanceof Error) {
 				logger.chronicle?.mark(
-					`failed to upload report "${packageName}" to recoverage.cloud`,
+					`failed to upload report "${cloudReportName}" to recoverage.cloud`,
 				)
 				console.error(cloudResponse)
 				return 1
 			}
 			logger.chronicle?.mark(
-				`uploaded coverage report "${packageName}" to recoverage.cloud`,
+				`uploaded coverage report "${cloudReportName}" to recoverage.cloud`,
 			)
 		} else {
 			logger.chronicle?.mark(`RECOVERAGE_CLOUD_TOKEN not set; skipping upload`)
@@ -122,9 +127,14 @@ export async function capture(options: RecoverageOptions = {}): Promise<0 | 1> {
 }
 
 export async function diff(
-	defaultBranch = `main`,
-	silent = false,
+	optionsOrDefaultBranch: RecoverageOptions | string = {},
+	silentArg = false,
 ): Promise<0 | 1> {
+	const options =
+		typeof optionsOrDefaultBranch === `string`
+			? { defaultBranch: optionsOrDefaultBranch, silent: silentArg }
+			: optionsOrDefaultBranch
+	const { defaultBranch = `main`, reportName, silent = false } = options
 	if (!silent && !logger.chronicle) {
 		logger.makeChronicle({ inline: true })
 	}
@@ -147,20 +157,19 @@ export async function diff(
 			return 1
 		}
 
-		// biome-ignore lint/style/noNonNullAssertion: there's always an element here
-		const packageName = process.cwd().split(`/`).at(-1)!
+		const cloudReportName = reportName ?? getDefaultReportName()
 		logger.chronicle?.mark(
-			`getting report "${packageName}" from recoverage.cloud`,
+			`getting report "${cloudReportName}" from recoverage.cloud`,
 		)
 		const cloudCoverage = await downloadCoverageReportFromCloud(
-			packageName,
+			cloudReportName,
 			env.RECOVERAGE_CLOUD_TOKEN,
 			env.RECOVERAGE_CLOUD_URL,
 		)
 
 		if (cloudCoverage instanceof Error) {
 			logger.chronicle?.mark(
-				`failed to download coverage report "${packageName}"`,
+				`failed to download coverage report "${cloudReportName}"`,
 			)
 			console.error(cloudCoverage)
 			return 1
@@ -170,13 +179,13 @@ export async function diff(
 			coverage: cloudCoverage,
 		}
 		logger.chronicle?.mark(
-			`downloaded report "${packageName}" from recoverage.cloud`,
+			`downloaded report "${cloudReportName}" from recoverage.cloud`,
 		)
 		saveCoverage(db).run({
 			$git_ref: baseGitRef,
 			$coverage: cloudCoverage,
 		})
-		logger.chronicle?.mark(`saved report "${packageName}" to local database`)
+		logger.chronicle?.mark(`saved report "${cloudReportName}" to local database`)
 	}
 
 	if (!currentCoverage) {
