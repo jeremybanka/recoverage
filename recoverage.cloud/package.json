@@ -56,7 +56,7 @@
 		"concurrently": "10.0.5",
 		"drizzle-kit": "0.31.10",
 		"eslint": "10.9.1",
-		"fast-xml-parser": "5.11.0",
+		"fast-xml-parser": "5.11.1",
 		"recoverage": "workspace:*",
 		"recoverage-fixtures": "workspace:*",
 		"takua": "0.2.3",
