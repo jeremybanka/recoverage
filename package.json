@@ -34,7 +34,7 @@
 		"@biomejs/biome": "2.5.11",
 		"@changesets/cli": "3.0.1",
 		"@dprint/biome": "0.13.9",
-		"@dprint/markdown": "0.23.1",
+		"@dprint/markdown": "0.23.2",
 		"@eslint/eslintrc": "3.3.6",
 		"@eslint/js": "10.0.1",
 		"@types/eslint": "9.6.1",
