@@ -9,7 +9,7 @@
 		"types": [
 			"vite/client",
 			"vitest/globals",
-			"@cloudflare/vitest-pool-workers/types",
+			"@cloudflare/vitest-plugin/types",
 			"./worker-configuration.d.ts"
 		]
 	}
