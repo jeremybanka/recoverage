@@ -44,7 +44,7 @@
 	},
 	"devDependencies": {
 		"@t3-oss/env-core": "0.13.11",
-		"@cloudflare/vitest-pool-workers": "0.22.0",
+		"@cloudflare/vitest-plugin": "1.1.2",
 		"@hono/vite-build": "1.11.1",
 		"@hono/vite-dev-server": "0.26.1",
 		"@octokit/types": "18.0.0",

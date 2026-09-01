@@ -1,4 +1,4 @@
-import "@cloudflare/vitest-pool-workers/types"
+import "@cloudflare/vitest-plugin/types"
 
 declare global {
 	namespace Cloudflare {
