@@ -3,6 +3,18 @@
 	"extends": ["config:recommended", "customManagers:biomeVersions"],
 	"automerge": true,
 	"branchConcurrentLimit": 9,
+	"customManagers": [
+		{
+			"customType": "regex",
+			"managerFilePatterns": ["/(^|/)package\\.json$/"],
+			"matchStrings": [
+				"\"packageManager\":\\s*\"bun@(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
+			],
+			"depNameTemplate": "bun",
+			"datasourceTemplate": "npm",
+			"versioningTemplate": "npm"
+		}
+	],
 	"internalChecksFilter": "strict",
 	"minimumReleaseAge": "1 day",
 	"prConcurrentLimit": 3,
@@ -22,6 +34,10 @@
 		{
 			"matchPackageNames": ["wrangler", "@cloudflare/vitest-pool-workers"],
 			"groupName": "Cloudflare Workers tooling"
+		},
+		{
+			"matchPackageNames": ["bun", "oven-sh/bun"],
+			"groupName": "Bun"
 		}
 	]
 }
