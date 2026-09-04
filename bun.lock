@@ -8,7 +8,7 @@
         "@biomejs/biome": "2.5.12",
         "@changesets/cli": "3.0.1",
         "@dprint/biome": "0.13.10",
-        "@dprint/markdown": "0.23.2",
+        "@dprint/markdown": "0.23.3",
         "@eslint/eslintrc": "3.3.7",
         "@eslint/js": "10.0.1",
         "@types/eslint": "9.6.1",
@@ -254,7 +254,7 @@
 
     "@dprint/linux-x64-musl": ["@dprint/linux-x64-musl@0.57.0", "", { "os": "linux", "cpu": "x64" }, "sha512-/QXScBA3Cz2xB6V98xXAxjsKl7Xu+2A69W5qj21eM13fNEj1TauBjsEYY3fb9/mymp93E1QSpAkkJI2bQD6XiQ=="],
 
-    "@dprint/markdown": ["@dprint/markdown@0.23.2", "", {}, "sha512-ny300A/+tv4i3U7kJwmakYjmiHQKidAPFyTLCslM80n7TkqDIzFvVRBPVXjzo6/VTox+wbzmTcZOwi4ImfIOBQ=="],
+    "@dprint/markdown": ["@dprint/markdown@0.23.3", "", {}, "sha512-llL0a6tjViXG8OIgyibfJZxW4vN3KsfoTPOl/LobFjCmdiunopoIxlDrjTR/PWHt9WJRd98m+TMfp4bb2Vc6vQ=="],
 
     "@dprint/win32-arm64": ["@dprint/win32-arm64@0.57.0", "", { "os": "win32", "cpu": "arm64" }, "sha512-aQ59I3BoshAZakIp3KXifu1c5eueE16TwsHeOTpJSw/TgE35nntkbA8PgH5HLtYjQLcJwYfgdZEDC4Bfq3yE9Q=="],
 
