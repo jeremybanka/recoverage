@@ -37,6 +37,7 @@
 		},
 		{
 			"matchPackageNames": ["bun", "oven-sh/bun"],
+			"minimumReleaseAge": null,
 			"groupName": "Bun"
 		}
 	]
