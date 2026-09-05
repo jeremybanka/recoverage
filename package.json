@@ -32,7 +32,7 @@
 	"license": "BSD-3-Clause",
 	"devDependencies": {
 		"@biomejs/biome": "2.5.12",
-		"@changesets/cli": "3.0.1",
+		"@changesets/cli": "3.0.2",
 		"@dprint/biome": "0.13.10",
 		"@dprint/markdown": "0.23.3",
 		"@eslint/eslintrc": "3.3.7",
