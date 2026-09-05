@@ -53,7 +53,7 @@
         "takua": "0.2.3",
       },
       "devDependencies": {
-        "@types/bun": "npm:bun-types@1.4.0",
+        "@types/bun": "npm:bun-types@1.4.1",
         "@types/istanbul-lib-coverage": "2.0.6",
         "@types/istanbul-lib-report": "3.0.3",
         "@types/istanbul-reports": "3.0.4",
@@ -87,7 +87,7 @@
         "@hono/vite-dev-server": "0.26.1",
         "@octokit/types": "18.0.0",
         "@t3-oss/env-core": "0.13.11",
-        "@types/bun": "npm:bun-types@1.4.0",
+        "@types/bun": "npm:bun-types@1.4.1",
         "@types/istanbul-lib-coverage": "2.0.6",
         "@types/node": "26.4.1",
         "cloudflare": "7.1.0",
@@ -568,7 +568,7 @@
 
     "@types/aws-lambda": ["@types/aws-lambda@8.10.161", "", {}, "sha512-rUYdp+MQwSFocxIOcSsYSF3YYYC/uUpMbCY/mbO21vGqfrEYvNSoPyKYDj6RhXXpPfS0KstW9RwG3qXh9sL7FQ=="],
 
-    "@types/bun": ["bun-types@1.4.0", "", { "dependencies": { "@types/node": "*" } }, "sha512-iIKw23BspnQQYd3prITOBxeUsxBHnwzX6YJfGMuNOZzeNcMmVqzIIVGRm1l69ogaPQmb4wB6BN8mA5bE9YuC5Q=="],
+    "@types/bun": ["bun-types@1.4.1", "", { "dependencies": { "@types/node": "*" } }, "sha512-loKuVrAFZKfEv+JvWkHRS9GW5IqLuLRjVXN9p+vZvBN86O5hf/pBZQ5hSoyipsrMmWObZBDvWnlmKvjKTM0PdA=="],
 
     "@types/chai": ["@types/chai@5.2.3", "", { "dependencies": { "@types/deep-eql": "*", "assertion-error": "^2.0.1" } }, "sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA=="],
 
