@@ -54,7 +54,7 @@
 		"typescript-language-server": "6.0.0",
 		"vscode-langservers-extracted": "4.10.0"
 	},
-	"packageManager": "bun@1.4.1",
+	"packageManager": "bun@1.4.2",
 	"trustedDependencies": [
 		"@biomejs/biome",
 		"dprint",
