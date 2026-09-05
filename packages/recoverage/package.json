@@ -56,7 +56,7 @@
 		"takua": "0.2.3"
 	},
 	"devDependencies": {
-		"@types/bun": "npm:bun-types@1.4.0",
+		"@types/bun": "npm:bun-types@1.4.1",
 		"@types/istanbul-lib-coverage": "2.0.6",
 		"@types/istanbul-lib-report": "3.0.3",
 		"@types/istanbul-reports": "3.0.4",
