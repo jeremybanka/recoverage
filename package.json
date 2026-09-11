@@ -31,7 +31,7 @@
 	"author": "",
 	"license": "BSD-3-Clause",
 	"devDependencies": {
-		"@biomejs/biome": "2.5.12",
+		"@biomejs/biome": "2.5.13",
 		"@changesets/cli": "3.0.2",
 		"@dprint/biome": "0.13.10",
 		"@dprint/markdown": "0.23.3",
