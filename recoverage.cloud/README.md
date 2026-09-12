@@ -39,3 +39,18 @@ The Worker expects these bindings/secrets:
 
 Production deploys use `wrangler.jsonc`; preview deploys use
 `wrangler-preview.jsonc` and the `preview:*` scripts.
+
+## Report quota exemptions
+
+Free accounts are limited to three reports per project. The explicit
+`unlimitedReportGithubUserIds` allowlist in `src/roles-permissions.ts` exempts
+selected accounts from this report quota, starting with `jeremybanka` (`8570459`).
+To add an account, verify its numeric ID with `gh api users/LOGIN --jq .id`, then
+add the ID with a comment identifying the account. Deploy the Worker to apply
+allowlist changes; no database migration or CLI release is needed.
+
+The exemption uses the project owner's GitHub ID stored during OAuth, after
+verifying the reporter token. Authentication, project ownership, report ref and
+payload validation, and project/token limits still apply. Reports are retained
+until their project is deleted; there is no separate storage quota or automatic
+retention limit in the app.
