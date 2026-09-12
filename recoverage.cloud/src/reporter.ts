@@ -12,7 +12,10 @@ import type { Bindings } from "./env"
 import { computeHash } from "./hash"
 import { stringify } from "./json"
 import type { Role } from "./roles-permissions"
-import { reportsAllowed } from "./roles-permissions"
+import {
+	reportsAllowed,
+	unlimitedReportGithubUserIds,
+} from "./roles-permissions"
 import * as schema from "./schema"
 
 type ReporterEnv = {
@@ -21,6 +24,7 @@ type ReporterEnv = {
 		drizzle: DrizzleD1Database<typeof schema>
 		projectScope: string
 		userRole: Role
+		githubUserId: number
 	}
 }
 export const reporterRoutes = new Hono<ReporterEnv>()
@@ -64,6 +68,7 @@ const reporterAuth: MiddlewareHandler<ReporterEnv> = async (c, next) => {
 	c.set(`drizzle`, db)
 	c.set(`projectScope`, projectId)
 	c.set(`userRole`, tokenRecord.project.user.role)
+	c.set(`githubUserId`, tokenRecord.project.user.id)
 	await next()
 }
 
@@ -103,12 +108,15 @@ reporterRoutes.put(`/:reportRef`, reporterAuth, async (c) => {
 
 	const db = c.get(`drizzle`)
 
-	const currentReports = await db.query.reports.findMany({
-		where: eq(schema.reports.projectId, projectScope),
-	})
+	if (!unlimitedReportGithubUserIds.has(c.get(`githubUserId`))) {
+		const currentReports = await db.query.reports.findMany({
+			where: eq(schema.reports.projectId, projectScope),
+			columns: { ref: true },
+		})
 
-	if (currentReports.length >= numberOfReportsAllowed) {
-		return c.json({ error: `You may not create more reports` }, 401)
+		if (currentReports.length >= numberOfReportsAllowed) {
+			return c.json({ error: `You may not create more reports` }, 401)
+		}
 	}
 
 	const jsonPayload = await c.req.json()

@@ -3,6 +3,13 @@ import { Escalator, Laws, optional, required } from "jurist"
 
 export type Role = Roles<typeof authorization>
 export type Permission = Permissions<typeof authorization>
+
+// Stable GitHub user IDs verified via GET /users/{login}. These IDs are stored
+// in users.id during GitHub OAuth; never trust an ID supplied in an upload.
+export const unlimitedReportGithubUserIds: ReadonlySet<number> = new Set([
+	8570459, // jeremybanka
+])
+
 export const authorization = new Laws({
 	roles: [`free`],
 	permissions: required({

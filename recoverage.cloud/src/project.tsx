@@ -50,6 +50,10 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 			const { id, name, tokens, reports, mode, userRole } = props
 			const numberOfTokensAllowed = tokensAllowed.get(userRole)
 			const mayCreateToken = tokens.length < numberOfTokensAllowed
+			const numberOfReportsToDisplay = Math.max(
+				reports.length,
+				reportsAllowed.get(userRole),
+			)
 			return (
 				<div
 					key={id}
@@ -116,13 +120,12 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 								gap: 10px;
 							`}
 						>
-							{Array.from({ length: reportsAllowed.get(userRole) }).map(
-								(_, idx) => {
-									const report = reports[idx]
-									if (!report) {
-										return (
-											<span
-												class={css`
+							{Array.from({ length: numberOfReportsToDisplay }).map((_, idx) => {
+								const report = reports[idx]
+								if (!report) {
+									return (
+										<span
+											class={css`
 												background: transparent;
 												border: 1px solid var(--color-fg-faint);
 												padding: 5px;
@@ -131,18 +134,18 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 												width: 80px;
 												box-shadow: inset 0 1px 0 1px #0002;
 											`}
-											/>
-										)
-									}
-									let coveragePercent: number | undefined
-									if (report?.jsonSummary) {
-										const summary = JSON.parse(report.jsonSummary)
-										coveragePercent = summary.total.statements.pct
-									}
-									return (
-										<span
-											key={report?.ref ?? idx}
-											class={css`
+										/>
+									)
+								}
+								let coveragePercent: number | undefined
+								if (report?.jsonSummary) {
+									const summary = JSON.parse(report.jsonSummary)
+									coveragePercent = summary.total.statements.pct
+								}
+								return (
+									<span
+										key={report?.ref ?? idx}
+										class={css`
 												display: flex;
 												box-sizing: border-box;
 												flex-flow: column;
@@ -155,9 +158,9 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 												min-height: 30px;
 												min-width: 80px;
 												`}
-										>
-											<span
-												class={css`
+									>
+										<span
+											class={css`
 													position: relative;
 													box-sizing: border-box;
 													display: flex;
@@ -173,12 +176,12 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 													min-width: 80px;
 													line-break: none;
 												`}
-											>
-												{report.ref}
-												{when(
-													coveragePercent,
-													<span
-														class={css`
+										>
+											{report.ref}
+											{when(
+												coveragePercent,
+												<span
+													class={css`
 															position: absolute;
 															bottom: -12px;
 															margin: auto;
@@ -191,15 +194,14 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 															padding: 1px 3px 2px 6px;
 															box-shadow: 0 2px 0px -1px #0005;
 														`}
-													>
-														{coveragePercent}%
-													</span>,
-												)}
-											</span>
+												>
+													{coveragePercent}%
+												</span>,
+											)}
 										</span>
-									)
-								},
-							)}
+									</span>
+								)
+							})}
 						</div>
 					</section>
 
