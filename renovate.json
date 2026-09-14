@@ -32,6 +32,12 @@
 			"minimumReleaseAge": null
 		},
 		{
+			"matchDatasources": ["npm"],
+			"matchPackageNames": ["comline", "jurist", "takua"],
+			"minimumReleaseAge": null,
+			"groupName": "jeremybanka packages"
+		},
+		{
 			"matchPackageNames": ["wrangler", "@cloudflare/vitest-pool-workers"],
 			"groupName": "Cloudflare Workers tooling"
 		},
