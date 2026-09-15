@@ -15,6 +15,8 @@ import {
 } from "comline"
 import logger from "takua"
 
+import * as Recoverage from "./recoverage.ts"
+
 const exec = promisify(execFile)
 
 function branchOptions(description: string) {
@@ -81,7 +83,6 @@ if (inputs.case === `help`) {
 	process.exit(0)
 }
 
-const Recoverage = await import(`./recoverage.ts`)
 switch (inputs.case) {
 	case ``:
 		{
