@@ -61,72 +61,70 @@ const parse = cli({
 	},
 })
 
-async function main() {
-	const completion = await completionResponse(parse.definition, process.argv)
-	if (completion !== undefined) {
-		process.stdout.write(completion)
-		return
-	}
+const completion = await completionResponse(parse.definition, process.argv)
+if (completion !== undefined) {
+	await new Promise<void>((resolve) => {
+		process.stdout.write(completion, () => {
+			resolve()
+		})
+	})
+	process.exit(0)
+}
 
-	const { inputs, warnings } = parse(process.argv)
-	logWarnings(warnings)
-	if (inputs.case === `help`) {
-		console.log(help(parse.definition))
-		console.log(
-			`\nShell completion: recoverage completion install <bash|zsh|fish|nushell|carapace>`,
-		)
-		return
-	}
+const { inputs, warnings } = parse(process.argv)
+logWarnings(warnings)
+if (inputs.case === `help`) {
+	console.log(help(parse.definition))
+	console.log(
+		`\nShell completion: recoverage completion install <bash|zsh|fish|nushell|carapace>`,
+	)
+	process.exit(0)
+}
 
-	const Recoverage = await import(`./recoverage.ts`)
-	switch (inputs.case) {
-		case ``:
-			{
-				const captureCode = await Recoverage.capture({
-					defaultBranch: inputs.opts.defaultBranch ?? `main`,
-				})
-				if (captureCode === 1) {
-					logger.chronicle?.logMarks()
-					process.exit(1)
-				}
-				try {
-					const diffCode = await Recoverage.diff(
-						inputs.opts.defaultBranch ?? `main`,
-					)
-					logger.chronicle?.logMarks()
-					if (diffCode === 1) {
-						process.exit(1)
-					}
-				} catch (thrown) {
-					logger.chronicle?.logMarks()
-					console.error(thrown)
-					process.exit(1)
-				}
+const Recoverage = await import(`./recoverage.ts`)
+switch (inputs.case) {
+	case ``:
+		{
+			const captureCode = await Recoverage.capture({
+				defaultBranch: inputs.opts.defaultBranch ?? `main`,
+			})
+			if (captureCode === 1) {
+				logger.chronicle?.logMarks()
+				process.exit(1)
 			}
-			break
-		case `capture`:
-			{
-				const captureCode = await Recoverage.capture({
-					defaultBranch: inputs.opts.defaultBranch ?? `main`,
-				})
-				if (captureCode === 1) {
-					process.exit(1)
-				}
-			}
-			break
-		case `diff`:
 			try {
 				const diffCode = await Recoverage.diff(
 					inputs.opts.defaultBranch ?? `main`,
 				)
+				logger.chronicle?.logMarks()
 				if (diffCode === 1) {
 					process.exit(1)
 				}
 			} catch (thrown) {
+				logger.chronicle?.logMarks()
 				console.error(thrown)
+				process.exit(1)
 			}
-			break
-	}
+		}
+		break
+	case `capture`:
+		{
+			const captureCode = await Recoverage.capture({
+				defaultBranch: inputs.opts.defaultBranch ?? `main`,
+			})
+			if (captureCode === 1) {
+				process.exit(1)
+			}
+		}
+		break
+	case `diff`:
+		try {
+			const diffCode = await Recoverage.diff(inputs.opts.defaultBranch ?? `main`)
+			if (diffCode === 1) {
+				process.exit(1)
+			}
+		} catch (thrown) {
+			console.error(thrown)
+		}
+		break
 }
-
-await main()
