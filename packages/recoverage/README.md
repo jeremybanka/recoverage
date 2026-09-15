@@ -14,6 +14,45 @@ Recoverage works smoothly `vitest` + `@vitest/coverage-v8`, as well as many othe
 
 > **Please Note:** Bun is required to run this tool. You can install Bun from [bun.com/docs/installation](https://bun.com/docs/installation).
 
+## Commands and Options
+
+Run `recoverage` to capture and diff coverage, `recoverage capture` to capture only,
+or `recoverage diff` to compare saved reports. Run `recoverage help` for usage.
+
+All three coverage commands accept `--default-branch` (also `--defaultBranch` or
+`-b`). The default is `main`. The combined command uses the selected branch for
+both capture and diff:
+
+```sh
+recoverage --default-branch=trunk
+recoverage capture -b trunk
+recoverage diff --default-branch=trunk
+```
+
+Unknown options and options ignored by the selected command produce warnings on
+stderr. Warnings are advisory; they do not change the coverage result or exit code.
+
+### Shell Completion
+
+With `recoverage` on your `PATH`, install completion for your shell:
+
+```sh
+recoverage completion install bash
+```
+
+Replace `bash` with `zsh`, `fish`, `nushell`, or `carapace` as appropriate. Bash
+requires bash-completion 2.18 or newer; Fish requires version 4 or newer. Installation
+uses the shell's configured completion directories without editing shell profiles.
+If your shell already uses Carapace, install the `carapace` integration.
+
+To print an integration file for manual setup, use `recoverage completion bash`
+(or another supported target) without `install`.
+
+Completion suggests commands, options, and local Git branches for the default
+branch option. Branch suggestions use the current directory's repository and do
+not fetch from a remote. Completion works without coverage reports or valid
+application configuration; outside Git, branch suggestions are empty.
+
 ## Persisting Coverage Reports for CI
 
 To make a report representing your main branch available to your CI runners, you have three options:
