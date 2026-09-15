@@ -1,0 +1,12 @@
+{
+	"recommendations": [
+		"biomejs.biome",
+		"christian-kohler.npm-intellisense",
+		"christian-kohler.path-intellisense",
+		"dbaeumer.vscode-eslint",
+		"github.vscode-github-actions",
+		"redhat.vscode-yaml",
+		"streetsidesoftware.code-spell-checker",
+		"tamasfe.even-better-toml"
+	]
+}
