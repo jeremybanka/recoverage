@@ -32,6 +32,29 @@ recoverage diff --default-branch=trunk
 Unknown options and options ignored by the selected command produce warnings on
 stderr. Warnings are advisory; they do not change the coverage result or exit code.
 
+### Configuration
+
+Create `recoverage.config.json` in the directory where you run Recoverage:
+
+```json
+{
+  "defaultBranch": "trunk"
+}
+```
+
+Commit this file to share the baseline branch with contributors and CI. The
+`defaultBranch` setting applies to `recoverage`, `recoverage capture`, and
+`recoverage diff`. Use the camelCase key `defaultBranch` in JSON.
+
+Command-line options override the config file. For example,
+`recoverage diff --default-branch=release` compares against `release` even when the
+file specifies `trunk`. Without a configured branch or command-line override,
+Recoverage uses `main`.
+
+The file is optional and is read from the current working directory; Recoverage
+does not search parent directories. Invalid JSON or an invalid `defaultBranch`
+value fails before any coverage operation runs. `defaultBranch` must be a string.
+
 ### Shell Completion
 
 With `recoverage` on your `PATH`, install completion for your shell:

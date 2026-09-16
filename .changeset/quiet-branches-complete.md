@@ -2,7 +2,7 @@
 "recoverage": patch
 ---
 
-⬆️ Update `comline` to `0.8.0`, preserving discovery of `recoverage.config.json`.
+⬆️ Update `comline` to `0.8.0`, with documented support for `recoverage.config.json`. Set `defaultBranch` once for capture and diff, with command-line options taking precedence.
 
 ✨ Add shell completion for Bash, Zsh, Fish, Nushell, and Carapace, including local Git branch suggestions and explicit completion installation.
 

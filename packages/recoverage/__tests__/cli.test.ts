@@ -80,27 +80,50 @@ describe(`CLI execution`, () => {
 		).toEqual([{ capture: `main` }, { diff: `main` }])
 	})
 
+	for (const command of [[], [`capture`], [`diff`]]) {
+		it.each([
+			{ args: [], branch: `trunk` },
+			{ args: [`--default-branch=release`], branch: `release` },
+		])(
+			`reads JSON configuration for ${command[0] ?? `the combined command`} with overrides: $args`,
+			({ args, branch }) => {
+				writeFileSync(
+					path.join(directory, `recoverage.config.json`),
+					JSON.stringify({ defaultBranch: `trunk` }),
+				)
+				const result = invoke([...command, ...args])
+				expect(result.status, result.stderr).toBe(0)
+				expect(result.stderr).toBe(``)
+				expect(
+					result.stdout
+						.trim()
+						.split(`\n`)
+						.map((line) => JSON.parse(line)),
+				).toEqual(
+					command[0] === `capture`
+						? [{ capture: branch }]
+						: command[0] === `diff`
+							? [{ diff: branch }]
+							: [{ capture: branch }, { diff: branch }],
+				)
+			},
+		)
+	}
+
 	it.each([
-		{ args: [], branch: `trunk` },
-		{ args: [`--default-branch=release`], branch: `release` },
-	])(
-		`reads JSON configuration with CLI overrides: $args`,
-		({ args, branch }) => {
-			writeFileSync(
-				path.join(directory, `recoverage.config.json`),
-				JSON.stringify({ defaultBranch: `trunk` }),
-			)
-			const result = invoke(args)
-			expect(result.status, result.stderr).toBe(0)
-			expect(result.stderr).toBe(``)
-			expect(
-				result.stdout
-					.trim()
-					.split(`\n`)
-					.map((line) => JSON.parse(line)),
-			).toEqual([{ capture: branch }, { diff: branch }])
+		{ label: `malformed JSON`, config: `{invalid`, error: `JSON` },
+		{
+			label: `invalid branch type`,
+			config: `{"defaultBranch": 123}`,
+			error: `defaultBranch`,
 		},
-	)
+	])(`rejects $label before running coverage`, ({ config, error }) => {
+		writeFileSync(path.join(directory, `recoverage.config.json`), config)
+		const result = invoke([])
+		expect(result.status).toBe(1)
+		expect(result.stdout).toBe(``)
+		expect(result.stderr).toContain(error)
+	})
 
 	it(`warns on stderr about a misspelled flag without changing success`, () => {
 		const result = invoke([`diff`, `--defaultBrnach=trunk`])
