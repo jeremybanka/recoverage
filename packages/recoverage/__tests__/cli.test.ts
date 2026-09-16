@@ -80,6 +80,28 @@ describe(`CLI execution`, () => {
 		).toEqual([{ capture: `main` }, { diff: `main` }])
 	})
 
+	it.each([
+		{ args: [], branch: `trunk` },
+		{ args: [`--default-branch=release`], branch: `release` },
+	])(
+		`reads JSON configuration with CLI overrides: $args`,
+		({ args, branch }) => {
+			writeFileSync(
+				path.join(directory, `recoverage.config.json`),
+				JSON.stringify({ defaultBranch: `trunk` }),
+			)
+			const result = invoke(args)
+			expect(result.status, result.stderr).toBe(0)
+			expect(result.stderr).toBe(``)
+			expect(
+				result.stdout
+					.trim()
+					.split(`\n`)
+					.map((line) => JSON.parse(line)),
+			).toEqual([{ capture: branch }, { diff: branch }])
+		},
+	)
+
 	it(`warns on stderr about a misspelled flag without changing success`, () => {
 		const result = invoke([`diff`, `--defaultBrnach=trunk`])
 		expect(result.status).toBe(0)

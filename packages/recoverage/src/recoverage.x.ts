@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { execFile } from "node:child_process"
+import path from "node:path"
 import { promisify } from "node:util"
 
 import { type } from "arktype"
@@ -49,6 +50,7 @@ function branchOptions(description: string) {
 
 const parse = cli({
 	cliName: `recoverage`,
+	discoverConfigPath: () => path.join(process.cwd(), `recoverage.config.json`),
 	routes: optional({
 		"": null,
 		capture: null,
