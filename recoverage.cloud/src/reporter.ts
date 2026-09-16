@@ -13,7 +13,11 @@ import { type Bindings, getEnv } from "./env"
 import { computeHash } from "./hash"
 import { stringify } from "./json"
 import type { Role } from "./roles-permissions"
-import { hostedReportsAllowed, reportBytesAllowed, unlimitedReportGithubUserIds } from "./roles-permissions"
+import {
+	hostedReportsAllowed,
+	reportBytesAllowed,
+	unlimitedReportGithubUserIds,
+} from "./roles-permissions"
 import * as schema from "./schema"
 
 type ReporterEnv = {

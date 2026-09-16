@@ -18,6 +18,8 @@ export default defineConfig(async () => {
 					bindings: {
 						TEST_MIGRATIONS: migrations,
 						COOKIE_SECRET: `HI`,
+						GITHUB_CLIENT_ID: `test-client-id`,
+						GITHUB_CLIENT_SECRET: `test-client-secret`,
 					},
 				},
 			}),

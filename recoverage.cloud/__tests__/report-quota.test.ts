@@ -114,7 +114,7 @@ test(`other accounts keep their quota even if they claim the maintainer's identi
 	})
 	expect(rejected.status).toBe(401)
 	expect(await rejected.json()).toEqual({
-		error: `You may not create more reports`,
+		error: `You may not create more hosted reports. Your account tier allows 3.`,
 	})
 	expect((await download(token, `report-3`)).status).toBe(404)
 	expect(

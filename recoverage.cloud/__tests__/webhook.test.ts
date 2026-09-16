@@ -1,3 +1,4 @@
+import { Temporal } from "@js-temporal/polyfill"
 import { env } from "cloudflare:test"
 
 import app from "../src"
@@ -104,6 +105,7 @@ test(`signed Stripe subscription webhooks sync billing state`, async () => {
 
 	const userRole = await getUserRole({
 		db,
+		now: Temporal.Instant.fromEpochMilliseconds(nowUnixSeconds * 1000),
 		stripeSupporterPriceId: supporterPriceId,
 		userId,
 	})
