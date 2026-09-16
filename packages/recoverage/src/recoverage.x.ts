@@ -77,13 +77,6 @@ if (completion !== undefined) {
 
 const { inputs, warnings } = parse(process.argv)
 logWarnings(warnings)
-if (inputs.case === `help`) {
-	console.log(help(parse.definition))
-	console.log(
-		`\nShell completion: recoverage completion install <bash|zsh|fish|nushell|carapace>`,
-	)
-	process.exit(0)
-}
 
 switch (inputs.case) {
 	case ``:
@@ -130,4 +123,10 @@ switch (inputs.case) {
 			console.error(thrown)
 		}
 		break
+	case `help`:
+		console.log(help(parse.definition))
+		console.log(
+			`\nShell completion: recoverage completion install <bash|zsh|fish|nushell|carapace>`,
+		)
+		process.exit(0)
 }
