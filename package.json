@@ -33,7 +33,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.5.14",
 		"@changesets/cli": "3.0.3",
-		"@dprint/biome": "0.13.11",
+		"@dprint/biome": "0.13.12",
 		"@dprint/markdown": "0.24.0",
 		"@eslint/eslintrc": "3.3.7",
 		"@eslint/js": "10.0.1",
