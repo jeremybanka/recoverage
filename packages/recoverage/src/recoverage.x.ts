@@ -1,13 +1,56 @@
 #!/usr/bin/env bun
 
+import { execFile } from "node:child_process"
+import path from "node:path"
+import { promisify } from "node:util"
+
 import { type } from "arktype"
-import { cli, help, noOptions, optional, options } from "comline"
+import {
+	cli,
+	completionResponse,
+	help,
+	logWarnings,
+	noOptions,
+	optional,
+	options,
+} from "comline"
 import logger from "takua"
 
 import * as Recoverage from "./recoverage.ts"
 
+const exec = promisify(execFile)
+
+function branchOptions(description: string) {
+	return options(description, type({ "defaultBranch?": `string` }), {
+		defaultBranch: {
+			flag: `b`,
+			aliases: [`default-branch`],
+			required: false,
+			description: `The default branch for the repository (default: "main").`,
+			example: `--default-branch=trunk`,
+			completion: {
+				repeatable: false,
+				fileSystem: `none`,
+				async provide({ signal }) {
+					try {
+						const { stdout } = await exec(
+							`git`,
+							[`for-each-ref`, `--format=%(refname:strip=2)`, `refs/heads/`],
+							{ cwd: process.cwd(), signal, timeout: 1000 },
+						)
+						return stdout.trim().split(`\n`).filter(Boolean)
+					} catch {
+						return []
+					}
+				},
+			},
+		},
+	})
+}
+
 const parse = cli({
 	cliName: `recoverage`,
+	discoverConfigPath: () => path.join(process.cwd(), `recoverage.config.json`),
 	routes: optional({
 		"": null,
 		capture: null,
@@ -15,41 +58,32 @@ const parse = cli({
 		help: null,
 	}),
 	routeOptions: {
-		"": options(
-			`capture and diff the current state of your coverage.`,
-
-			type({ "defaultBranch?": `string` }),
-			{
-				defaultBranch: {
-					flag: `b`,
-					required: false,
-					description: `The default branch for the repository (default: "main").`,
-					example: `--defaultBranch=trunk`,
-				},
-			},
-		),
-		capture: noOptions(`capture the current state of your coverage.`),
-		diff: options(
-			`diff the current state of your coverage.`,
-			type({ "defaultBranch?": `string` }),
-			{
-				defaultBranch: {
-					flag: `b`,
-					required: false,
-					description: `The default branch for the repository (default: "main").`,
-					example: `--defaultBranch=trunk`,
-				},
-			},
-		),
+		"": branchOptions(`capture and diff the current state of your coverage.`),
+		capture: branchOptions(`capture the current state of your coverage.`),
+		diff: branchOptions(`diff the current state of your coverage.`),
 		help: noOptions(`show this help text.`),
 	},
 })
 
-const { inputs } = parse(process.argv)
+const completion = await completionResponse(parse.definition, process.argv)
+if (completion !== undefined) {
+	await new Promise<void>((resolve) => {
+		process.stdout.write(completion, () => {
+			resolve()
+		})
+	})
+	process.exit(0)
+}
+
+const { inputs, warnings } = parse(process.argv)
+logWarnings(warnings)
+
 switch (inputs.case) {
 	case ``:
 		{
-			const captureCode = await Recoverage.capture()
+			const captureCode = await Recoverage.capture({
+				defaultBranch: inputs.opts.defaultBranch ?? `main`,
+			})
 			if (captureCode === 1) {
 				logger.chronicle?.logMarks()
 				process.exit(1)
@@ -71,7 +105,9 @@ switch (inputs.case) {
 		break
 	case `capture`:
 		{
-			const captureCode = await Recoverage.capture()
+			const captureCode = await Recoverage.capture({
+				defaultBranch: inputs.opts.defaultBranch ?? `main`,
+			})
 			if (captureCode === 1) {
 				process.exit(1)
 			}
@@ -89,5 +125,8 @@ switch (inputs.case) {
 		break
 	case `help`:
 		console.log(help(parse.definition))
-		break
+		console.log(
+			`\nShell completion: recoverage completion install <bash|zsh|fish|nushell|carapace>`,
+		)
+		process.exit(0)
 }
