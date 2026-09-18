@@ -44,7 +44,7 @@
       "dependencies": {
         "@t3-oss/env-core": "0.13.11",
         "arktype": "2.2.3",
-        "comline": "0.8.0",
+        "comline": "0.8.1",
         "diff": "9.0.0",
         "istanbul-lib-coverage": "3.2.2",
         "istanbul-lib-report": "3.0.1",
@@ -77,7 +77,7 @@
         "hono": "4.13.8",
         "htmx.org": "4.0.0",
         "istanbul-lib-coverage": "3.2.2",
-        "jurist": "0.0.13",
+        "jurist": "0.0.14",
         "nanoid": "6.0.1",
         "octokit": "5.0.5",
       },
@@ -838,7 +838,7 @@
 
     "color-name": ["color-name@1.1.4", "", {}, "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA=="],
 
-    "comline": ["comline@0.8.0", "", { "dependencies": { "@standard-schema/spec": "1.1.0", "treetrunks": "0.1.11" }, "peerDependencies": { "arktype": "^2.1.28", "zod": "^4.2.0" }, "optionalPeers": ["arktype", "zod"] }, "sha512-Np5SpA0LnzFMWcUvgPFypzh7rf98QuzGA5IbjHNMs0UjGcjAh5twPF0QvJqg4YRkWFBHxZ13EzlUpabxBUYT+g=="],
+    "comline": ["comline@0.8.1", "", { "dependencies": { "@standard-schema/spec": "1.1.0", "treetrunks": "0.1.12" }, "peerDependencies": { "arktype": "^2.1.28", "zod": "^4.2.0" }, "optionalPeers": ["arktype", "zod"] }, "sha512-FSg4FZRIC4WOlN4Kg8KPLBufj+2crxZ/ZC+Q97rP1q+kEWOBnSaVJuc1rCM/JHx2KVtHd3Jaap9lpTlYAZwdDg=="],
 
     "comment-parser": ["comment-parser@1.4.5", "", {}, "sha512-aRDkn3uyIlCFfk5NUA+VdwMmMsh8JGhc4hapfV4yxymHGQ3BVskMQfoXGpCo5IoBuQ9tS5iiVKhCpTcB4pW4qw=="],
 
@@ -1102,7 +1102,7 @@
 
     "jsonfile": ["jsonfile@4.0.0", "", { "optionalDependencies": { "graceful-fs": "^4.1.6" } }, "sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg=="],
 
-    "jurist": ["jurist@0.0.13", "", { "dependencies": { "treetrunks": "0.1.11" } }, "sha512-uz7YzIihFeMwV+5LHVn5JwMEm9DtHSuC6LNIUo11EQKt47B1aStq1ixWTZndW204hK+vhZsQWftaqNEO/LZK/w=="],
+    "jurist": ["jurist@0.0.14", "", { "dependencies": { "treetrunks": "0.1.12" } }, "sha512-Qv9gZGzJ85b1qO81pJbSJ83vb+ld7yDZodXcxhX0vbX7RmoHi47l/P3Y83QcVevco0xxFym8G6SL7cr70RqsBw=="],
 
     "keyv": ["keyv@5.6.0", "", { "dependencies": { "@keyv/serialize": "^1.1.1" } }, "sha512-CYDD3SOtsHtyXeEORYRx2qBtpDJFjRTGXUtmNEMGyzYOKj1TE3tycdlho7kA1Ufx9OYWZzg52QFBGALTirzDSw=="],
 
@@ -1338,7 +1338,7 @@
 
     "tree-kill": ["tree-kill@1.2.2", "", { "bin": { "tree-kill": "cli.js" } }, "sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A=="],
 
-    "treetrunks": ["treetrunks@0.1.11", "", {}, "sha512-3L5O5w3AGZd47pGpTNEQAfp68pSIQCeundsUZnPLPtg4TYL87qmcSJsvoqLeRUXtmL8W7JycaD3gd+i2SCYQrQ=="],
+    "treetrunks": ["treetrunks@0.1.12", "", {}, "sha512-x9XbZAus9Y4y7WRke6DwOrxmAxrwXNVv/wSmO9aNEfO92gu4Jau/4lmfXE1untxNle1WygPX2wriCtf+oYKMmg=="],
 
     "ts-api-utils": ["ts-api-utils@2.5.0", "", { "peerDependencies": { "typescript": ">=4.8.4" } }, "sha512-OJ/ibxhPlqrMM0UiNHJ/0CKQkoKF243/AEmplt3qpRgkW8VG7IfOS41h7V8TjITqdByHzrjcS/2si+y4lIh8NA=="],
 
