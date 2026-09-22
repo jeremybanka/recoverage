@@ -48,6 +48,7 @@ async function account() {
 type Account = Awaited<ReturnType<typeof account>>
 
 function post(owner: Account, bindings: Partial<Bindings> = {}, headers = {}) {
+	const portalConfiguration = { STRIPE_PORTAL_CONFIGURATION_ID: `bpc_test` }
 	return app.request(
 		`${origin}/billing/checkout`,
 		{
@@ -56,6 +57,7 @@ function post(owner: Account, bindings: Partial<Bindings> = {}, headers = {}) {
 		},
 		{
 			...env,
+			...portalConfiguration,
 			STRIPE_SECRET_KEY: `sk_test_placeholder`,
 			STRIPE_SUPPORTER_PRICE_ID: priceId,
 			STRIPE_WEBHOOK_SECRET: `whsec_placeholder`,
