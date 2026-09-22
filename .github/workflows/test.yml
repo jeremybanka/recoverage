@@ -5,9 +5,10 @@ permissions:
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "paid-coverage-tiers"]
+  # Keep PR targets unrestricted so work targeting integration branches is checked.
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
