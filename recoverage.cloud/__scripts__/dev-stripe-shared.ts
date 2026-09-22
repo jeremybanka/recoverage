@@ -1,12 +1,8 @@
+import { billingEvents } from "../src/billing-config"
+
 export const TEMP_ENV_NAME = `stripe-local`
 export const DEFAULT_WRANGLER_PORT = 8787
-export const STRIPE_EVENTS = [
-	`checkout.session.completed`,
-	`customer.subscription.created`,
-	`customer.subscription.updated`,
-	`customer.subscription.deleted`,
-	`invoice.paid`,
-]
+export const STRIPE_EVENTS = billingEvents
 
 export function extractWebhookSecret(text: string): string | undefined {
 	return text.match(/whsec_[A-Za-z0-9]+/u)?.[0]

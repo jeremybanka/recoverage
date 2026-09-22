@@ -9,6 +9,8 @@ export const billingEvents = [
 	`customer.subscription.updated`,
 	`customer.subscription.deleted`,
 	`invoice.paid`,
+	`invoice.payment_failed`,
+	`invoice.payment_action_required`,
 ] as const
 
 export type BillingConfig = {

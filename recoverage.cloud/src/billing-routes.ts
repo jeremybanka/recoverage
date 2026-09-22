@@ -254,7 +254,11 @@ async function handleStripeWebhookEvent({
 		event.type === `customer.subscription.deleted`
 	) {
 		subscriptionId = event.data.object.id
-	} else if (event.type === `invoice.paid`) {
+	} else if (
+		event.type === `invoice.paid` ||
+		event.type === `invoice.payment_failed` ||
+		event.type === `invoice.payment_action_required`
+	) {
 		const subscription =
 			event.data.object.parent?.subscription_details?.subscription
 		subscriptionId =
