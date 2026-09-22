@@ -127,8 +127,16 @@ async function deliver(
 	)
 }
 
-async function accept(stripeEvent: ReturnType<typeof event>) {
-	const response = await deliver(stripeEvent)
+async function accept(
+	stripeEvent: ReturnType<typeof event>,
+	currentSubscription = stripeEvent.data.object as ReturnType<
+		typeof subscription
+	>,
+) {
+	// Normal subscription notifications mirror current Stripe state. Delayed
+	// notifications and invoice events supply the current snapshot separately.
+	mockSubscriptionLookup(currentSubscription)
+	const response = await deliver(stripeEvent, { apiKey: `sk_test_placeholder` })
 	expect(response.status).toBe(200)
 	await expect(response.json()).resolves.toEqual({ received: true })
 }
@@ -164,6 +172,7 @@ function mockSubscriptionLookup(snapshot: ReturnType<typeof subscription>) {
 		expect(request.method).toBe(`GET`)
 		expect(url.origin).toBe(`https://api.stripe.com`)
 		expect(url.pathname).toBe(`/v1/subscriptions/${snapshot.id}`)
+		expect([...url.searchParams.values()]).toContain(`latest_invoice`)
 		return Promise.resolve(Response.json(snapshot))
 	})
 }
@@ -224,7 +233,14 @@ test.each([`subscription-first`, `invoice-first`] as const)(
 		for (const delivery of order === `subscription-first`
 			? [updated, paid]
 			: [paid, updated]) {
-			await accept(delivery)
+			await accept(
+				delivery,
+				subscription(owner, {
+					end: renewalEnd,
+					invoiceId: renewedInvoiceId,
+					paidAt: periodEnd,
+				}),
+			)
 		}
 		expect(await storedSubscription(owner)).toMatchObject({
 			currentPeriodEnd: sqlTimestampFromUnixSeconds(renewalEnd),
@@ -331,6 +347,7 @@ test(`an invoice arriving before its subscription is backfilled from Stripe`, as
 			`customer.subscription.created`,
 			subscription(owner, { expandInvoice: false }),
 		),
+		subscription(owner),
 	)
 	expect(await role(owner)).toBe(`supporter`)
 	expect(await storedSubscription(owner)).toMatchObject({
@@ -345,7 +362,7 @@ test(`a failed invoice backfill can be retried with the same event ID`, async ()
 	expect(failed.status).toBe(500)
 	expect(await recordedEvent(owner, paid.id)).toMatchObject({
 		processedAt: null,
-		processingError: `STRIPE_SECRET_KEY is required to backfill invoice subscriptions.`,
+		processingError: `STRIPE_SECRET_KEY is required to sync Stripe subscriptions.`,
 	})
 	expect(await storedSubscription(owner)).toBeUndefined()
 
@@ -373,7 +390,6 @@ test(`an invalid signature cannot create billing state or event records`, async 
 	expect(await role(owner)).toBe(`free`)
 })
 
-// Active regressions for the subsequent billing work; see PAID_SERVICE_PROPOSAL.md.
 test(`a delayed older subscription snapshot must not revive a canceled subscription`, async () => {
 	const owner = await account()
 	await accept(
@@ -397,6 +413,7 @@ test(`a delayed older subscription snapshot must not revive a canceled subscript
 			`customer.subscription.updated`,
 			subscription(owner),
 		),
+		subscription(owner, { status: `canceled` }),
 	)
 	expect(await role(owner)).toBe(`free`)
 })
@@ -418,6 +435,11 @@ test(`an older paid invoice must not replace the renewal invoice`, async () => {
 	)
 	await accept(
 		event(`${owner.userId}_old_invoice`, `invoice.paid`, invoice(owner)),
+		subscription(owner, {
+			end: renewalEnd,
+			invoiceId: renewedInvoiceId,
+			paidAt: periodEnd,
+		}),
 	)
 	expect(await storedSubscription(owner)).toMatchObject({
 		latestInvoiceId: renewedInvoiceId,
@@ -448,3 +470,180 @@ test(`an unpaid renewal must not inherit the previous invoice's payment`, async 
 	)
 	expect(await role(owner, periodEnd + 1)).toBe(`free`)
 })
+
+test(`a delayed pre-renewal snapshot cannot shorten the current paid period`, async () => {
+	const owner = await account()
+	const current = subscription(owner, {
+		end: renewalEnd,
+		invoiceId: `${owner.invoiceId}_renewal`,
+		paidAt: periodEnd,
+	})
+	await accept(
+		event(
+			`${owner.userId}_renewed`,
+			`customer.subscription.updated`,
+			current,
+			periodEnd,
+		),
+	)
+	await accept(
+		event(
+			`${owner.userId}_old_snapshot`,
+			`customer.subscription.updated`,
+			subscription(owner),
+		),
+		current,
+	)
+	expect(await storedSubscription(owner)).toMatchObject({
+		currentPeriodEnd: sqlTimestampFromUnixSeconds(renewalEnd),
+		latestInvoiceId: `${owner.invoiceId}_renewal`,
+		latestInvoicePaidAt: sqlTimestampFromUnixSeconds(periodEnd),
+	})
+	expect(await role(owner, periodEnd + 1)).toBe(`supporter`)
+})
+
+test(`late payment of an earlier invoice cannot pay an unpaid renewal`, async () => {
+	const owner = await account()
+	const current = subscription(owner, {
+		end: renewalEnd,
+		invoiceId: `${owner.invoiceId}_renewal`,
+		paidAt: null,
+	})
+	await accept(
+		event(
+			`${owner.userId}_renewed`,
+			`customer.subscription.updated`,
+			current,
+			periodEnd,
+		),
+	)
+	await accept(
+		event(
+			`${owner.userId}_old_paid_late`,
+			`invoice.paid`,
+			invoice(owner, owner.invoiceId, periodEnd + 1),
+			periodEnd + 1,
+		),
+		current,
+	)
+	expect(await storedSubscription(owner)).toMatchObject({
+		latestInvoiceId: `${owner.invoiceId}_renewal`,
+		latestInvoicePaidAt: null,
+	})
+	expect(await role(owner, periodEnd + 2)).toBe(`free`)
+})
+
+test(`a failed Stripe lookup leaves billing unchanged and retries the same event`, async () => {
+	const owner = await account()
+	await accept(
+		event(
+			`${owner.userId}_created`,
+			`customer.subscription.created`,
+			subscription(owner),
+		),
+	)
+	const before = await storedSubscription(owner)
+	const canceled = subscription(owner, { status: `canceled` })
+	const deleted = event(
+		`${owner.userId}_deleted`,
+		`customer.subscription.deleted`,
+		canceled,
+	)
+	vi.spyOn(globalThis, `fetch`).mockResolvedValue(
+		Response.json(
+			{
+				error: { type: `authentication_error`, message: `Invalid API key` },
+			},
+			{ status: 401 },
+		),
+	)
+	const failure = await deliver(deleted, { apiKey: `sk_test_placeholder` })
+	expect(failure.status).toBe(500)
+	expect(await storedSubscription(owner)).toEqual(before)
+	expect(await recordedEvent(owner, deleted.id)).toMatchObject({
+		processedAt: null,
+		processingError: expect.stringContaining(`Invalid API key`),
+	})
+	await accept(deleted, canceled)
+	expect(await role(owner)).toBe(`free`)
+	const retried = await recordedEvent(owner, deleted.id)
+	expect(retried?.processedAt).toBeTruthy()
+	expect(retried?.processingError).toBeNull()
+})
+
+test(`an unexpanded current invoice cannot silently reuse an earlier payment`, async () => {
+	const owner = await account()
+	await accept(
+		event(
+			`${owner.userId}_created`,
+			`customer.subscription.created`,
+			subscription(owner),
+		),
+	)
+	const before = await storedSubscription(owner)
+	const current = subscription(owner, {
+		end: renewalEnd,
+		invoiceId: `${owner.invoiceId}_renewal`,
+		paidAt: null,
+	})
+	const updated = event(
+		`${owner.userId}_renewed`,
+		`customer.subscription.updated`,
+		current,
+		periodEnd,
+	)
+	mockSubscriptionLookup({
+		...current,
+		latest_invoice: `${owner.invoiceId}_renewal`,
+	})
+	const failure = await deliver(updated, { apiKey: `sk_test_placeholder` })
+	expect(failure.status).toBe(500)
+	expect(await storedSubscription(owner)).toEqual(before)
+	expect(await recordedEvent(owner, updated.id)).toMatchObject({
+		processedAt: null,
+		processingError: expect.stringContaining(
+			`requires an expanded latest invoice`,
+		),
+	})
+	await accept(updated, current)
+	expect(await role(owner, periodEnd + 1)).toBe(`free`)
+})
+
+test.each([`canceled`, `incomplete_expired`] as const)(
+	`a lookup started before %s cannot restore a nonterminal state when it finishes late`,
+	async (status) => {
+		const owner = await account()
+		const active = subscription(owner, {
+			status: status === `canceled` ? `active` : `incomplete`,
+			paidAt: status === `canceled` ? now : null,
+		})
+		await accept(
+			event(`${owner.userId}_created`, `customer.subscription.created`, active),
+		)
+		const lookupStarted = Promise.withResolvers<void>()
+		const lookupResult = Promise.withResolvers<Response>()
+		vi.spyOn(globalThis, `fetch`).mockImplementationOnce(() => {
+			lookupStarted.resolve()
+			return lookupResult.promise
+		})
+		const pending = deliver(
+			event(`${owner.userId}_inflight`, `customer.subscription.updated`, active),
+			{ apiKey: `sk_test_placeholder` },
+		)
+		try {
+			await lookupStarted.promise
+			await accept(
+				event(
+					`${owner.userId}_terminal`,
+					`customer.subscription.updated`,
+					subscription(owner, { status }),
+				),
+			)
+		} finally {
+			lookupResult.resolve(Response.json(active))
+		}
+		expect((await pending).status).toBe(200)
+		expect(await storedSubscription(owner)).toMatchObject({ status })
+		expect(await role(owner)).toBe(`free`)
+	},
+)

@@ -9,17 +9,17 @@ Keep D1 storage and sell hosted-report capacity at the existing account limits.
 Do not introduce object storage, byte-based plan tiers, organization billing, or
 report history for this launch.
 
-The current task revises the plan and adds lifecycle tests. Rebase only when
+The plan rework and local lifecycle fixes are complete. Rebase only when
 requested. Customer portal and duplicate-subscription prevention follow the
 rebase; they are prerequisites for accepting live subscriptions. The work below
 can then be delivered in three small changes: usage and errors, resource controls,
 and operational readiness.
 
-The new lifecycle tests reproduce three outstanding bugs: a delayed subscription
-snapshot can undo cancellation, an old invoice can overwrite renewal facts, and
-an unpaid renewal can inherit an earlier invoice's payment. Their expected
-behavior is recorded in the [product plan](PAID_SERVICE_PROPOSAL.md#lifecycle-regressions-found-september-22).
-They remain failing regressions for the later billing work.
+Local regression coverage now checks stale subscription snapshots, delayed invoice
+payments, and unpaid renewals against the
+[billing lifecycle guarantees](PAID_SERVICE_PROPOSAL.md#billing-lifecycle-guarantees).
+Keep those tests as a gate while completing the remaining billing management and
+real Stripe test-mode validation.
 
 ## 1. Show usage and explain limits
 

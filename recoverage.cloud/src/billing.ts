@@ -1,5 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill"
-import { and, eq } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 import type { DrizzleD1Database } from "drizzle-orm/d1"
 import type Stripe from "stripe"
 
@@ -118,26 +118,17 @@ function latestInvoiceIdFromSubscription(
 }
 
 function latestInvoicePaidAtFromSubscription(subscription: Stripe.Subscription) {
-	if (
-		!subscription.latest_invoice ||
-		typeof subscription.latest_invoice === `string`
-	) {
+	if (!subscription.latest_invoice) {
 		return null
+	}
+	if (typeof subscription.latest_invoice === `string`) {
+		throw new Error(
+			`Stripe subscription ${subscription.id} requires an expanded latest invoice.`,
+		)
 	}
 	return sqlTimestampFromUnixSeconds(
 		subscription.latest_invoice.status_transitions.paid_at,
 	)
-}
-
-function stripeSubscriptionIdFromInvoice(
-	invoice: Stripe.Invoice,
-): string | null {
-	if (!invoice.parent?.subscription_details?.subscription) {
-		return null
-	}
-	return typeof invoice.parent.subscription_details.subscription === `string`
-		? invoice.parent.subscription_details.subscription
-		: invoice.parent.subscription_details.subscription.id
 }
 
 export async function upsertStripeSubscription({
@@ -180,21 +171,10 @@ export async function upsertStripeSubscription({
 		)
 	}
 
-	const existingSubscription = await db.query.stripeSubscriptions.findFirst({
-		where: eq(schema.stripeSubscriptions.stripeSubscriptionId, subscription.id),
-		columns: {
-			latestInvoiceId: true,
-			latestInvoicePaidAt: true,
-		},
-	})
-	const latestInvoiceId =
-		latestInvoiceIdFromSubscription(subscription) ??
-		existingSubscription?.latestInvoiceId ??
-		null
-	const latestInvoicePaidAt =
-		latestInvoicePaidAtFromSubscription(subscription) ??
-		existingSubscription?.latestInvoicePaidAt ??
-		null
+	// These facts come from one current Stripe snapshot. In particular, a null
+	// payment on a new invoice must never inherit payment from an earlier invoice.
+	const latestInvoiceId = latestInvoiceIdFromSubscription(subscription)
+	const latestInvoicePaidAt = latestInvoicePaidAtFromSubscription(subscription)
 
 	await db
 		.insert(schema.stripeSubscriptions)
@@ -212,6 +192,10 @@ export async function upsertStripeSubscription({
 		})
 		.onConflictDoUpdate({
 			target: [schema.stripeSubscriptions.stripeSubscriptionId],
+			// A fetch begun before cancellation may finish after its webhook. Keep
+			// terminal states irreversible even when these database writes race.
+			setWhere: sql`${schema.stripeSubscriptions.status} not in ('canceled', 'incomplete_expired')
+				or ${schema.stripeSubscriptions.status} = ${subscription.status}`,
 			set: {
 				cancelAtPeriodEnd: subscription.cancel_at_period_end,
 				currentPeriodEnd,
@@ -224,45 +208,6 @@ export async function upsertStripeSubscription({
 				userId,
 			},
 		})
-}
-
-export async function applyInvoicePaidToStripeSubscription({
-	db,
-	invoice,
-}: {
-	db: DrizzleD1Database<typeof schema>
-	invoice: Stripe.Invoice
-}): Promise<boolean> {
-	const stripeSubscriptionId = stripeSubscriptionIdFromInvoice(invoice)
-	if (!stripeSubscriptionId) {
-		return false
-	}
-
-	const existingSubscription = await db.query.stripeSubscriptions.findFirst({
-		where: eq(
-			schema.stripeSubscriptions.stripeSubscriptionId,
-			stripeSubscriptionId,
-		),
-		columns: { stripeSubscriptionId: true },
-	})
-	if (!existingSubscription) {
-		return false
-	}
-
-	await db
-		.update(schema.stripeSubscriptions)
-		.set({
-			latestInvoiceId: invoice.id,
-			latestInvoicePaidAt: sqlTimestampFromUnixSeconds(
-				invoice.status_transitions.paid_at,
-			),
-			updatedAt: sqlNow(),
-		})
-		.where(
-			eq(schema.stripeSubscriptions.stripeSubscriptionId, stripeSubscriptionId),
-		)
-
-	return true
 }
 
 export async function recordStripeWebhookEvent({

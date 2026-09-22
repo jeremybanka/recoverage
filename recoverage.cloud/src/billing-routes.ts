@@ -8,7 +8,6 @@ import { Octokit } from "octokit"
 import type Stripe from "stripe"
 
 import {
-	applyInvoicePaidToStripeSubscription,
 	markStripeWebhookEventFailed,
 	markStripeWebhookEventProcessed,
 	recordStripeWebhookEvent,
@@ -188,70 +187,43 @@ async function handleStripeWebhookEvent({
 	event: Stripe.Event
 	stripe: Stripe | null
 }): Promise<void> {
+	let subscriptionId: string | undefined
 	if (event.type === `checkout.session.completed`) {
 		const session = event.data.object
 		if (session.mode !== `subscription`) {
 			return
 		}
-		const subscriptionId =
+		subscriptionId =
 			typeof session.subscription === `string`
 				? session.subscription
 				: session.subscription?.id
-		if (!subscriptionId) {
-			return
-		}
-		if (!stripe) {
-			throw new Error(
-				`STRIPE_SECRET_KEY is required to sync Checkout subscriptions.`,
-			)
-		}
-		await upsertStripeSubscription({
-			db,
-			subscription: await retrieveStripeSubscription(stripe, subscriptionId),
-		})
-		return
-	}
-
-	if (
+	} else if (
 		event.type === `customer.subscription.created` ||
 		event.type === `customer.subscription.updated` ||
 		event.type === `customer.subscription.deleted`
 	) {
-		await upsertStripeSubscription({
-			db,
-			subscription: event.data.object,
-		})
+		subscriptionId = event.data.object.id
+	} else if (event.type === `invoice.paid`) {
+		const subscription =
+			event.data.object.parent?.subscription_details?.subscription
+		subscriptionId =
+			typeof subscription === `string` ? subscription : subscription?.id
+	}
+
+	if (!subscriptionId) {
 		return
 	}
-
-	if (event.type === `invoice.paid`) {
-		const invoice = event.data.object
-		const foundExistingSubscription = await applyInvoicePaidToStripeSubscription(
-			{
-				db,
-				invoice,
-			},
+	if (!stripe) {
+		throw new Error(
+			`STRIPE_SECRET_KEY is required to sync Stripe subscriptions.`,
 		)
-		if (foundExistingSubscription) {
-			return
-		}
-
-		const subscriptionId = invoice.parent?.subscription_details?.subscription
-		if (!subscriptionId) {
-			return
-		}
-		if (!stripe) {
-			throw new Error(
-				`STRIPE_SECRET_KEY is required to backfill invoice subscriptions.`,
-			)
-		}
-		await upsertStripeSubscription({
-			db,
-			subscription: await retrieveStripeSubscription(
-				stripe,
-				typeof subscriptionId === `string` ? subscriptionId : subscriptionId.id,
-			),
-		})
-		await applyInvoicePaidToStripeSubscription({ db, invoice })
 	}
+
+	// Webhooks are notifications, not ordered state changes. Even invoice.paid
+	// may describe an older invoice, so always fetch the subscription's current
+	// status, period, and expanded latest invoice together before persisting them.
+	await upsertStripeSubscription({
+		db,
+		subscription: await retrieveStripeSubscription(stripe, subscriptionId),
+	})
 }

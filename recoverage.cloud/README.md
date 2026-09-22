@@ -37,6 +37,12 @@ The Worker expects these bindings/secrets:
 - `GITHUB_CLIENT_SECRET` - GitHub OAuth app client secret.
 - `COOKIE_SECRET` - secret used to sign auth cookies.
 
+Billing additionally requires `STRIPE_SECRET_KEY`, `STRIPE_SUPPORTER_PRICE_ID`,
+and `STRIPE_WEBHOOK_SECRET`. Every relevant webhook refreshes the subscription
+and its expanded latest invoice through the Stripe API. If the API key is missing
+or the lookup fails, the event remains unprocessed and returns a server error so
+Stripe can retry; it does not overwrite subscription facts from an event snapshot.
+
 Production deploys use `wrangler.jsonc`; preview deploys use
 `wrangler-preview.jsonc` and the `preview:*` scripts.
 

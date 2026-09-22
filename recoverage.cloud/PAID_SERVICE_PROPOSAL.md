@@ -63,8 +63,8 @@ Billing belongs to a GitHub user. The implementation stores:
 - signed event payloads, processing status, and errors in `stripeWebhookEvents`.
 
 A manual role override wins. Otherwise the user receives Supporter only when a
-subscription matches the configured Supporter price, is active, has a recorded
-paid invoice, and has a period end later than the time of the request. Every other
+subscription matches the configured Supporter price, is active, has a paid latest
+invoice, and has a period end later than the time of the request. Every other
 case receives Free. The current policy does not grant trial or past-due grace
 entitlements. A scheduled cancellation retains access while these conditions
 still hold; an effective cancellation or expired period removes paid access.
@@ -73,11 +73,12 @@ On downgrade, existing reports remain readable and replaceable. Creating another
 report is blocked when the account is already at or above its new quota. Existing
 projects and tokens are not automatically deleted either.
 
-Stripe Checkout handles subscription purchases. Signed webhooks synchronize local
-billing facts. Processed event IDs are recorded to avoid reapplying a completed
-event; unsuccessful processing is retained for retries and diagnosis. Lifecycle
-tests must establish renewal, cancellation, duplicate-delivery, retry, and ordering
-behavior before relying on this for paid users. Stripe does not guarantee event
+Stripe Checkout handles subscription purchases. Signed webhooks identify which
+subscription needs refreshing. Each handled notification retrieves the current
+Stripe subscription and its expanded latest invoice, and stores their facts
+together. Event snapshots and earlier invoices never supply fallback payment
+evidence. Processed event IDs avoid repeating a completed delivery; unsuccessful
+processing is retained for retries and diagnosis. Stripe does not guarantee event
 ordering; see its [webhook guidance](https://docs.stripe.com/webhooks#event-ordering).
 
 ## Current implementation
@@ -87,51 +88,51 @@ ordering; see its [webhook guidance](https://docs.stripe.com/webhooks#event-orde
 - Manual role overrides and the maintainer's report-count exemption.
 - Stripe customer/subscription/event tables and generated migration.
 - `POST /billing/checkout` and `POST /billing/webhook`.
-- Subscription and invoice event handling, with backfill for missing subscriptions.
+- Current-state subscription synchronization for subscription, checkout, and
+  invoice events, including missing local subscriptions.
 - Authenticated `/ui/upgrade`, plan badges, and checkout return messages.
 - Local Stripe CLI forwarding through `bun run --filter=recoverage.cloud dev:stripe`.
 
 Checkout and webhooks use `STRIPE_SECRET_KEY`, `STRIPE_SUPPORTER_PRICE_ID`, and
-`STRIPE_WEBHOOK_SECRET`. A price ID is configuration, not proof that the configured
+`STRIPE_WEBHOOK_SECRET`. The API key is required for every subscription sync;
+failed lookups return a retryable server error without replacing existing billing
+facts or marking the event processed. A price ID is configuration, not proof that the configured
 Stripe price is $1/month; confirm the actual price when preparing each environment.
 
 ## Remaining work and sequence
 
-1. Complete the plan rework and add billing lifecycle regression tests on this
-   branch. Record any discovered failures explicitly.
-2. Rebase only when requested. Billing-management work follows that rebase:
+1. Rebase only when requested. Billing-management work follows that rebase:
    customer portal, cancellation/card management, and protection against duplicate
    subscriptions at checkout.
-3. Address lifecycle failures and implement the separately proposed launch work:
+2. Implement the separately proposed launch work:
    usage display, resource controls, operating procedures, and environment checks.
-4. Validate a complete subscription lifecycle in an isolated Stripe test
+3. Validate a complete subscription lifecycle in an isolated Stripe test
    environment before enabling live purchases.
 
 Organization billing, report history, private badges, automatic report retention,
 and object storage are deferred.
 
-## Lifecycle regressions found September 22
+## Billing lifecycle guarantees
 
 The expanded `__tests__/webhook.test.ts` exercises signed deliveries against local
 D1 and mocks outbound Stripe lookups. It covers both renewal delivery orders,
 scheduled and effective cancellation, overrides, duplicate deliveries, invoice
-backfill, retry after failure, and signature rejection.
+backfill, retry after failure, signature rejection, and overlapping deliveries.
 
-Three ordinary regression tests currently fail against the billing implementation:
+The regression tests enforce these behaviors:
 
-| Scenario | Required result | Current result |
-| --- | --- | --- |
-| A previously unseen older subscription update arrives after cancellation | The subscription remains canceled and the user stays Free. | The old snapshot restores active status and Supporter. |
-| An earlier invoice-paid event arrives after renewal | The latest invoice ID and its payment stay associated with the renewal. | The earlier invoice replaces the latest invoice fields. |
-| A renewal has a new invoice whose payment timestamp is null | The prior invoice cannot prove payment of the new period. | The old payment timestamp carries over and grants Supporter. |
+| Scenario | Required result |
+| --- | --- |
+| An older subscription update arrives after cancellation | Current Stripe state keeps the subscription canceled and the user Free. |
+| An earlier invoice-paid event arrives after renewal | The latest invoice ID and its payment stay associated with the renewal. |
+| A renewal has a new invoice whose payment timestamp is null | The prior invoice cannot prove payment of the new period. |
+| A Stripe lookup fails or returns an unexpanded invoice | Existing subscription facts remain intact, and the event can be retried. |
+| A lookup started before a terminal transition finishes late | An atomic database condition prevents it from restoring a nonterminal status. |
 
-Keep these tests enabled and resolve the failures in subsequent billing work.
-They are not skipped, inverted, or assertions that the incorrect behavior is
-acceptable. The full cloud test command will remain red until they are fixed.
-Subscription reconciliation must not infer state order from event timestamps:
-Stripe events can share a creation second. Also preserve the association between
-an invoice ID and its payment evidence instead of carrying a timestamp onto a
-different invoice.
+Keep these tests enabled. Reconciliation does not infer state order from event
+timestamps, which can share a creation second. The database also preserves
+terminal `canceled` and `incomplete_expired` states for the same subscription ID.
+Scheduled cancellation remains reversible while the subscription is active.
 
 ## Product copy
 
