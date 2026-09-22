@@ -6,6 +6,7 @@ export type Bindings = {
 	REPORT_RATE_SCOPE: string
 	REPORT_TOKEN_LIMITER: RateLimit
 	REPORT_ACCOUNT_LIMITER: RateLimit
+	CHECKOUT_LIMITER: RateLimit
 	GITHUB_CLIENT_ID: string
 	GITHUB_CLIENT_SECRET: string
 	COOKIE_SECRET: string

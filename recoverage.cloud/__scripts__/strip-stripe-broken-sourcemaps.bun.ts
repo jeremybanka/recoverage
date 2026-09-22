@@ -4,6 +4,7 @@ import {
 	readdir,
 	readFile,
 	realpath,
+	rename,
 	rm,
 	stat,
 	writeFile,
@@ -129,6 +130,9 @@ async function stripBrokenSourceMapComment(
 	const originalJavaScript = await readFile(javaScriptFilePath, `utf8`)
 	const expectedComment = `//# sourceMappingURL=${path.basename(mapFilePath)}`
 	if (!originalJavaScript.includes(expectedComment)) {
+		// Older installs patched Bun's hardlinked cache in place. A fresh install
+		// can therefore contain stripped JavaScript alongside the original map.
+		if (!originalJavaScript.includes(`sourceMappingURL=`)) return
 		throw new Error(
 			`Expected ${javaScriptFilePath} to reference ${path.basename(mapFilePath)}.`,
 		)
@@ -141,7 +145,15 @@ async function stripBrokenSourceMapComment(
 		)
 	}
 
-	await writeFile(javaScriptFilePath, strippedJavaScript)
+	// Replace our directory entry instead of writing through a potential Bun
+	// cache hardlink shared with other worktrees and future installations.
+	const temporaryPath = `${javaScriptFilePath}.${crypto.randomUUID()}.tmp`
+	try {
+		await writeFile(temporaryPath, strippedJavaScript)
+		await rename(temporaryPath, javaScriptFilePath)
+	} finally {
+		await rm(temporaryPath, { force: true })
+	}
 }
 
 async function main(): Promise<void> {
