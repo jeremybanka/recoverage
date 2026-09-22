@@ -1,0 +1,11 @@
+name: Setup Git for tests
+description: Configure Git for tests that create temporary repositories and commits.
+runs:
+  using: composite
+  steps:
+    - name: Configure Git
+      shell: bash
+      run: |
+        git config --global init.defaultBranch main
+        git config --global user.email "you@example.com"
+        git config --global user.name "Your Name"
