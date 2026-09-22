@@ -174,11 +174,15 @@ export async function upsertStripeSubscription({
 	// payment on a new invoice must never inherit payment from an earlier invoice.
 	const latestInvoiceId = latestInvoiceIdFromSubscription(subscription)
 	const latestInvoicePaidAt = latestInvoicePaidAtFromSubscription(subscription)
+	// Portal cancellation uses cancel_at for flexible billing subscriptions.
+	const cancelAtPeriodEnd =
+		subscription.cancel_at_period_end ||
+		typeof subscription.cancel_at === `number`
 
 	await db
 		.insert(schema.stripeSubscriptions)
 		.values({
-			cancelAtPeriodEnd: subscription.cancel_at_period_end,
+			cancelAtPeriodEnd,
 			currentPeriodEnd,
 			latestInvoiceId,
 			latestInvoicePaidAt,
@@ -196,7 +200,7 @@ export async function upsertStripeSubscription({
 			setWhere: sql`${schema.stripeSubscriptions.status} not in ('canceled', 'incomplete_expired')
 				or ${schema.stripeSubscriptions.status} = ${subscription.status}`,
 			set: {
-				cancelAtPeriodEnd: subscription.cancel_at_period_end,
+				cancelAtPeriodEnd,
 				currentPeriodEnd,
 				latestInvoiceId,
 				latestInvoicePaidAt,
