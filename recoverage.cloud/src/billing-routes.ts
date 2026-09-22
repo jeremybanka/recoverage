@@ -1,4 +1,3 @@
-import type { Endpoints } from "@octokit/types"
 import { eq } from "drizzle-orm"
 import type { DrizzleD1Database } from "drizzle-orm/d1"
 import type { MiddlewareHandler } from "hono"
@@ -12,6 +11,7 @@ import {
 	recordStripeWebhookEvent,
 	upsertStripeSubscription,
 } from "./billing"
+import type { BillingEnv } from "./billing-auth"
 import {
 	billingModeMatches,
 	checkoutEnabled,
@@ -20,23 +20,15 @@ import {
 } from "./billing-config"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
-import { type Bindings, getEnv } from "./env"
+import { getEnv } from "./env"
 import { createGitHubClient } from "./github-client"
+import { registerPortalRoutes } from "./portal-routes"
 import * as schema from "./schema"
 import {
 	createStripeClient,
 	createSupporterCheckoutSessionParams,
 	retrieveStripeSubscription,
 } from "./stripe"
-
-type BillingEnv = {
-	Bindings: Bindings
-	Variables: {
-		drizzle: DrizzleD1Database<typeof schema>
-		githubUserData: Endpoints[`GET /user`][`response`][`data`]
-		userId: number
-	}
-}
 
 export const billingRoutes = new Hono<BillingEnv>()
 
@@ -278,3 +270,5 @@ async function handleStripeWebhookEvent({
 		throw new Error(`Stripe subscription mode mismatch.`)
 	await upsertStripeSubscription({ db, subscription })
 }
+
+registerPortalRoutes(billingRoutes, billingAuth)

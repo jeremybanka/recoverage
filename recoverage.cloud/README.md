@@ -93,7 +93,8 @@ an operational protection, independent of plan roles. Uploads are limited to
 errors without automatic retries. Reads and badges do not use upload budgets.
 
 New checkout defaults off. Configure `STRIPE_MODE`, the matching Stripe secrets,
-`BILLING_SUPPORT_EMAIL`, and `BILLING_REFUND_POLICY`; enable `CHECKOUT_ENABLED`
+`STRIPE_PORTAL_CONFIGURATION_ID`, `BILLING_SUPPORT_EMAIL`, and
+`BILLING_REFUND_POLICY`; enable `CHECKOUT_ENABLED`
 only after the launch gates pass. Preview and live events are kept separate.
 The daily retention job redacts old event payloads while preserving deduplication
 metadata. No report or raw payment payload is written to application logs.
@@ -101,4 +102,11 @@ metadata. No report or raw payment payload is written to application logs.
 See [OPERATIONS.md](OPERATIONS.md) for stable preview setup, configuration and
 hosted-storage verification scripts, webhook recovery, signing-secret rotation,
 entitlement overrides, retention, monitoring, migration rehearsal, and rollback.
-Customer portal and duplicate-subscription prevention remain the next phase.
+`/ui/billing` shows the effective plan separately from subscription payment and
+cancellation status. The **Manage billing** button opens an authenticated Stripe
+portal for payment methods, invoices, period-end cancellation, and undoing a
+scheduled cancellation. It remains available while new checkout is paused.
+Configure `STRIPE_PORTAL_CONFIGURATION_ID` separately for test and live mode;
+see [portal setup](OPERATIONS.md#customer-portal) and run `billing:verify` before
+launch. A return from Checkout is only a navigation hint: paid access is confirmed
+from synchronized subscription facts. Cancellation does not request a refund.

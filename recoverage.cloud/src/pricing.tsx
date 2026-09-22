@@ -12,7 +12,7 @@ import {
 import { BillingSupport } from "./support"
 import { StorageHelp } from "./usage"
 
-function roleLabel(role: Role): string {
+export function roleLabel(role: Role): string {
 	switch (role) {
 		case `free`:
 			return `Free`
@@ -202,13 +202,18 @@ function PricingCard({
 export function PricingPage({
 	currentRole,
 	config,
+	hasExistingSubscription = false,
 }: {
 	currentRole: Role
 	config: BillingConfig
+	hasExistingSubscription?: boolean
 }): Loadable<HtmlEscapedString> {
 	return (
 		<>
-			<h1>Upgrade</h1>
+			<h1>Plans</h1>
+			<p>
+				<a href="/ui/billing">Plan and billing</a>
+			</p>
 			<StorageHelp />
 			<BillingSupport config={config} />
 			<p
@@ -253,8 +258,10 @@ export function PricingPage({
 									font-weight: 700;
 								`}
 							>
-								Current plan
+								Current plan — <a href="/ui/billing">Manage billing</a>
 							</span>
+						) : hasExistingSubscription ? (
+							<a href="/ui/billing">Manage your existing subscription</a>
 						) : !checkoutEnabled(config) ? (
 							<p>New subscriptions are currently unavailable.</p>
 						) : (

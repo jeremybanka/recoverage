@@ -4,6 +4,7 @@
 		"*.ts",
 		"../__tests__/report-fixture.ts",
 		"../src/billing-config.ts",
+		"../src/portal-config.ts",
 		"../src/stripe.ts"
 	],
 	"compilerOptions": {

@@ -5,6 +5,7 @@ import { css } from "hono/css"
 
 import { assetsRoutes } from "./assets"
 import { getUserRole } from "./billing"
+import { billingAccount, BillingReturnNotice } from "./billing-account"
 import { billingRoutes } from "./billing-routes"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
@@ -134,6 +135,8 @@ app.get(`/`, async (c) => {
 			return c.json({ error: `User did not have a resolvable role.` }, 500)
 		}
 		const billingState = url.searchParams.get(`billing`)
+		const account = await billingAccount(db, user.id, userRole)
+		c.header(`Cache-Control`, `no-store`)
 		const usage = await accountUsage(db, user.id)
 
 		return await c.html(
@@ -152,30 +155,19 @@ app.get(`/`, async (c) => {
 				<p>
 					Logged in as {data.login} ({data.id}){` `}
 					{RoleBadge({
-						href: `/ui/upgrade`,
+						href: `/ui/billing`,
 						role: userRole,
 					})}
 				</p>
-				{billingState === `success` ? (
-					<p
-						class={css`
-							margin-top: -4px;
-							color: var(--success);
-						`}
-					>
-						Supporter checkout completed. Your account will refresh as Stripe
-						events arrive.
-					</p>
-				) : billingState === `cancel` ? (
-					<p
-						class={css`
-							margin-top: -4px;
-							color: var(--color-fg-light);
-						`}
-					>
-						Checkout cancelled.
-					</p>
-				) : null}
+				<BillingReturnNotice
+					state={billingState}
+					account={account}
+					config={env}
+				/>
+				<p>
+					<a href="/ui/billing">Plan and billing</a> ·{` `}
+					<a href="/ui/upgrade">Compare plans</a>
+				</p>
 				<AccountUsage usage={usage} role={userRole} userId={user.id} />
 				<BillingSupport config={env} />
 				<h2>Your Projects</h2>
@@ -228,7 +220,10 @@ app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
 		accessToken,
 		env.COOKIE_SECRET,
 		{
-			sameSite: `strict`,
+			// Stripe returns through a top-level GET. Billing writes also require
+			// an exact same-origin POST, so this does not allow cross-site writes.
+			sameSite: `lax`,
+			secure: new URL(c.req.url).protocol === `https:`,
 			httpOnly: true,
 			path: `/`,
 		},

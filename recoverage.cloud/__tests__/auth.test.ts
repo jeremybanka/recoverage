@@ -24,13 +24,12 @@ test(`authentication flow`, async () => {
 
 		switch (`${request.method} ${url.origin}${url.pathname}`) {
 			case `GET https://github.com/login/oauth/authorize`: {
-				const redirectUrl = new URL(GITHUB_CALLBACK_ENDPOINT, `http://localhost`)
-				redirectUrl.searchParams.set(`code`, `mocked-github-token`)
-				return app.request(
-					redirectUrl.pathname + redirectUrl.search,
-					{ method: `GET` },
-					env,
+				const redirectUrl = new URL(
+					GITHUB_CALLBACK_ENDPOINT,
+					`https://recoverage.cloud`,
 				)
+				redirectUrl.searchParams.set(`code`, `mocked-github-token`)
+				return app.request(redirectUrl.href, { method: `GET` }, env)
 			}
 			case `GET https://github.com/login/oauth/access_token`:
 				return new Response(`access_token=gho_fake&scope=user&token_type=bearer`)
@@ -54,6 +53,10 @@ test(`authentication flow`, async () => {
 	const githubAccessTokenCookie = authRes.headers.get(`set-cookie`)
 
 	assert(githubAccessTokenCookie)
+	expect(githubAccessTokenCookie).toContain(`SameSite=Lax`)
+	expect(githubAccessTokenCookie).toContain(`Secure`)
+	expect(githubAccessTokenCookie).toContain(`HttpOnly`)
+	expect(githubAccessTokenCookie).toContain(`Path=/`)
 
 	const response2 = await fetch(`https://recoverage.cloud/`, {
 		method: `GET`,

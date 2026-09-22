@@ -91,6 +91,10 @@ ordering; see its [webhook guidance](https://docs.stripe.com/webhooks#event-orde
 - Current-state subscription synchronization for subscription, checkout, and
   invoice events, including missing local subscriptions.
 - Authenticated `/ui/upgrade`, plan badges, and checkout return messages.
+- Authenticated `/ui/billing` with plan/payment status and customer-portal access
+  for payment methods, invoices, and scheduled cancellation or reactivation.
+- Checkout return messages distinguish confirmed billing facts from pending
+  confirmation; a return URL does not prove that a payment succeeded.
 - Local Stripe CLI forwarding through `bun run --filter=recoverage.cloud dev:stripe`.
 
 Checkout and webhooks use `STRIPE_SECRET_KEY`, `STRIPE_SUPPORTER_PRICE_ID`, and
@@ -101,9 +105,11 @@ Stripe price is $1/month; confirm the actual price when preparing each environme
 
 ## Remaining work and sequence
 
-1. Rebase and local launch-readiness implementation are complete. Next implement
-   billing management: customer portal, cancellation/card management, and
-   protection against duplicate subscriptions at checkout.
+1. Rebase and local launch-readiness implementation are complete. Billing
+   management is delivered through three coordinated PRs into this integration
+   branch: account/portal management, checkout and duplicate-subscription
+   protection, and renewal/cancellation/downgrade recovery. Merge and validate all
+   three together before treating the billing workflows as launch-ready.
 2. Finish the external verification gates in [OPERATIONS.md](OPERATIONS.md),
    including approved support/refund settings and isolated environment setup.
 3. Validate a complete subscription lifecycle in Stripe test mode, then verify
@@ -111,6 +117,22 @@ Stripe price is $1/month; confirm the actual price when preparing each environme
 
 Organization billing, report history, private badges, automatic report retention,
 and object storage are deferred.
+
+## Customer billing flows
+
+| Flow | Expected behavior |
+| --- | --- |
+| Upgrade | Open Stripe Checkout; show pending confirmation until current billing facts prove paid access. Returning or abandoning checkout alone never changes the account's plan. |
+| Repeated purchase attempt | Resume an open checkout or direct an existing subscriber to billing management. Concurrent requests must not create duplicate subscriptions. |
+| Manage billing | The authenticated account opens its own Stripe portal to update payment details, view invoices, or manage cancellation. This remains available while new purchases are paused. |
+| Failed renewal and recovery | Show the payment problem and offer billing management. There is no paid grace period; current paid facts restore access after recovery. |
+| Cancel or undo cancellation | Keep paid access through the paid period when cancellation is scheduled; allow reactivation before cancellation takes effect. |
+| Downgrade or resubscribe | Retain reports, projects, and tokens. Existing reports remain readable and replaceable; creation follows the effective plan's limits. A new paid subscription can restore higher limits. |
+| Get help | Offer the configured support contact for missing entitlements or unexpected charges. Cancellation and refund requests are separate; show the maintainer's configured refund policy. |
+
+The portal configuration must support payment methods, invoice history, and
+end-of-period cancellation. Select and verify it independently in each Stripe
+environment, using the procedure in [OPERATIONS.md](OPERATIONS.md).
 
 ## Billing lifecycle guarantees
 

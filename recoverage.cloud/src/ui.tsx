@@ -8,6 +8,7 @@ import { deleteCookie, getSignedCookie } from "hono/cookie"
 import { nanoid } from "nanoid"
 
 import { getUserRole } from "./billing"
+import { billingAccount, BillingAccountPage } from "./billing-account"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
 import { type Bindings, getEnv } from "./env"
@@ -91,10 +92,43 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 	await next()
 }
 
-uiRoutes.get(`/upgrade`, uiAuth, async (c) => {
+uiRoutes.get(`/billing`, uiAuth, async (c) => {
+	c.header(`Cache-Control`, `no-store`)
 	return c.html(
 		<Page>
-			<PricingPage currentRole={c.get(`userRole`)} config={getEnv(c.env)} />
+			<BillingAccountPage
+				account={
+					await billingAccount(
+						c.get(`drizzle`),
+						c.get(`githubUserData`).id,
+						c.get(`userRole`),
+					)
+				}
+				config={getEnv(c.env)}
+				returnState={c.req.query(`billing`)}
+			/>
+		</Page>,
+	)
+})
+
+uiRoutes.get(`/upgrade`, uiAuth, async (c) => {
+	const account = await billingAccount(
+		c.get(`drizzle`),
+		c.get(`githubUserData`).id,
+		c.get(`userRole`),
+	)
+	c.header(`Cache-Control`, `no-store`)
+	return c.html(
+		<Page>
+			<PricingPage
+				currentRole={c.get(`userRole`)}
+				config={getEnv(c.env)}
+				hasExistingSubscription={account.subscriptions.some(
+					(subscription) =>
+						subscription.status !== `canceled` &&
+						subscription.status !== `incomplete_expired`,
+				)}
+			/>
 		</Page>,
 	)
 })
