@@ -5,7 +5,6 @@ import type { Loadable } from "./loadable"
 import {
 	hostedReportsAllowed,
 	projectsAllowed,
-	reportBytesAllowed,
 	type Role,
 	tokensAllowed,
 } from "./roles-permissions"
@@ -19,11 +18,6 @@ function roleLabel(role: Role): string {
 		case `admin`:
 			return `Admin`
 	}
-}
-
-function bytesLabel(bytes: number): string {
-	const megabytes = bytes / (1024 * 1024)
-	return `${megabytes} MB`
 }
 
 function roleBadgeStyle(role: Role): string {
@@ -197,7 +191,6 @@ function PricingCard({
 				<li>{projectsAllowed.get(role)} projects</li>
 				<li>{hostedReportsAllowed.get(role)} hosted reports</li>
 				<li>{tokensAllowed.get(role)} tokens per project</li>
-				<li>{bytesLabel(reportBytesAllowed.get(role))} per report</li>
 			</ul>
 		</section>
 	)

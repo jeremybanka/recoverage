@@ -1,74 +1,114 @@
 import { Temporal } from "@js-temporal/polyfill"
 import { env } from "cloudflare:test"
+import { eq } from "drizzle-orm"
 
 import app from "../src"
 import { getUserRole } from "../src/billing"
 import { createDatabase } from "../src/db"
 import * as schema from "../src/schema"
 import { createStripeClient } from "../src/stripe"
+import { sqlTimestampFromUnixSeconds } from "../src/temporal"
 
 const webhookSecret = `whsec_test_webhook_secret`
 const supporterPriceId = `price_supporter`
-
+const now = 1_778_507_200
+const periodEnd = now + 30 * 24 * 60 * 60
+const renewalEnd = periodEnd + 30 * 24 * 60 * 60
 let nextUserId = 910_000
 
-test(`signed Stripe subscription webhooks sync billing state`, async () => {
+afterEach(() => {
+	vi.restoreAllMocks()
+})
+
+async function account() {
 	const db = createDatabase(env.DB)
 	const userId = nextUserId++
-	const stripeCustomerId = `cus_${userId}`
-	const stripeSubscriptionId = `sub_${userId}`
+	const customerId = `cus_${userId}`
+	const subscriptionId = `sub_${userId}`
 	const invoiceId = `in_${userId}`
-	const nowUnixSeconds = 1_778_507_200
-	const currentPeriodEndUnixSeconds = 1_781_099_200
-
 	await db.insert(schema.users).values({ id: userId })
-	await db.insert(schema.stripeCustomers).values({ stripeCustomerId, userId })
-
-	const payload = JSON.stringify({
-		api_version: `2026-04-22.dahlia`,
-		created: nowUnixSeconds,
-		data: {
-			object: {
-				cancel_at_period_end: false,
-				current_period_end: currentPeriodEndUnixSeconds,
-				customer: stripeCustomerId,
-				id: stripeSubscriptionId,
-				items: {
-					data: [
-						{
-							current_period_end: currentPeriodEndUnixSeconds,
-							price: {
-								id: supporterPriceId,
-							},
-						},
-					],
-				},
-				latest_invoice: {
-					id: invoiceId,
-					status_transitions: {
-						paid_at: nowUnixSeconds,
-					},
-				},
-				metadata: {
-					recoverageUserId: String(userId),
-				},
-				object: `subscription`,
-				status: `active`,
-			},
-		},
-		id: `evt_${userId}`,
-		livemode: false,
-		object: `event`,
-		type: `customer.subscription.created`,
+	await db.insert(schema.stripeCustomers).values({
+		stripeCustomerId: customerId,
+		userId,
 	})
+	return { db, userId, customerId, subscriptionId, invoiceId }
+}
 
+type Account = Awaited<ReturnType<typeof account>>
+
+function subscription(
+	owner: Account,
+	options: {
+		status?: schema.StripeSubscriptionStatus
+		end?: number
+		invoiceId?: string
+		paidAt?: number | null
+		expandInvoice?: boolean
+		cancelAtPeriodEnd?: boolean
+	} = {},
+) {
+	const invoiceId = options.invoiceId ?? owner.invoiceId
+	return {
+		object: `subscription`,
+		id: owner.subscriptionId,
+		customer: owner.customerId,
+		metadata: { recoverageUserId: String(owner.userId) },
+		status: options.status ?? `active`,
+		cancel_at_period_end: options.cancelAtPeriodEnd ?? false,
+		items: {
+			data: [
+				{
+					current_period_end: options.end ?? periodEnd,
+					price: { id: supporterPriceId },
+				},
+			],
+		},
+		latest_invoice:
+			options.expandInvoice === false
+				? invoiceId
+				: {
+						id: invoiceId,
+						status_transitions: {
+							paid_at: options.paidAt === undefined ? now : options.paidAt,
+						},
+					},
+	}
+}
+
+function invoice(owner: Account, invoiceId = owner.invoiceId, paidAt = now) {
+	return {
+		object: `invoice`,
+		id: invoiceId,
+		parent: {
+			subscription_details: { subscription: owner.subscriptionId },
+		},
+		status_transitions: { paid_at: paidAt },
+	}
+}
+
+function event(id: string, type: string, object: object, created = now) {
+	return {
+		id: `evt_${id}`,
+		object: `event`,
+		api_version: `2026-04-22.dahlia`,
+		created,
+		livemode: false,
+		type,
+		data: { object },
+	}
+}
+
+async function deliver(
+	stripeEvent: ReturnType<typeof event>,
+	options: { apiKey?: string; signingSecret?: string } = {},
+) {
+	const payload = JSON.stringify(stripeEvent)
 	const stripe = createStripeClient(`sk_test_placeholder`)
 	const signature = await stripe.webhooks.generateTestHeaderStringAsync({
 		payload,
-		secret: webhookSecret,
+		secret: options.signingSecret ?? webhookSecret,
 	})
-
-	const response = await app.request(
+	return app.request(
 		`/billing/webhook`,
 		{
 			method: `POST`,
@@ -80,40 +120,331 @@ test(`signed Stripe subscription webhooks sync billing state`, async () => {
 		},
 		{
 			...env,
+			STRIPE_SECRET_KEY: options.apiKey,
 			STRIPE_SUPPORTER_PRICE_ID: supporterPriceId,
 			STRIPE_WEBHOOK_SECRET: webhookSecret,
 		},
 	)
+}
 
+async function accept(stripeEvent: ReturnType<typeof event>) {
+	const response = await deliver(stripeEvent)
 	expect(response.status).toBe(200)
 	await expect(response.json()).resolves.toEqual({ received: true })
+}
 
-	const syncedSubscription = await db.query.stripeSubscriptions.findFirst({
-		where: (subscription, { eq }) =>
-			eq(subscription.stripeSubscriptionId, stripeSubscriptionId),
+function role(owner: Account, at = now) {
+	return getUserRole({
+		db: owner.db,
+		userId: owner.userId,
+		now: Temporal.Instant.fromEpochMilliseconds(at * 1000),
+		stripeSupporterPriceId: supporterPriceId,
 	})
-	expect(syncedSubscription).toMatchObject({
+}
+
+function storedSubscription(owner: Account) {
+	return owner.db.query.stripeSubscriptions.findFirst({
+		where: eq(
+			schema.stripeSubscriptions.stripeSubscriptionId,
+			owner.subscriptionId,
+		),
+	})
+}
+
+function recordedEvent(owner: Account, eventId: string) {
+	return owner.db.query.stripeWebhookEvents.findFirst({
+		where: eq(schema.stripeWebhookEvents.stripeEventId, eventId),
+	})
+}
+
+function mockSubscriptionLookup(snapshot: ReturnType<typeof subscription>) {
+	return vi.spyOn(globalThis, `fetch`).mockImplementation((input, init) => {
+		const request = new Request(input, init)
+		const url = new URL(request.url)
+		expect(request.method).toBe(`GET`)
+		expect(url.origin).toBe(`https://api.stripe.com`)
+		expect(url.pathname).toBe(`/v1/subscriptions/${snapshot.id}`)
+		return Promise.resolve(Response.json(snapshot))
+	})
+}
+
+test(`signed Stripe subscription webhooks sync billing state`, async () => {
+	const owner = await account()
+	const created = event(
+		owner.userId.toString(),
+		`customer.subscription.created`,
+		subscription(owner),
+	)
+	await accept(created)
+
+	expect(await storedSubscription(owner)).toMatchObject({
 		cancelAtPeriodEnd: false,
-		latestInvoiceId: invoiceId,
+		latestInvoiceId: owner.invoiceId,
+		latestInvoicePaidAt: sqlTimestampFromUnixSeconds(now),
+		currentPeriodEnd: sqlTimestampFromUnixSeconds(periodEnd),
 		priceId: supporterPriceId,
 		status: `active`,
-		stripeCustomerId,
-		userId,
+		stripeCustomerId: owner.customerId,
+		userId: owner.userId,
 	})
-	expect(syncedSubscription?.latestInvoicePaidAt).toBe(`2026-05-11 13:46:40`)
-	expect(syncedSubscription?.currentPeriodEnd).toBe(`2026-06-10 13:46:40`)
+	expect(await role(owner)).toBe(`supporter`)
+	const recorded = await recordedEvent(owner, created.id)
+	expect(recorded?.processedAt).toBeTruthy()
+	expect(recorded?.processingError).toBeNull()
+})
 
-	const userRole = await getUserRole({
-		db,
-		now: Temporal.Instant.fromEpochMilliseconds(nowUnixSeconds * 1000),
-		stripeSupporterPriceId: supporterPriceId,
-		userId,
-	})
-	expect(userRole).toBe(`supporter`)
+test.each([`subscription-first`, `invoice-first`] as const)(
+	`renewal keeps the next paid period available with %s delivery`,
+	async (order) => {
+		const owner = await account()
+		await accept(
+			event(
+				`${owner.userId}_initial`,
+				`customer.subscription.created`,
+				subscription(owner),
+			),
+		)
+		const renewedInvoiceId = `${owner.invoiceId}_renewal`
+		const updated = event(
+			`${owner.userId}_renewed`,
+			`customer.subscription.updated`,
+			subscription(owner, {
+				end: renewalEnd,
+				invoiceId: renewedInvoiceId,
+				expandInvoice: false,
+			}),
+			periodEnd,
+		)
+		const paid = event(
+			`${owner.userId}_paid`,
+			`invoice.paid`,
+			invoice(owner, renewedInvoiceId, periodEnd),
+			periodEnd,
+		)
+		for (const delivery of order === `subscription-first`
+			? [updated, paid]
+			: [paid, updated]) {
+			await accept(delivery)
+		}
+		expect(await storedSubscription(owner)).toMatchObject({
+			currentPeriodEnd: sqlTimestampFromUnixSeconds(renewalEnd),
+			latestInvoiceId: renewedInvoiceId,
+			latestInvoicePaidAt: sqlTimestampFromUnixSeconds(periodEnd),
+		})
+		expect(await role(owner, periodEnd + 1)).toBe(`supporter`)
+		expect(await role(owner, renewalEnd)).toBe(`free`)
+	},
+)
 
-	const webhookEvent = await db.query.stripeWebhookEvents.findFirst({
-		where: (event, { eq }) => eq(event.stripeEventId, `evt_${userId}`),
+test(`scheduled cancellation retains access until the paid period ends`, async () => {
+	const owner = await account()
+	await accept(
+		event(
+			`${owner.userId}_created`,
+			`customer.subscription.created`,
+			subscription(owner),
+		),
+	)
+	await accept(
+		event(
+			`${owner.userId}_scheduled`,
+			`customer.subscription.updated`,
+			subscription(owner, { cancelAtPeriodEnd: true }),
+		),
+	)
+	expect(await storedSubscription(owner)).toMatchObject({
+		cancelAtPeriodEnd: true,
 	})
-	expect(webhookEvent?.processedAt).toBeTruthy()
-	expect(webhookEvent?.processingError).toBeNull()
+	expect(await role(owner, periodEnd - 1)).toBe(`supporter`)
+	expect(await role(owner, periodEnd)).toBe(`free`)
+})
+
+test(`effective cancellation downgrades billing entitlement but preserves manual overrides`, async () => {
+	const owner = await account()
+	await accept(
+		event(
+			`${owner.userId}_created`,
+			`customer.subscription.created`,
+			subscription(owner),
+		),
+	)
+	const deleted = event(
+		`${owner.userId}_deleted`,
+		`customer.subscription.deleted`,
+		subscription(owner, { status: `canceled` }),
+	)
+	await accept(deleted)
+	expect(await role(owner)).toBe(`free`)
+	await owner.db
+		.update(schema.users)
+		.set({ manualRoleOverride: `admin` })
+		.where(eq(schema.users.id, owner.userId))
+	await accept(
+		event(
+			`${owner.userId}_deleted_again`,
+			`customer.subscription.deleted`,
+			subscription(owner, { status: `canceled` }),
+		),
+	)
+	expect(await role(owner)).toBe(`admin`)
+})
+
+test(`redelivering a processed event cannot undo a later cancellation`, async () => {
+	const owner = await account()
+	const created = event(
+		`${owner.userId}_created`,
+		`customer.subscription.created`,
+		subscription(owner),
+	)
+	await accept(created)
+	await accept(
+		event(
+			`${owner.userId}_deleted`,
+			`customer.subscription.deleted`,
+			subscription(owner, { status: `canceled` }),
+		),
+	)
+	const before = await storedSubscription(owner)
+	const firstReceipt = await recordedEvent(owner, created.id)
+	const duplicate = await deliver(created)
+	expect(duplicate.status).toBe(200)
+	await expect(duplicate.json()).resolves.toEqual({
+		received: true,
+		duplicate: true,
+	})
+	expect(await recordedEvent(owner, created.id)).toEqual(firstReceipt)
+	expect(await storedSubscription(owner)).toEqual(before)
+	expect(await role(owner)).toBe(`free`)
+})
+
+test(`an invoice arriving before its subscription is backfilled from Stripe`, async () => {
+	const owner = await account()
+	const lookup = mockSubscriptionLookup(subscription(owner))
+	const paid = event(`${owner.userId}_paid`, `invoice.paid`, invoice(owner))
+	const response = await deliver(paid, { apiKey: `sk_test_placeholder` })
+	expect(response.status).toBe(200)
+	expect(lookup).toHaveBeenCalledTimes(1)
+	expect(await role(owner)).toBe(`supporter`)
+	await accept(
+		event(
+			`${owner.userId}_created_later`,
+			`customer.subscription.created`,
+			subscription(owner, { expandInvoice: false }),
+		),
+	)
+	expect(await role(owner)).toBe(`supporter`)
+	expect(await storedSubscription(owner)).toMatchObject({
+		latestInvoicePaidAt: sqlTimestampFromUnixSeconds(now),
+	})
+})
+
+test(`a failed invoice backfill can be retried with the same event ID`, async () => {
+	const owner = await account()
+	const paid = event(`${owner.userId}_paid`, `invoice.paid`, invoice(owner))
+	const failed = await deliver(paid)
+	expect(failed.status).toBe(500)
+	expect(await recordedEvent(owner, paid.id)).toMatchObject({
+		processedAt: null,
+		processingError: `STRIPE_SECRET_KEY is required to backfill invoice subscriptions.`,
+	})
+	expect(await storedSubscription(owner)).toBeUndefined()
+
+	mockSubscriptionLookup(subscription(owner))
+	const retry = await deliver(paid, { apiKey: `sk_test_placeholder` })
+	expect(retry.status).toBe(200)
+	await expect(retry.json()).resolves.toEqual({ received: true })
+	const retriedEvent = await recordedEvent(owner, paid.id)
+	expect(retriedEvent?.processedAt).toBeTruthy()
+	expect(retriedEvent?.processingError).toBeNull()
+	expect(await role(owner)).toBe(`supporter`)
+})
+
+test(`an invalid signature cannot create billing state or event records`, async () => {
+	const owner = await account()
+	const created = event(
+		`${owner.userId}_invalid`,
+		`customer.subscription.created`,
+		subscription(owner),
+	)
+	const response = await deliver(created, { signingSecret: `whsec_wrong` })
+	expect(response.status).toBe(400)
+	expect(await recordedEvent(owner, created.id)).toBeUndefined()
+	expect(await storedSubscription(owner)).toBeUndefined()
+	expect(await role(owner)).toBe(`free`)
+})
+
+// Active regressions for the subsequent billing work; see PAID_SERVICE_PROPOSAL.md.
+test(`a delayed older subscription snapshot must not revive a canceled subscription`, async () => {
+	const owner = await account()
+	await accept(
+		event(
+			`${owner.userId}_created`,
+			`customer.subscription.created`,
+			subscription(owner),
+		),
+	)
+	// Distinct events can share a creation second. Arrival order is not state order.
+	await accept(
+		event(
+			`${owner.userId}_deleted`,
+			`customer.subscription.deleted`,
+			subscription(owner, { status: `canceled` }),
+		),
+	)
+	await accept(
+		event(
+			`${owner.userId}_delayed`,
+			`customer.subscription.updated`,
+			subscription(owner),
+		),
+	)
+	expect(await role(owner)).toBe(`free`)
+})
+
+test(`an older paid invoice must not replace the renewal invoice`, async () => {
+	const owner = await account()
+	const renewedInvoiceId = `${owner.invoiceId}_renewal`
+	await accept(
+		event(
+			`${owner.userId}_renewed`,
+			`customer.subscription.updated`,
+			subscription(owner, {
+				end: renewalEnd,
+				invoiceId: renewedInvoiceId,
+				paidAt: periodEnd,
+			}),
+			periodEnd,
+		),
+	)
+	await accept(
+		event(`${owner.userId}_old_invoice`, `invoice.paid`, invoice(owner)),
+	)
+	expect(await storedSubscription(owner)).toMatchObject({
+		latestInvoiceId: renewedInvoiceId,
+		latestInvoicePaidAt: sqlTimestampFromUnixSeconds(periodEnd),
+	})
+})
+
+test(`an unpaid renewal must not inherit the previous invoice's payment`, async () => {
+	const owner = await account()
+	await accept(
+		event(
+			`${owner.userId}_initial`,
+			`customer.subscription.created`,
+			subscription(owner),
+		),
+	)
+	await accept(
+		event(
+			`${owner.userId}_unpaid_renewal`,
+			`customer.subscription.updated`,
+			subscription(owner, {
+				end: renewalEnd,
+				invoiceId: `${owner.invoiceId}_renewal`,
+				paidAt: null,
+			}),
+			periodEnd,
+		),
+	)
+	expect(await role(owner, periodEnd + 1)).toBe(`free`)
 })

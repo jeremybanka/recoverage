@@ -15,7 +15,6 @@ import { stringify } from "./json"
 import type { Role } from "./roles-permissions"
 import {
 	hostedReportsAllowed,
-	reportBytesAllowed,
 	unlimitedReportGithubUserIds,
 } from "./roles-permissions"
 import * as schema from "./schema"
@@ -117,17 +116,7 @@ reporterRoutes.put(`/:reportRef`, reporterAuth, async (c) => {
 
 	const userRole = c.get(`userRole`)
 	const numberOfReportsAllowed = hostedReportsAllowed.get(userRole)
-	const numberOfReportBytesAllowed = reportBytesAllowed.get(userRole)
 	const requestText = await c.req.text()
-	const suppliedReportByteLength = new TextEncoder().encode(requestText).length
-	if (suppliedReportByteLength > numberOfReportBytesAllowed) {
-		return c.json(
-			{
-				error: `Report is too large, at ${suppliedReportByteLength} bytes. Max size is ${numberOfReportBytesAllowed} bytes for your account tier.`,
-			},
-			413,
-		)
-	}
 
 	const db = c.get(`drizzle`)
 	const existingReport = await db.query.reports.findFirst({

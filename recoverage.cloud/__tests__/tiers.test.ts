@@ -8,7 +8,6 @@ import {
 	hostedReportsAllowed,
 	laws,
 	projectsAllowed,
-	reportBytesAllowed,
 	type Role,
 	tokensAllowed,
 } from "../src/roles-permissions"
@@ -116,10 +115,6 @@ test(`tier privileges encode the hosted report model`, () => {
 	expect(hostedReportsAllowed.get(`free`)).toBe(3)
 	expect(hostedReportsAllowed.get(`supporter`)).toBe(100)
 	expect(hostedReportsAllowed.get(`admin`)).toBe(200)
-
-	expect(reportBytesAllowed.get(`free`)).toBe(5 * 1024 * 1024)
-	expect(reportBytesAllowed.get(`supporter`)).toBe(25 * 1024 * 1024)
-	expect(reportBytesAllowed.get(`admin`)).toBe(50 * 1024 * 1024)
 })
 
 test(`hosted report limits are counted across all projects for an account`, async () => {
@@ -156,17 +151,4 @@ test(`existing hosted reports can be updated when the account is at its limit`, 
 
 	const existingReportUpdate = await putReport(firstProject.token, `atom.io`)
 	expect(existingReportUpdate.status).toBe(200)
-})
-
-test(`report uploads are capped by account tier size`, async () => {
-	const { token } = await createProjectToken(`free`)
-	const oversizedBody = JSON.stringify({
-		data: `x`.repeat(5 * 1024 * 1024),
-	})
-
-	const response = await putReport(token, `oversized`, oversizedBody)
-	expect(response.status).toBe(413)
-	await expect(response.json()).resolves.toMatchObject({
-		error: expect.stringContaining(`Report is too large`),
-	})
 })

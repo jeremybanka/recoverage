@@ -33,32 +33,22 @@ export const laws = new Laws({
 				}),
 			}),
 		}),
-		uploadReportBytes: optional({
-			"<=5Mb": optional({
-				"<=25Mb": optional({
-					"<=50Mb": null,
-				}),
-			}),
-		}),
 	}),
 	rolePermissions: {
 		free: new Set([
 			`ownProjects_<=3`,
 			`ownProjects_attachTokens_<=5`,
 			`hostReports_<=3`,
-			`uploadReportBytes_<=5Mb`,
 		] as const),
 		supporter: new Set([
 			`ownProjects_<=3_<=100`,
 			`ownProjects_attachTokens_<=5_<=10`,
 			`hostReports_<=3_<=100`,
-			`uploadReportBytes_<=5Mb_<=25Mb`,
 		] as const),
 		admin: new Set([
 			`ownProjects_<=3_<=100_<=200`,
 			`ownProjects_attachTokens_<=5_<=10_<=25`,
 			`hostReports_<=3_<=100_<=200`,
-			`uploadReportBytes_<=5Mb_<=25Mb_<=50Mb`,
 		] as const),
 	},
 })
@@ -92,17 +82,6 @@ export const hostedReportsAllowed = new Escalator({
 		[`hostReports_<=3`, 3],
 		[`hostReports_<=3_<=100`, 100],
 		[`hostReports_<=3_<=100_<=200`, 200],
-	] as const,
-	fallback: 0 as const,
-})
-
-export const reportBytesAllowed = new Escalator({
-	style: `untilMiss`,
-	laws,
-	permissionData: [
-		[`uploadReportBytes_<=5Mb`, 5 * 1024 * 1024],
-		[`uploadReportBytes_<=5Mb_<=25Mb`, 25 * 1024 * 1024],
-		[`uploadReportBytes_<=5Mb_<=25Mb_<=50Mb`, 50 * 1024 * 1024],
 	] as const,
 	fallback: 0 as const,
 })

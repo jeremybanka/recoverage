@@ -40,9 +40,23 @@ The Worker expects these bindings/secrets:
 Production deploys use `wrangler.jsonc`; preview deploys use
 `wrangler-preview.jsonc` and the `preview:*` scripts.
 
+## Hosted plans
+
+The paid-tier branch offers Free (3 hosted reports), Supporter ($1/month for
+100 hosted reports), and an internal Admin role (200 hosted reports). Reports
+are counted across all projects owned by a GitHub account. Updating an existing
+report does not consume another slot, including when the account is at its limit.
+
+All plans use the same D1 storage constraints. Cloudflare currently limits a
+string, BLOB, or entire row to 2,000,000 bytes; a report row also contains its
+summary and metadata, so this is not a promised upload size. There are no
+plan-specific report byte allowances. See [D1 limits](https://developers.cloudflare.com/d1/platform/limits/),
+the [paid service plan](PAID_SERVICE_PROPOSAL.md), and the proposed
+[launch work](LAUNCH_READINESS_PROPOSAL.md).
+
 ## Report quota exemptions
 
-Free accounts are limited to three reports per project. The explicit
+Free accounts are limited to three reports per account. The explicit
 `unlimitedReportGithubUserIds` allowlist in `src/roles-permissions.ts` exempts
 selected accounts from this report quota, starting with `jeremybanka` (`8570459`).
 To add an account, verify its numeric ID with `gh api users/LOGIN --jq .id`, then
@@ -51,6 +65,8 @@ allowlist changes; no database migration or CLI release is needed.
 
 The exemption uses the project owner's GitHub ID stored during OAuth, after
 verifying the reporter token. Authentication, project ownership, report ref and
-payload validation, and project/token limits still apply. Reports are retained
+payload validation, project/token limits, and D1 storage constraints still apply.
+The exemption removes the report-count bound for these selected accounts.
+Reports are retained
 until their project is deleted; there is no separate storage quota or automatic
 retention limit in the app.
