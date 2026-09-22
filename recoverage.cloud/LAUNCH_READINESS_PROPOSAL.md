@@ -11,8 +11,9 @@ report history for this launch.
 
 The branch has been rebased onto main. Usage and error handling, upload resource
 controls, and operational/configuration tooling are implemented. Billing management
-(customer portal and duplicate-subscription prevention) is the next separate phase
-and remains a prerequisite for live purchases.
+is being delivered as coordinated account/portal, checkout-protection, and
+subscription-lifecycle PRs into this branch. Integrating and validating all three
+remains a prerequisite for live purchases.
 
 Implemented behavior and executable procedures are documented in
 [OPERATIONS.md](OPERATIONS.md). The sections below retain the design and acceptance
@@ -26,7 +27,8 @@ Local regression coverage now checks stale subscription snapshots, delayed invoi
 payments, and unpaid renewals against the
 [billing lifecycle guarantees](PAID_SERVICE_PROPOSAL.md#billing-lifecycle-guarantees).
 Keep those tests as a gate while completing the remaining billing management and
-real Stripe test-mode validation.
+real Stripe test-mode validation. The customer workflows and their expected
+behavior are recorded in [PAID_SERVICE_PROPOSAL.md](PAID_SERVICE_PROPOSAL.md#customer-billing-flows).
 
 ## 1. Show usage and explain limits
 

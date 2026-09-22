@@ -101,4 +101,11 @@ metadata. No report or raw payment payload is written to application logs.
 See [OPERATIONS.md](OPERATIONS.md) for stable preview setup, configuration and
 hosted-storage verification scripts, webhook recovery, signing-secret rotation,
 entitlement overrides, retention, monitoring, migration rehearsal, and rollback.
-Customer portal and duplicate-subscription prevention remain the next phase.
+`/ui/billing` shows the effective plan separately from subscription payment and
+cancellation status. The **Manage billing** button opens an authenticated Stripe
+portal for payment methods, invoices, period-end cancellation, and undoing a
+scheduled cancellation. It remains available while new checkout is paused.
+Configure `STRIPE_PORTAL_CONFIGURATION_ID` separately for test and live mode;
+see [portal setup](OPERATIONS.md#customer-portal) and run `billing:verify` before
+launch. A return from Checkout is only a navigation hint: paid access is confirmed
+from synchronized subscription facts. Cancellation does not request a refund.

@@ -2,14 +2,14 @@
 
 The Worker changes in this branch are implemented locally. Deployment, real
 Stripe lifecycle verification, and enabling purchases are separate release steps.
-Customer portal and duplicate-subscription prevention remain billing-management
-work. Keep `CHECKOUT_ENABLED=false` until those changes and the checks below pass.
+The customer portal is implemented in the billing-management PR; checkout
+deduplication and lifecycle recovery are companion PRs. Integrate all three. Keep `CHECKOUT_ENABLED=false` until those changes and the checks below pass.
 
 ## Environment record
 
 Maintain a private record for each environment with the Worker URL/name, D1
 database name/ID, GitHub OAuth app and callback URL, Stripe mode, price ID, webhook
-endpoint ID/API version, deployed commit, and verification date. Record secret
+endpoint ID/API version, portal configuration ID, deployed commit, and verification date. Record secret
 locations, not their values. Keep preview and production databases, OAuth apps,
 customers, prices, API keys, and signing secrets separate.
 
@@ -20,6 +20,7 @@ customers, prices, API keys, and signing secrets separate.
 | `COOKIE_SECRET` | Distinct random signing secret for this environment. |
 | `STRIPE_MODE` | Exactly `test` or `live`; checked against API key, signed event, and retrieved subscription. |
 | `STRIPE_SECRET_KEY` | Matching Stripe secret API key. Required for every subscription refresh. |
+| `STRIPE_PORTAL_CONFIGURATION_ID` | Preconfigured customer portal ID in the matching mode; required for billing management and verification. |
 | `STRIPE_SUPPORTER_PRICE_ID` | Active USD 1 monthly recurring, licensed, per-unit price in this mode. |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret belonging to this endpoint. |
 | `STRIPE_WEBHOOK_PREVIOUS_SECRET` | Optional previous secret during rotation; remove after the overlap period. |
@@ -36,7 +37,8 @@ webhooks. The endpoint validates the configured price before creating a purchase
 The webhook endpoint must use `2026-04-22.dahlia` and receive
 `checkout.session.completed`, `customer.subscription.created`,
 `customer.subscription.updated`, `customer.subscription.deleted`, and
-`invoice.paid`. Signed events with a different mode or API version are rejected
+`invoice.paid`, `invoice.payment_failed`, and `invoice.payment_action_required`
+(the latter two are included in the lifecycle companion PR). Signed events with a different mode or API version are rejected
 before recording or updating billing facts.
 
 ## Stable isolated preview
@@ -88,7 +90,7 @@ bun --env-file=.env.billing-preview __scripts__/verify-billing-env.bun.ts
 ```
 
 This is a read-only Stripe configuration check. It verifies price, endpoint URL,
-mode, API version, status, and subscribed events. It cannot prove that locally
+mode, API version, status, subscribed events, and the portal configuration below. It cannot prove that locally
 supplied secrets equal deployed secrets or that a signing secret belongs to the
 endpoint; a real signed delivery is required. Verify the OAuth callback by
 signing in and confirm the deployed D1 binding against the environment record.
@@ -106,6 +108,42 @@ Delete the disposable project afterward. The local D1 emulator does not enforce
 the hosted 2,000,000-byte limit, so passing local mocks is insufficient evidence
 of this hosted behavior. Unexpected error shapes remain `500` until confirmed;
 inspect them only in the isolated preview without logging report contents.
+
+## Customer portal
+
+Create a portal configuration in the matching Stripe test/live environment and
+record its `bpc_...` ID as `STRIPE_PORTAL_CONFIGURATION_ID`. Configure these
+capabilities before running `billing:verify`:
+
+- Invoice history and payment-method updates enabled.
+- Subscription cancellation enabled with `mode=at_period_end` and
+  `proration_behavior=none`.
+- Subscription plan and quantity updates disabled. Recoverage has a single paid
+  plan and does not implement prorated plan changes.
+
+The app validates these settings and the configuration's active/mode flags on
+every portal launch. It never creates or changes portal configurations at runtime.
+Stripe's period-end cancellation flow also lets customers undo a scheduled
+cancellation before it takes effect. See the [portal integration guide](https://docs.stripe.com/customer-management/integrate-customer-portal)
+and [configuration reference](https://docs.stripe.com/api/customer_portal/configurations/object).
+
+OAuth sessions use SameSite=Lax so Stripe’s top-level GET return can open the
+account page. Sessions issued before this change retain SameSite=Strict until
+the user signs in again; if a return asks for authentication, sign in again.
+
+The authenticated POST `/billing/portal` requires a same-origin browser request,
+uses only the current GitHub user's stored Stripe customer, and returns to
+`/ui/billing`. Submitted customer IDs and return URLs are ignored. Keep portal
+configuration and the Stripe API key available during checkout pauses so existing
+subscribers can still view invoices, update cards, and cancel. If the portal fails,
+use the support procedure below; application logs deliberately omit Stripe error
+payloads and temporary portal URLs.
+
+In isolated preview, verify card update, invoice history, scheduled cancellation,
+undo before period end, cancellation becoming effective, and return navigation.
+Confirm the account page changes only after webhook synchronization. Also test
+opening the portal with `CHECKOUT_ENABLED=false`; purchasing and billing
+management are separate controls.
 
 ## Upload behavior and troubleshooting
 
@@ -215,8 +253,8 @@ project/token limits.
 
 ### Cancellation or refund
 
-Use Stripe's supported subscription/refund controls until billing management is
-implemented. Scheduled cancellation retains access while the current paid period
+Customers can schedule cancellation or undo it from **Manage billing**. Support
+can use Stripe's dashboard when needed. Scheduled cancellation retains access while the current paid period
 remains active; effective cancellation removes paid access. Refunds do not by
 themselves define a cancellation or entitlement policy. Follow the maintainer's
 published `BILLING_REFUND_POLICY`, record the decision, and verify the resulting
@@ -228,7 +266,7 @@ the maintainer.
 Set `CHECKOUT_ENABLED=false` and deploy the same code/config to the affected
 environment. Verify `/billing/checkout` returns `503` and the upgrade page has no
 purchase form. Leave all Stripe credentials, price ID, webhooks, uploads, reads,
-and existing subscriber access configured. Fix the incident and repeat billing
+the customer portal, and existing subscriber access configured. Fix the incident and repeat billing
 verification before considering re-enablement.
 
 ## Logs, retention, and monitoring
