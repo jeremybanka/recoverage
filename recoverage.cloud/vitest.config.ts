@@ -17,6 +17,7 @@ export default defineConfig(async () => {
 				miniflare: {
 					bindings: {
 						TEST_MIGRATIONS: migrations,
+						STRIPE_MODE: `test`,
 						COOKIE_SECRET: `HI`,
 						GITHUB_CLIENT_ID: `test-client-id`,
 						GITHUB_CLIENT_SECRET: `test-client-secret`,

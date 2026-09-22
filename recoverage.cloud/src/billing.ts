@@ -4,7 +4,6 @@ import type { DrizzleD1Database } from "drizzle-orm/d1"
 import type Stripe from "stripe"
 
 import type { Json } from "./json"
-import { stringify } from "./json"
 import type { Role } from "./roles-permissions"
 import * as schema from "./schema"
 import {
@@ -227,14 +226,17 @@ export async function recordStripeWebhookEvent({
 		return { alreadyProcessed: true }
 	}
 	if (!existingEvent) {
-		await db.insert(schema.stripeWebhookEvents).values({
-			createdAt: sqlTimestampFromUnixSeconds(event.created),
-			mode: event.livemode ? `live` : `test`,
-			payload: payload as Json.stringified<Json.Val>,
-			receivedAt: sqlNow(),
-			stripeEventId: event.id,
-			type: event.type,
-		})
+		await db
+			.insert(schema.stripeWebhookEvents)
+			.values({
+				createdAt: sqlTimestampFromUnixSeconds(event.created),
+				mode: event.livemode ? `live` : `test`,
+				payload: payload as Json.stringified<Json.Val>,
+				receivedAt: sqlNow(),
+				stripeEventId: event.id,
+				type: event.type,
+			})
+			.onConflictDoNothing()
 	}
 
 	return { alreadyProcessed: false }
@@ -268,10 +270,21 @@ export async function markStripeWebhookEventFailed({
 	await db
 		.update(schema.stripeWebhookEvents)
 		.set({
-			processingError:
-				error instanceof Error
-					? error.message
-					: stringify({ error: String(error) }),
+			processingError: webhookFailureReason(error),
 		})
 		.where(eq(schema.stripeWebhookEvents.stripeEventId, eventId))
+}
+
+function webhookFailureReason(error: unknown): string {
+	if (!(error instanceof Error)) return `Webhook synchronization failed.`
+	if (`type` in error && error.type === `StripeAuthenticationError`)
+		return `Stripe authentication failed; verify the API key.`
+	if (
+		error.message ===
+		`STRIPE_SECRET_KEY is required to sync Stripe subscriptions.`
+	)
+		return error.message
+	if (error.message.includes(`expanded latest invoice`))
+		return `Stripe did not return an expanded latest invoice.`
+	return `Webhook synchronization failed; check Stripe delivery and configuration.`
 }

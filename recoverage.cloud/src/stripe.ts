@@ -1,8 +1,10 @@
 import Stripe from "stripe"
 
+import { stripeApiVersion } from "./billing-config"
+
 export function createStripeClient(secretKey: string): Stripe {
 	return new Stripe(secretKey, {
-		apiVersion: `2026-04-22.dahlia`,
+		apiVersion: stripeApiVersion,
 		appInfo: {
 			name: `recoverage.cloud`,
 			url: `https://recoverage.cloud`,

@@ -57,8 +57,8 @@ All plans use the same D1 storage constraints. Cloudflare currently limits a
 string, BLOB, or entire row to 2,000,000 bytes; a report row also contains its
 summary and metadata, so this is not a promised upload size. There are no
 plan-specific report byte allowances. See [D1 limits](https://developers.cloudflare.com/d1/platform/limits/),
-the [paid service plan](PAID_SERVICE_PROPOSAL.md), and the proposed
-[launch work](LAUNCH_READINESS_PROPOSAL.md).
+the [paid service plan](PAID_SERVICE_PROPOSAL.md), and the
+[launch status](LAUNCH_READINESS_PROPOSAL.md).
 
 ## Report quota exemptions
 
@@ -76,3 +76,29 @@ The exemption removes the report-count bound for these selected accounts.
 Reports are retained
 until their project is deleted; there is no separate storage quota or automatic
 retention limit in the app.
+
+## Usage, errors, and operations
+
+The account page shows combined hosted-report and project usage. Each project
+shows token usage, and creation controls explain exhausted limits. Existing
+reports and credentials remain usable after a downgrade. `/support` publishes the
+maintainer-configured billing contact and refund policy; see the service's
+[current support page](https://recoverage.cloud/support) after deployment.
+
+Uploads return distinct codes for invalid credentials (401), invalid coverage
+(400), exhausted report slots (403), request frequency (429, with Retry-After),
+and ingress/storage size rejection (413). The shared streaming ingress guard is
+an operational protection, independent of plan roles. Uploads are limited to
+120/minute/token and 600/minute/account per Cloudflare location. The CLI surfaces
+errors without automatic retries. Reads and badges do not use upload budgets.
+
+New checkout defaults off. Configure `STRIPE_MODE`, the matching Stripe secrets,
+`BILLING_SUPPORT_EMAIL`, and `BILLING_REFUND_POLICY`; enable `CHECKOUT_ENABLED`
+only after the launch gates pass. Preview and live events are kept separate.
+The daily retention job redacts old event payloads while preserving deduplication
+metadata. No report or raw payment payload is written to application logs.
+
+See [OPERATIONS.md](OPERATIONS.md) for stable preview setup, configuration and
+hosted-storage verification scripts, webhook recovery, signing-secret rotation,
+entitlement overrides, retention, monitoring, migration rehearsal, and rollback.
+Customer portal and duplicate-subscription prevention remain the next phase.

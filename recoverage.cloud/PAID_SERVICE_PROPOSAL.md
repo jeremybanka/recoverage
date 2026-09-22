@@ -48,9 +48,9 @@ uploads from D1 constraints and means the ordinary per-account count bound does
 not apply to that account.
 
 Object storage is outside the current plan. Revisit it only if supporting larger
-individual reports becomes a deliberate product requirement. Better handling of
-D1 size errors and ingress/resource protection are proposed launch work; removing
-size entitlements does not itself implement that handling.
+individual reports becomes a deliberate product requirement. Shared ingress protection and D1 size-error handling are implemented as described
+in [OPERATIONS.md](OPERATIONS.md); hosted D1 behavior still needs verification in
+the isolated preview.
 
 ## Entitlements and billing
 
@@ -101,13 +101,13 @@ Stripe price is $1/month; confirm the actual price when preparing each environme
 
 ## Remaining work and sequence
 
-1. Rebase only when requested. Billing-management work follows that rebase:
-   customer portal, cancellation/card management, and protection against duplicate
-   subscriptions at checkout.
-2. Implement the separately proposed launch work:
-   usage display, resource controls, operating procedures, and environment checks.
-3. Validate a complete subscription lifecycle in an isolated Stripe test
-   environment before enabling live purchases.
+1. Rebase and local launch-readiness implementation are complete. Next implement
+   billing management: customer portal, cancellation/card management, and
+   protection against duplicate subscriptions at checkout.
+2. Finish the external verification gates in [OPERATIONS.md](OPERATIONS.md),
+   including approved support/refund settings and isolated environment setup.
+3. Validate a complete subscription lifecycle in Stripe test mode, then verify
+   live configuration before explicitly enabling purchases. Checkout defaults off.
 
 Organization billing, report history, private badges, automatic report retention,
 and object storage are deferred.

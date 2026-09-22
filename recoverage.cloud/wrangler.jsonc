@@ -3,10 +3,28 @@
 	"name": "recoverage-cloud",
 	"compatibility_date": "2025-02-24",
 	"main": "src/index.tsx",
+	"vars": {
+		"STRIPE_MODE": "live",
+		"REPORT_RATE_SCOPE": "recoverage-cloud",
+		"CHECKOUT_ENABLED": "false"
+	},
+	"triggers": { "crons": ["0 3 * * *"] },
 	"observability": {
 		"logs": { "enabled": true }
 	},
 	// "compatibility_flags": ["nodejs_compat"],
+	"ratelimits": [
+		{
+			"name": "REPORT_TOKEN_LIMITER",
+			"namespace_id": "1001",
+			"simple": { "limit": 120, "period": 60 }
+		},
+		{
+			"name": "REPORT_ACCOUNT_LIMITER",
+			"namespace_id": "1002",
+			"simple": { "limit": 600, "period": 60 }
+		}
+	],
 	"d1_databases": [
 		{
 			"binding": "DB",

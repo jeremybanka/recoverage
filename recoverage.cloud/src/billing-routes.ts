@@ -4,7 +4,6 @@ import type { DrizzleD1Database } from "drizzle-orm/d1"
 import type { MiddlewareHandler } from "hono"
 import { Hono } from "hono"
 import { deleteCookie, getSignedCookie } from "hono/cookie"
-import { Octokit } from "octokit"
 import type Stripe from "stripe"
 
 import {
@@ -13,9 +12,16 @@ import {
 	recordStripeWebhookEvent,
 	upsertStripeSubscription,
 } from "./billing"
+import {
+	billingModeMatches,
+	checkoutEnabled,
+	stripeApiVersion,
+	verifySupporterPrice,
+} from "./billing-config"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
 import { type Bindings, getEnv } from "./env"
+import { createGitHubClient } from "./github-client"
 import * as schema from "./schema"
 import {
 	createStripeClient,
@@ -46,7 +52,7 @@ const billingAuth: MiddlewareHandler<BillingEnv> = async (c, next) => {
 		return c.json({ error: `Unauthorized` }, 401)
 	}
 
-	const octokit = new Octokit({ auth: githubAccessTokenCookie })
+	const octokit = createGitHubClient(githubAccessTokenCookie)
 	const { data, status } = await octokit.request(`GET /user`, {
 		request: { fetch: cachedFetch },
 	})
@@ -77,6 +83,13 @@ const billingAuth: MiddlewareHandler<BillingEnv> = async (c, next) => {
 	await next()
 }
 
+billingRoutes.use(`/checkout`, async (c, next) => {
+	if (!checkoutEnabled(getEnv(c.env))) {
+		return c.json({ error: `New subscriptions are currently unavailable.` }, 503)
+	}
+	await next()
+})
+
 billingRoutes.post(`/checkout`, billingAuth, async (c) => {
 	const env = getEnv(c.env)
 
@@ -91,6 +104,12 @@ billingRoutes.post(`/checkout`, billingAuth, async (c) => {
 	const userId = c.get(`userId`)
 	const githubUser = c.get(`githubUserData`)
 	const stripe = createStripeClient(env.STRIPE_SECRET_KEY)
+	if (!env.STRIPE_MODE)
+		return c.json({ error: `Billing mode is not configured.` }, 503)
+	verifySupporterPrice(
+		await stripe.prices.retrieve(env.STRIPE_SUPPORTER_PRICE_ID),
+		env.STRIPE_MODE,
+	)
 
 	let stripeCustomer = await db.query.stripeCustomers.findFirst({
 		where: eq(schema.stripeCustomers.userId, userId),
@@ -128,6 +147,7 @@ billingRoutes.post(`/checkout`, billingAuth, async (c) => {
 })
 
 billingRoutes.post(`/webhook`, async (c) => {
+	const started = Date.now()
 	const env = getEnv(c.env)
 	if (!env.STRIPE_WEBHOOK_SECRET) {
 		return c.json({ error: `STRIPE_WEBHOOK_SECRET is not configured.` }, 500)
@@ -143,18 +163,47 @@ billingRoutes.post(`/webhook`, async (c) => {
 		? createStripeClient(env.STRIPE_SECRET_KEY)
 		: null
 
-	let event: Stripe.Event
-	try {
-		event = await createStripeClient(
-			`sk_test_placeholder`,
-		).webhooks.constructEventAsync(
-			rawBody,
-			stripeSignature,
-			env.STRIPE_WEBHOOK_SECRET,
+	let event: Stripe.Event | undefined
+	for (const secret of [
+		env.STRIPE_WEBHOOK_SECRET,
+		env.STRIPE_WEBHOOK_PREVIOUS_SECRET,
+	]) {
+		if (!secret) continue
+		try {
+			event = await createStripeClient(
+				`sk_test_placeholder`,
+			).webhooks.constructEventAsync(rawBody, stripeSignature, secret)
+			break
+		} catch {
+			// Signature errors can contain the signed payload. Never log them.
+		}
+	}
+	if (!event) return c.json({ error: `Invalid Stripe webhook signature.` }, 400)
+	if (!env.STRIPE_MODE || (env.STRIPE_SECRET_KEY && !billingModeMatches(env))) {
+		return c.json(
+			{ error: `Billing environment is not configured consistently.` },
+			503,
 		)
-	} catch (error) {
-		console.error(error)
-		return c.json({ error: `Invalid Stripe webhook signature.` }, 400)
+	}
+	if (
+		event.livemode !== (env.STRIPE_MODE === `live`) ||
+		event.api_version !== stripeApiVersion
+	) {
+		return c.json(
+			{
+				error: `Stripe event mode or API version does not match this environment.`,
+			},
+			400,
+		)
+	}
+	const logOutcome = (outcome: string) => {
+		console.info({
+			event: `stripe_webhook`,
+			eventId: event.id,
+			type: event.type,
+			outcome,
+			durationMs: Date.now() - started,
+		})
 	}
 
 	const db = createDatabase(c.env.DB)
@@ -164,15 +213,17 @@ billingRoutes.post(`/webhook`, async (c) => {
 		payload: rawBody,
 	})
 	if (alreadyProcessed) {
+		logOutcome(`duplicate`)
 		return c.json({ received: true, duplicate: true })
 	}
 
 	try {
 		await handleStripeWebhookEvent({ db, event, stripe })
 		await markStripeWebhookEventProcessed({ db, eventId: event.id })
+		logOutcome(`processed`)
 		return c.json({ received: true })
 	} catch (error) {
-		console.error(error)
+		logOutcome(`failed`)
 		await markStripeWebhookEventFailed({ db, eventId: event.id, error })
 		return c.json({ error: `Webhook processing failed.` }, 500)
 	}
@@ -222,8 +273,8 @@ async function handleStripeWebhookEvent({
 	// Webhooks are notifications, not ordered state changes. Even invoice.paid
 	// may describe an older invoice, so always fetch the subscription's current
 	// status, period, and expanded latest invoice together before persisting them.
-	await upsertStripeSubscription({
-		db,
-		subscription: await retrieveStripeSubscription(stripe, subscriptionId),
-	})
+	const subscription = await retrieveStripeSubscription(stripe, subscriptionId)
+	if (subscription.livemode !== event.livemode)
+		throw new Error(`Stripe subscription mode mismatch.`)
+	await upsertStripeSubscription({ db, subscription })
 }

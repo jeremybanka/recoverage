@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm"
 import app from "../src"
 import { getUserRole } from "../src/billing"
 import { createDatabase } from "../src/db"
+import type { Bindings } from "../src/env"
 import * as schema from "../src/schema"
 import { createStripeClient } from "../src/stripe"
 import { sqlTimestampFromUnixSeconds } from "../src/temporal"
@@ -50,6 +51,7 @@ function subscription(
 	const invoiceId = options.invoiceId ?? owner.invoiceId
 	return {
 		object: `subscription`,
+		livemode: false,
 		id: owner.subscriptionId,
 		customer: owner.customerId,
 		metadata: { recoverageUserId: String(owner.userId) },
@@ -100,7 +102,11 @@ function event(id: string, type: string, object: object, created = now) {
 
 async function deliver(
 	stripeEvent: ReturnType<typeof event>,
-	options: { apiKey?: string; signingSecret?: string } = {},
+	options: {
+		apiKey?: string
+		signingSecret?: string
+		bindings?: Partial<Bindings>
+	} = {},
 ) {
 	const payload = JSON.stringify(stripeEvent)
 	const stripe = createStripeClient(`sk_test_placeholder`)
@@ -123,6 +129,7 @@ async function deliver(
 			STRIPE_SECRET_KEY: options.apiKey,
 			STRIPE_SUPPORTER_PRICE_ID: supporterPriceId,
 			STRIPE_WEBHOOK_SECRET: webhookSecret,
+			...options.bindings,
 		},
 	)
 }
@@ -562,7 +569,7 @@ test(`a failed Stripe lookup leaves billing unchanged and retries the same event
 	expect(await storedSubscription(owner)).toEqual(before)
 	expect(await recordedEvent(owner, deleted.id)).toMatchObject({
 		processedAt: null,
-		processingError: expect.stringContaining(`Invalid API key`),
+		processingError: expect.stringContaining(`Stripe authentication failed`),
 	})
 	await accept(deleted, canceled)
 	expect(await role(owner)).toBe(`free`)
@@ -601,9 +608,7 @@ test(`an unexpanded current invoice cannot silently reuse an earlier payment`, a
 	expect(await storedSubscription(owner)).toEqual(before)
 	expect(await recordedEvent(owner, updated.id)).toMatchObject({
 		processedAt: null,
-		processingError: expect.stringContaining(
-			`requires an expanded latest invoice`,
-		),
+		processingError: expect.stringContaining(`expanded latest invoice`),
 	})
 	await accept(updated, current)
 	expect(await role(owner, periodEnd + 1)).toBe(`free`)
@@ -647,3 +652,61 @@ test.each([`canceled`, `incomplete_expired`] as const)(
 		expect(await role(owner)).toBe(`free`)
 	},
 )
+
+test(`signed events from the wrong mode or API version cannot write billing facts`, async () => {
+	const owner = await account()
+	const notification = event(
+		`wrong_mode`,
+		`customer.subscription.updated`,
+		subscription(owner),
+	)
+	const result = await deliver(notification, {
+		apiKey: `sk_live_placeholder`,
+		bindings: { STRIPE_MODE: `live` },
+	})
+	expect(result.status).toBe(400)
+	expect(await recordedEvent(owner, notification.id)).toBeUndefined()
+	expect(await storedSubscription(owner)).toBeUndefined()
+	const wrongVersion = { ...notification, api_version: `2020-01-01` }
+	expect(
+		(await deliver(wrongVersion, { apiKey: `sk_test_placeholder` })).status,
+	).toBe(400)
+	expect(await recordedEvent(owner, notification.id)).toBeUndefined()
+})
+
+test(`rotation accepts the previous signing secret while checkout is paused`, async () => {
+	const owner = await account()
+	const notification = event(
+		`rotating_secret`,
+		`customer.subscription.updated`,
+		subscription(owner),
+	)
+	mockSubscriptionLookup(subscription(owner))
+	const result = await deliver(notification, {
+		apiKey: `sk_test_placeholder`,
+		signingSecret: `whsec_previous`,
+		bindings: {
+			STRIPE_WEBHOOK_PREVIOUS_SECRET: `whsec_previous`,
+			CHECKOUT_ENABLED: `false`,
+		},
+	})
+	expect(result.status).toBe(200)
+	expect(await role(owner)).toBe(`supporter`)
+})
+
+test(`a lookup in the wrong mode cannot change a subscription`, async () => {
+	const owner = await account()
+	const notification = event(
+		`wrong_snapshot_mode`,
+		`customer.subscription.updated`,
+		subscription(owner),
+	)
+	mockSubscriptionLookup({ ...subscription(owner), livemode: true })
+	expect(
+		(await deliver(notification, { apiKey: `sk_test_placeholder` })).status,
+	).toBe(500)
+	expect(await storedSubscription(owner)).toBeUndefined()
+	expect(await recordedEvent(owner, notification.id)).toMatchObject({
+		processedAt: null,
+	})
+})

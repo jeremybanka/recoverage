@@ -135,9 +135,10 @@ test(`hosted report limits are counted across all projects for an account`, asyn
 	)
 
 	const fourthReport = await putReport(secondProject.token, `eris`)
-	expect(fourthReport.status).toBe(401)
+	expect(fourthReport.status).toBe(403)
 	await expect(fourthReport.json()).resolves.toMatchObject({
-		error: `You may not create more hosted reports. Your account tier allows 3.`,
+		code: `REPORT_QUOTA_EXCEEDED`,
+		error: `You may not create more hosted reports. Your account tier allows 3. Existing reports can still be updated.`,
 	})
 })
 

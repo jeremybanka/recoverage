@@ -51,7 +51,6 @@ shieldsRoutes.get(`/:projectId/:reportRef`, shieldsMiddleware, async (c) => {
 		return c.json({ error: `No report found` }, 404)
 	}
 	const summary = parse(summaryString)
-	console.log(summary)
 	const coveragePct = summary.total.statements.pct
 	const thresholds = [
 		[90, `brightgreen`],

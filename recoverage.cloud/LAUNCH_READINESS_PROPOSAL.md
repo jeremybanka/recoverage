@@ -1,6 +1,6 @@
 # Proposal: finish the paid-service launch
 
-September 22, 2026. Proposed work, not a deployment plan already in progress.
+September 22, 2026. Implementation and release-verification status. No deployment has been performed.
 The product decisions are in [PAID_SERVICE_PROPOSAL.md](PAID_SERVICE_PROPOSAL.md).
 
 ## Scope and order
@@ -9,11 +9,18 @@ Keep D1 storage and sell hosted-report capacity at the existing account limits.
 Do not introduce object storage, byte-based plan tiers, organization billing, or
 report history for this launch.
 
-The plan rework and local lifecycle fixes are complete. Rebase only when
-requested. Customer portal and duplicate-subscription prevention follow the
-rebase; they are prerequisites for accepting live subscriptions. The work below
-can then be delivered in three small changes: usage and errors, resource controls,
-and operational readiness.
+The branch has been rebased onto main. Usage and error handling, upload resource
+controls, and operational/configuration tooling are implemented. Billing management
+(customer portal and duplicate-subscription prevention) is the next separate phase
+and remains a prerequisite for live purchases.
+
+Implemented behavior and executable procedures are documented in
+[OPERATIONS.md](OPERATIONS.md). The sections below retain the design and acceptance
+criteria. Remaining external work is selecting the public support contact/refund
+policy, provisioning and verifying the isolated preview/live resources, observing
+the hosted D1 size rejection, rehearsing operational procedures, and completing
+the real Stripe lifecycle after billing management. None of those external checks
+is represented as complete by the local tests.
 
 Local regression coverage now checks stale subscription snapshots, delayed invoice
 payments, and unpaid renewals against the
@@ -66,16 +73,15 @@ Use the same rate policy for public plans initially; this is resource protection
 not another paid feature. Apply it before buffering/parsing coverage JSON.
 
 Proposed starting budgets are 120 uploads per minute per token and 600 per minute
-per account, then tune against observed CI bursts. These are configuration choices
-for this proposal, not entitlements or constants to add now. Validate a 100-report
+per account, then tune against observed CI bursts. These are now operational Wrangler settings, not plan entitlements. Validate a 100-report
 monorepo upload burst before launch. Return `429` with retry guidance; preserve
 authentication errors and test the CLI's behavior when throttled. Any automatic
 retry should be bounded and respect `Retry-After`.
 
 Cloudflare describes this binding as approximate and scoped to a location. It is
 suitable for coarse load control, not precise global metering. Keep durable report
-quotas in D1 and close the current count-then-insert race before describing the
-account quota as strict under concurrent uploads. Do not use a rate limiter as a
+quotas in D1 and keep the implemented single-statement quota check and write together so
+concurrent inserts cannot exceed the account quota. Do not use a rate limiter as a
 substitute for that fix. See [Workers rate limiting](https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/).
 
 Add a shared ingress/resource guard based on the actual storage format and Worker
@@ -109,12 +115,11 @@ Write a small runbook covering:
 | Service incident | Disable new checkout while preserving webhooks, existing subscriber access, uploads, and reads where possible; repair billing state before reopening purchases. |
 
 Log event IDs, outcomes, and durations without logging full report bodies, tokens,
-or raw payment payloads. The current reporter logs its parsed payload, and the
-database logger prints query parameters, including stored event payloads. Remove
-or redact both in this work. Monitor failed webhook processing, D1 capacity, upload
-errors, throttling, and Worker resource failures. Full event payloads are already
-stored in D1, so define their retention separately from a compact processed-event
-deduplication record; report-count quotas do not bound webhook-table growth.
+or raw payment payloads. Report-body, database-parameter, and OAuth-token logging have been removed.
+The implementation emits compact request and webhook outcome logs. Monitor failed webhook processing, D1 capacity, upload
+errors, throttling, and Worker resource failures. A daily job redacts processed payloads after 30 days and unprocessed payloads
+after 90 days while preserving compact event records; report-count quotas do not
+bound webhook-table growth.
 
 Acceptance: the maintainer can recover a missed payment update, rotate a secret,
 apply/remove an override, and pause new purchases from the written instructions.
@@ -149,7 +154,7 @@ rollback. In particular, the billing migration replaces `users.role`; rolling
 back only the Worker to old code is not sufficient. Generate any needed schema
 changes with drizzle-kit rather than editing existing migrations.
 
-Deploy with a proposed checkout-enable switch off, configure and verify live
+Deploy with `CHECKOUT_ENABLED=false`, configure and verify live
 bindings and webhook delivery, then enable checkout after the preview lifecycle
 and operational checks pass. Disabling checkout must not remove the configured
 Supporter price or prevent existing customers from retaining their entitlement.

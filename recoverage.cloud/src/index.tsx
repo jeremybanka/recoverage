@@ -2,27 +2,68 @@ import { eq } from "drizzle-orm"
 import { Hono } from "hono"
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie"
 import { css } from "hono/css"
-import { Octokit } from "octokit"
 
 import { assetsRoutes } from "./assets"
 import { getUserRole } from "./billing"
 import { billingRoutes } from "./billing-routes"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
+import type { Bindings } from "./env"
 import { getEnv, GITHUB_CALLBACK_ENDPOINT } from "./env"
+import { createGitHubClient } from "./github-client"
+import { redactWebhookPayloads } from "./maintenance"
 import { Page, SplashPage } from "./page"
 import { RoleBadge } from "./pricing"
 import { reporterRoutes } from "./reporter"
 import * as schema from "./schema"
 import { shieldsRoutes } from "./shields"
+import { BillingSupport } from "./support"
 import type { UiEnv } from "./ui"
 import { uiRoutes } from "./ui"
+import { AccountUsage, accountUsage, StorageHelp } from "./usage"
 
 const app = new Hono<UiEnv>()
 
+function requestCategory(path: string): string {
+	if (path === `/`) return `account`
+	const category = path.split(`/`)[1] ?? ``
+	return [
+		`assets`,
+		`billing`,
+		`reporter`,
+		`ui`,
+		`shields`,
+		`oauth`,
+		`support`,
+	].includes(category)
+		? category
+		: `other`
+}
+
 app.use(`*`, async (c, next) => {
-	console.log(c.req.method, c.req.path)
+	const started = Date.now()
 	await next()
+	console.info({
+		event: `request`,
+		route: requestCategory(c.req.path),
+		method: c.req.method,
+		status: c.res.status,
+		durationMs: Date.now() - started,
+	})
+})
+
+app.onError((_error, c) => {
+	console.error({
+		event: `request_failed`,
+		route: requestCategory(c.req.path),
+	})
+	return c.json(
+		{
+			code: `INTERNAL_ERROR`,
+			error: `The service could not complete this request. Please retry later.`,
+		},
+		500,
+	)
 })
 
 app.route(`assets`, assetsRoutes)
@@ -30,6 +71,26 @@ app.route(`billing`, billingRoutes)
 app.route(`reporter`, reporterRoutes)
 app.route(`ui`, uiRoutes)
 app.route(`shields`, shieldsRoutes)
+
+app.get(`/support`, (c) => {
+	const config = getEnv(c.env)
+	return c.html(
+		<Page>
+			<h1>Help and billing support</h1>
+			<StorageHelp />
+			<BillingSupport config={config} />
+			{!config.BILLING_SUPPORT_EMAIL ? (
+				<p>
+					Billing support details will be published before subscriptions open.
+				</p>
+			) : null}
+			<p>
+				Existing reports remain readable and replaceable when your account
+				reaches its report limit.
+			</p>
+		</Page>,
+	)
+})
 
 app.get(`/`, async (c) => {
 	const env = getEnv(c.env)
@@ -45,10 +106,8 @@ app.get(`/`, async (c) => {
 		)
 	}
 
-	console.log(`Found github access token cookie`)
-
 	try {
-		const octokit = new Octokit({ auth: githubAccessTokenCookie })
+		const octokit = createGitHubClient(githubAccessTokenCookie)
 
 		const { data } = await octokit.request(`GET /user`, {
 			request: { fetch: cachedFetch },
@@ -66,7 +125,6 @@ app.get(`/`, async (c) => {
 			await db.insert(schema.users).values({ id: data.id }).returning()
 		)[0]
 
-		console.log(`User`, user)
 		const userRole = await getUserRole({
 			db,
 			stripeSupporterPriceId: env.STRIPE_SUPPORTER_PRICE_ID,
@@ -76,6 +134,7 @@ app.get(`/`, async (c) => {
 			return c.json({ error: `User did not have a resolvable role.` }, 500)
 		}
 		const billingState = url.searchParams.get(`billing`)
+		const usage = await accountUsage(db, user.id)
 
 		return await c.html(
 			<Page>
@@ -117,6 +176,8 @@ app.get(`/`, async (c) => {
 						Checkout cancelled.
 					</p>
 				) : null}
+				<AccountUsage usage={usage} role={userRole} userId={user.id} />
+				<BillingSupport config={env} />
 				<h2>Your Projects</h2>
 				<div
 					hx-get="/ui/project"
@@ -129,8 +190,8 @@ app.get(`/`, async (c) => {
 				/>
 			</Page>,
 		)
-	} catch (thrown) {
-		console.error(thrown)
+	} catch {
+		console.error({ event: `account_load_failed` })
 		deleteCookie(c, `github-access-token`)
 		return c.html(
 			<SplashPage currentUrl={url} githubClientId={env.GITHUB_CLIENT_ID} />,
@@ -156,8 +217,6 @@ app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
 	}
 	const accessTokenResponseText = await accessTokenResponse.text()
 
-	console.log({ accessTokenResponseText })
-
 	const params = new URLSearchParams(accessTokenResponseText)
 	const accessToken = params.get(`access_token`)
 	if (!accessToken) {
@@ -181,4 +240,9 @@ app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
 		</Page>,
 	)
 })
-export default app
+export default Object.assign(app, {
+	async scheduled(_event: ScheduledController, bindings: Bindings) {
+		const redacted = await redactWebhookPayloads(bindings.DB)
+		console.info({ event: `webhook_retention`, redacted })
+	},
+})

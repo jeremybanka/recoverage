@@ -1,6 +1,6 @@
 import type { Type } from "arktype"
 import { type } from "arktype"
-import { and, eq, sql } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import type { DrizzleD1Database } from "drizzle-orm/d1"
 import type { MiddlewareHandler } from "hono"
 import { Hono } from "hono"
@@ -12,6 +12,12 @@ import { createDatabase } from "./db"
 import { type Bindings, getEnv } from "./env"
 import { computeHash } from "./hash"
 import { stringify } from "./json"
+import {
+	isD1SizeError,
+	readReportBody,
+	ReportRequestTooLarge,
+	storeReport,
+} from "./report-storage"
 import type { Role } from "./roles-permissions"
 import {
 	hostedReportsAllowed,
@@ -24,6 +30,7 @@ type ReporterEnv = {
 	Variables: {
 		drizzle: DrizzleD1Database<typeof schema>
 		projectScope: string
+		tokenId: string
 		userId: number
 		userRole: Role
 	}
@@ -34,12 +41,12 @@ const reporterAuth: MiddlewareHandler<ReporterEnv> = async (c, next) => {
 	const env = getEnv(c.env)
 	const authHeader = c.req.header(`Authorization`)
 	if (!authHeader?.startsWith(`Bearer `)) {
-		return c.json({ error: `Unauthorized` }, 401)
+		return c.json({ code: `UNAUTHORIZED`, error: `Unauthorized` }, 401)
 	}
 	const token = authHeader.slice(7) // Remove "Bearer "
 	const [id, password] = token.split(`.`)
 	if (!id || !password) {
-		return c.json({ error: `Invalid token format` }, 401)
+		return c.json({ code: `UNAUTHORIZED`, error: `Invalid token format` }, 401)
 	}
 	const db = createDatabase(c.env.DB)
 	const tokenRecord = await db.query.tokens.findFirst({
@@ -59,13 +66,13 @@ const reporterAuth: MiddlewareHandler<ReporterEnv> = async (c, next) => {
 	})
 
 	if (!tokenRecord) {
-		return c.json({ error: `Token not found` }, 401)
+		return c.json({ code: `UNAUTHORIZED`, error: `Token not found` }, 401)
 	}
 
 	const { projectId, salt, hash: realHash } = tokenRecord
 	const suppliedHash = await computeHash(password, salt)
 	if (suppliedHash !== realHash) {
-		return c.json({ error: `Invalid token` }, 401)
+		return c.json({ code: `UNAUTHORIZED`, error: `Invalid token` }, 401)
 	}
 	const userId = tokenRecord.project.user.id
 	const userRole = await getUserRole({
@@ -78,6 +85,7 @@ const reporterAuth: MiddlewareHandler<ReporterEnv> = async (c, next) => {
 	}
 	c.set(`drizzle`, db)
 	c.set(`projectScope`, projectId)
+	c.set(`tokenId`, id)
 	c.set(`userId`, userId)
 	c.set(`userRole`, userRole)
 	await next()
@@ -108,6 +116,7 @@ reporterRoutes.put(`/:reportRef`, reporterAuth, async (c) => {
 	if (suppliedReportRefLength > reportRefMaxLength) {
 		return c.json(
 			{
+				code: `INVALID_REPORT`,
 				error: `Report ref is too long, at ${suppliedReportRefLength} characters. Max length is ${reportRefMaxLength}`,
 			},
 			400,
@@ -116,73 +125,99 @@ reporterRoutes.put(`/:reportRef`, reporterAuth, async (c) => {
 
 	const userRole = c.get(`userRole`)
 	const numberOfReportsAllowed = hostedReportsAllowed.get(userRole)
-	const requestText = await c.req.text()
 
-	const db = c.get(`drizzle`)
-	const existingReport = await db.query.reports.findFirst({
-		where: and(
-			eq(schema.reports.projectId, projectScope),
-			eq(schema.reports.ref, reportRef),
-		),
-		columns: {
-			ref: true,
-		},
-	})
-
-	if (!existingReport && !unlimitedReportGithubUserIds.has(c.get(`userId`))) {
-		const userId = c.get(`userId`)
-		const reportCountRow = await db
-			.select({ count: sql<number>`count(*)` })
-			.from(schema.reports)
-			.innerJoin(
-				schema.projects,
-				eq(schema.reports.projectId, schema.projects.id),
-			)
-			.where(eq(schema.projects.userId, userId))
-			.get()
-		const currentReportCount = reportCountRow?.count ?? 0
-
-		if (currentReportCount >= numberOfReportsAllowed) {
-			return c.json(
-				{
-					error: `You may not create more hosted reports. Your account tier allows ${numberOfReportsAllowed}.`,
-				},
-				401,
-			)
-		}
+	const scope = c.env.REPORT_RATE_SCOPE
+	const [tokenBudget, accountBudget] = await Promise.all([
+		c.env.REPORT_TOKEN_LIMITER.limit({
+			key: `${scope}:token:${c.get(`tokenId`)}`,
+		}),
+		c.env.REPORT_ACCOUNT_LIMITER.limit({
+			key: `${scope}:account:${c.get(`userId`)}`,
+		}),
+	])
+	if (!tokenBudget.success || !accountBudget.success) {
+		c.header(`Retry-After`, `60`)
+		return c.json(
+			{
+				code: `RATE_LIMITED`,
+				error: `Too many report uploads. Retry after 60 seconds.`,
+			},
+			429,
+		)
+	}
+	let requestText: string
+	try {
+		requestText = await readReportBody(c.req.raw)
+	} catch (error) {
+		if (!(error instanceof ReportRequestTooLarge)) throw error
+		return c.json(
+			{
+				code: `REQUEST_TOO_LARGE`,
+				error: `This upload is too large to process. Reduce or split the coverage report. The same limit applies to every plan.`,
+			},
+			413,
+		)
 	}
 
 	let jsonPayload: unknown
 	try {
 		jsonPayload = JSON.parse(requestText)
 	} catch {
-		return c.json({ error: `Bad request`, typeErrors: `Invalid JSON` }, 400)
+		return c.json(
+			{
+				code: `INVALID_REPORT`,
+				error: `Bad request`,
+				typeErrors: `Invalid JSON`,
+			},
+			400,
+		)
 	}
-	console.log({ jsonPayload })
 	const payloadOut = reporterPutType(jsonPayload)
 
 	if (payloadOut instanceof type.errors) {
-		return c.json({ error: `Bad request`, typeErrors: payloadOut.summary }, 400)
+		return c.json(
+			{
+				code: `INVALID_REPORT`,
+				error: `Bad request`,
+				typeErrors: payloadOut.summary,
+			},
+			400,
+		)
 	}
 
 	const coverageMapString = stringify(payloadOut.mapData as any)
 	const summaryReportString = stringify(payloadOut.jsonSummary)
 
-	await db
-		.insert(schema.reports)
-		.values({
-			ref: reportRef,
+	try {
+		const stored = await storeReport({
+			db: c.env.DB,
 			projectId: projectScope,
+			userId: c.get(`userId`),
+			ref: reportRef,
 			data: coverageMapString,
-			jsonSummary: summaryReportString,
+			summary: summaryReportString,
+			allowance: numberOfReportsAllowed,
+			exempt: unlimitedReportGithubUserIds.has(c.get(`userId`)),
 		})
-		.onConflictDoUpdate({
-			target: [schema.reports.ref, schema.reports.projectId],
-			set: {
-				data: coverageMapString,
-				jsonSummary: summaryReportString,
+		if (!stored) {
+			return c.json(
+				{
+					code: `REPORT_QUOTA_EXCEEDED`,
+					error: `You may not create more hosted reports. Your account tier allows ${numberOfReportsAllowed}. Existing reports can still be updated.`,
+				},
+				403,
+			)
+		}
+	} catch (error) {
+		if (!isD1SizeError(error)) throw error
+		return c.json(
+			{
+				code: `REPORT_TOO_LARGE`,
+				error: `This report exceeds the shared storage limit. Reduce or split the coverage report. Upgrading does not increase this limit.`,
 			},
-		})
+			413,
+		)
+	}
 
 	return c.json({ success: true })
 })

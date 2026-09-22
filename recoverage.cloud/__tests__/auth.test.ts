@@ -79,8 +79,8 @@ test(`authentication flow`, async () => {
 	})
 	expect(upgradeResponse.status).toBe(200)
 	const upgradeText = await upgradeResponse.text()
-	expect(upgradeText).toContain(`Upgrade to Supporter`)
-	expect(upgradeText).toContain(`action="/billing/checkout"`)
+	expect(upgradeText).toContain(`New subscriptions are currently unavailable.`)
+	expect(upgradeText).not.toContain(`action="/billing/checkout"`)
 
 	const project = await fetch(`https://recoverage.cloud/ui/project`, {
 		method: `POST`,
@@ -91,6 +91,7 @@ test(`authentication flow`, async () => {
 		body: `name=test`,
 	})
 	const projectText = await project.text()
+	expect(project.headers.get(`HX-Trigger`)).toBe(`usage-changed`)
 
 	const hxPost = projectText.match(/hx-post="([^"]+)"/)
 	const postTokenToProjectPath = hxPost?.[1]
@@ -114,6 +115,21 @@ test(`authentication flow`, async () => {
 	})
 
 	const tokenText = await token.text()
+	expect(token.headers.get(`HX-Trigger`)).toBe(`usage-changed`)
+	const controls = await fetch(
+		`https://recoverage.cloud/ui/token-usage/${projectId}`,
+		{ headers: { Cookie: githubAccessTokenCookie } },
+	)
+	expect(await controls.text()).toContain(`1 / 5 tokens`)
+	const counters = await Promise.all(
+		[`usage`, `project-usage`].map((path) =>
+			fetch(`https://recoverage.cloud/ui/${path}`, {
+				headers: { Cookie: githubAccessTokenCookie },
+			}),
+		),
+	)
+	for (const counter of counters) expect(counter.status).toBe(200)
+	expect(await counters[0].text()).toContain(`Projects: 1 / 3`)
 	const parser = new XMLParser()
 	const tokenXml = parser.parse(tokenText)
 	const code = tokenXml.div.div[0].span.code

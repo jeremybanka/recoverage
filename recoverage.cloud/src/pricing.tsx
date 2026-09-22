@@ -1,6 +1,7 @@
 import { css } from "hono/css"
 import type { HtmlEscapedString } from "hono/utils/html"
 
+import { type BillingConfig, checkoutEnabled } from "./billing-config"
 import type { Loadable } from "./loadable"
 import {
 	hostedReportsAllowed,
@@ -8,6 +9,8 @@ import {
 	type Role,
 	tokensAllowed,
 } from "./roles-permissions"
+import { BillingSupport } from "./support"
+import { StorageHelp } from "./usage"
 
 function roleLabel(role: Role): string {
 	switch (role) {
@@ -198,12 +201,16 @@ function PricingCard({
 
 export function PricingPage({
 	currentRole,
+	config,
 }: {
 	currentRole: Role
+	config: BillingConfig
 }): Loadable<HtmlEscapedString> {
 	return (
 		<>
 			<h1>Upgrade</h1>
+			<StorageHelp />
+			<BillingSupport config={config} />
 			<p
 				class={css`
 					margin-top: 0;
@@ -248,6 +255,8 @@ export function PricingPage({
 							>
 								Current plan
 							</span>
+						) : !checkoutEnabled(config) ? (
+							<p>New subscriptions are currently unavailable.</p>
 						) : (
 							<form method="post" action="/billing/checkout">
 								<button

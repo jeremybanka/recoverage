@@ -9,7 +9,7 @@ import * as header from "./header"
 import type { Json } from "./json"
 import type { Loadable } from "./loadable"
 import type { Role } from "./roles-permissions"
-import { tokensAllowed } from "./roles-permissions"
+import { projectsAllowed, tokensAllowed } from "./roles-permissions"
 import { when } from "./when"
 
 export type ProjectProps =
@@ -34,7 +34,8 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 			return (
 				<button.create
 					hx-post="/ui/project"
-					hx-swap="beforebegin"
+					hx-target="#project-list"
+					hx-swap="beforeend"
 					disabled={props.disabled}
 				>
 					+ New project
@@ -49,8 +50,6 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 		case `existing`:
 		case `deleted`: {
 			const { id, name, tokens, reports, mode, userRole } = props
-			const numberOfTokensAllowed = tokensAllowed.get(userRole)
-			const mayCreateToken = tokens.length < numberOfTokensAllowed
 			return (
 				<div
 					key={id}
@@ -207,16 +206,17 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 							gap: 10px;
 						`}
 					>
-						<h4.diagonals>
-							{tokens.length === 0 ? `No Tokens` : `Tokens`}
-						</h4.diagonals>
-						{tokens.map((token) => (
-							<ProjectToken key={token.id} {...token} />
-						))}
-						<ProjectToken
-							mode="button"
+						<h4.diagonals>Tokens</h4.diagonals>
+						<div id={`tokens-${id}`}>
+							{tokens.map((token) => (
+								<ProjectToken key={token.id} {...token} />
+							))}
+						</div>
+						<TokenControls
 							projectId={id}
-							disabled={mode === `deleted` || !mayCreateToken}
+							count={tokens.length}
+							role={userRole}
+							deleted={mode === `deleted`}
 						/>
 						{/* <ProjectToken mode="creator" projectId={id} />
 						<ProjectToken
@@ -256,7 +256,8 @@ export function ProjectToken(
 			return (
 				<button.create
 					hx-post={`/ui/token/${projectId}`}
-					hx-swap="beforebegin"
+					hx-target={`#tokens-${projectId}`}
+					hx-swap="beforeend"
 					disabled={disabled}
 				>
 					+ New token
@@ -357,4 +358,62 @@ export function ProjectToken(
 		}
 	}
 	return null
+}
+
+export function TokenControls({
+	projectId,
+	count,
+	role,
+	deleted = false,
+}: {
+	projectId: string
+	count: number
+	role: Role
+	deleted?: boolean
+}): Loadable<HtmlEscapedString> {
+	const limit = tokensAllowed.get(role)
+	return (
+		<div
+			hx-get={deleted ? undefined : `/ui/token-usage/${projectId}`}
+			hx-trigger="usage-changed from:body"
+			hx-swap="outerHTML"
+		>
+			<p>
+				{count} / {limit} tokens
+			</p>
+			{count >= limit ? (
+				<p>This project is at its token limit. Existing tokens remain usable.</p>
+			) : null}
+			<ProjectToken
+				mode="button"
+				projectId={projectId}
+				disabled={deleted || count >= limit}
+			/>
+		</div>
+	)
+}
+
+export function ProjectControls({
+	count,
+	role,
+}: {
+	count: number
+	role: Role
+}): Loadable<HtmlEscapedString> {
+	const limit = projectsAllowed.get(role)
+	return (
+		<div
+			hx-get="/ui/project-usage"
+			hx-trigger="usage-changed from:body"
+			hx-swap="outerHTML"
+		>
+			{count >= limit ? (
+				<p>
+					Your account is at its project limit. Existing projects remain
+					available.
+				</p>
+			) : null}
+			<Project mode="button" disabled={count >= limit} />
+		</div>
+	)
 }

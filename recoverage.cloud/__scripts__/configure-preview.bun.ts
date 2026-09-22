@@ -11,12 +11,17 @@ const projectRootPath = path.join(import.meta.dir, `..`)
 const wranglerConfigPath = path.join(projectRootPath, `wrangler.jsonc`)
 let content = fs.readFileSync(wranglerConfigPath, `utf8`)
 // Remove single-line comments (basic regex, sufficient for simple JSONC)
-content = content.replace(/\/\/.*$/gm, ``)
+content = content.replace(/^\s*\/\/.*$/gm, ``)
 const config = JSON.parse(content)
 
 // Update worker name
 config.name = previewEnv.WORKER_NAME
 config.preview_urls = true
+config.vars = {
+	REPORT_RATE_SCOPE: config.name,
+	STRIPE_MODE: `test`,
+	CHECKOUT_ENABLED: `false`,
+}
 // Update database name and ID (assuming single database at index 0)
 config.d1_databases[0].database_name = previewEnv.DATABASE_NAME
 config.d1_databases[0].database_id = previewEnv.DATABASE_ID
