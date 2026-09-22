@@ -30,7 +30,10 @@ customers, prices, API keys, and signing secrets separate.
 | `REPORT_RATE_SCOPE` | Stable Worker/environment identifier, never a caller-supplied hostname. |
 | `REPORT_TOKEN_LIMITER`, `REPORT_ACCOUNT_LIMITER` | Upload rate-limit bindings. |
 
-Checkout also requires complete support and billing configuration. Disabling it
+Checkout also requires complete support and billing configuration, including
+`STRIPE_PORTAL_CONFIGURATION_ID`, so new purchases cannot open before a portal
+configuration is selected. Validate that configuration with `billing:verify`
+before enabling purchases. Disabling it
 does not clear Stripe price configuration, remove existing entitlements, or pause
 webhooks. The endpoint validates the configured price before creating a purchase.
 

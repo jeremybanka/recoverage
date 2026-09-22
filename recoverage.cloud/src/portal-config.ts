@@ -6,9 +6,7 @@ import {
 	billingModeMatches,
 } from "./billing-config"
 
-export type PortalConfig = BillingConfig & {
-	STRIPE_PORTAL_CONFIGURATION_ID?: string | undefined
-}
+export type PortalConfig = BillingConfig
 
 export function portalEnabled(config: PortalConfig): boolean {
 	return billingModeMatches(config) && !!config.STRIPE_PORTAL_CONFIGURATION_ID

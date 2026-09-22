@@ -14,6 +14,7 @@ const config = {
 	STRIPE_SECRET_KEY: `sk_test_placeholder`,
 	STRIPE_WEBHOOK_SECRET: `whsec_placeholder`,
 	STRIPE_SUPPORTER_PRICE_ID: `price_supporter`,
+	STRIPE_PORTAL_CONFIGURATION_ID: `bpc_test`,
 	BILLING_SUPPORT_EMAIL: `billing@example.test`,
 	BILLING_REFUND_POLICY: `Contact billing support to request a refund.`,
 	CHECKOUT_ENABLED: `true`,

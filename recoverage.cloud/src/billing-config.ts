@@ -15,6 +15,7 @@ export type BillingConfig = {
 	STRIPE_MODE?: `live` | `test` | undefined
 	STRIPE_SECRET_KEY?: string | undefined
 	STRIPE_SUPPORTER_PRICE_ID?: string | undefined
+	STRIPE_PORTAL_CONFIGURATION_ID?: string | undefined
 	STRIPE_WEBHOOK_SECRET?: string | undefined
 	CHECKOUT_ENABLED?: string | undefined
 	BILLING_SUPPORT_EMAIL?: string | undefined
@@ -33,6 +34,7 @@ export function checkoutEnabled(config: BillingConfig): boolean {
 		config.CHECKOUT_ENABLED === `true` &&
 		billingModeMatches(config) &&
 		!!config.STRIPE_SUPPORTER_PRICE_ID &&
+		!!config.STRIPE_PORTAL_CONFIGURATION_ID &&
 		!!config.STRIPE_WEBHOOK_SECRET &&
 		!!config.BILLING_SUPPORT_EMAIL &&
 		!!config.BILLING_REFUND_POLICY
