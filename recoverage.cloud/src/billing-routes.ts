@@ -19,15 +19,12 @@ import {
 	verifySupporterPrice,
 } from "./billing-config"
 import { cachedFetch } from "./cached-fetch"
+import { CheckoutUnavailable, supporterCheckout } from "./checkout"
 import { createDatabase } from "./db"
 import { type Bindings, getEnv } from "./env"
 import { createGitHubClient } from "./github-client"
 import * as schema from "./schema"
-import {
-	createStripeClient,
-	createSupporterCheckoutSessionParams,
-	retrieveStripeSubscription,
-} from "./stripe"
+import { createStripeClient, retrieveStripeSubscription } from "./stripe"
 
 type BillingEnv = {
 	Bindings: Bindings
@@ -91,59 +88,70 @@ billingRoutes.use(`/checkout`, async (c, next) => {
 })
 
 billingRoutes.post(`/checkout`, billingAuth, async (c) => {
-	const env = getEnv(c.env)
-
-	if (!env.STRIPE_SECRET_KEY) {
-		return c.json({ error: `STRIPE_SECRET_KEY is not configured.` }, 500)
-	}
-	if (!env.STRIPE_SUPPORTER_PRICE_ID) {
-		return c.json({ error: `STRIPE_SUPPORTER_PRICE_ID is not configured.` }, 500)
-	}
-
-	const db = c.get(`drizzle`)
-	const userId = c.get(`userId`)
-	const githubUser = c.get(`githubUserData`)
-	const stripe = createStripeClient(env.STRIPE_SECRET_KEY)
-	if (!env.STRIPE_MODE)
-		return c.json({ error: `Billing mode is not configured.` }, 503)
-	verifySupporterPrice(
-		await stripe.prices.retrieve(env.STRIPE_SUPPORTER_PRICE_ID),
-		env.STRIPE_MODE,
-	)
-
-	let stripeCustomer = await db.query.stripeCustomers.findFirst({
-		where: eq(schema.stripeCustomers.userId, userId),
-		columns: { stripeCustomerId: true },
-	})
-
-	if (!stripeCustomer) {
-		const customer = await stripe.customers.create({
-			...(githubUser.email ? { email: githubUser.email } : {}),
-			metadata: { recoverageUserId: String(userId) },
-			name: githubUser.name ?? githubUser.login,
-		})
-		stripeCustomer = { stripeCustomerId: customer.id }
-		await db.insert(schema.stripeCustomers).values({
-			userId,
-			stripeCustomerId: customer.id,
-		})
-	}
-
 	const origin = new URL(c.req.url).origin
-	const checkoutSession = await stripe.checkout.sessions.create(
-		createSupporterCheckoutSessionParams({
-			customerId: stripeCustomer.stripeCustomerId,
-			origin,
-			priceId: env.STRIPE_SUPPORTER_PRICE_ID,
-			userId,
-		}),
-	)
-
-	if (!checkoutSession.url) {
-		return c.json({ error: `Stripe did not return a Checkout URL.` }, 500)
+	if (
+		c.req.header(`origin`) !== origin ||
+		(c.req.header(`sec-fetch-site`) &&
+			c.req.header(`sec-fetch-site`) !== `same-origin`)
+	) {
+		return c.json({ error: `Billing requests must come from this site.` }, 403)
+	}
+	const env = getEnv(c.env)
+	if (
+		!env.STRIPE_SECRET_KEY ||
+		!env.STRIPE_SUPPORTER_PRICE_ID ||
+		!env.STRIPE_MODE
+	) {
+		return c.json({ error: `Billing is not configured.` }, 503)
 	}
 
-	return c.redirect(checkoutSession.url, 303)
+	try {
+		const { success } = await c.env.CHECKOUT_LIMITER.limit({
+			key: `${c.env.REPORT_RATE_SCOPE}:checkout:${c.get(`userId`)}`,
+		})
+		if (!success) {
+			c.header(`Retry-After`, `60`)
+			return c.json(
+				{ error: `Too many checkout requests. Please try again in a minute.` },
+				429,
+			)
+		}
+		const stripe = createStripeClient(env.STRIPE_SECRET_KEY)
+		verifySupporterPrice(
+			await stripe.prices.retrieve(env.STRIPE_SUPPORTER_PRICE_ID),
+			env.STRIPE_MODE,
+		)
+		const checkout = await supporterCheckout({
+			db: c.get(`drizzle`),
+			stripe,
+			userId: c.get(`userId`),
+			priceId: env.STRIPE_SUPPORTER_PRICE_ID,
+			origin,
+			livemode: env.STRIPE_MODE === `live`,
+		})
+		return c.redirect(checkout.url, 303)
+	} catch (error) {
+		// Stripe errors may contain customer details. Keep the durable attempt
+		// for a safe retry, and never fall back to creating another purchase.
+		c.header(
+			`Retry-After`,
+			String(error instanceof CheckoutUnavailable ? error.retryAfter : 30),
+		)
+		if (error instanceof CheckoutUnavailable) {
+			return c.json(
+				{
+					error: `Your previous checkout is still reserved. Please try again in ${Math.ceil(error.retryAfter / 60)} minutes.`,
+				},
+				503,
+			)
+		}
+		return c.json(
+			{
+				error: `Checkout is temporarily unavailable. Please try again shortly.`,
+			},
+			503,
+		)
+	}
 })
 
 billingRoutes.post(`/webhook`, async (c) => {
