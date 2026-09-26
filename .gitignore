@@ -20,3 +20,9 @@ heap.json
 coverage.sqlite
 git.sha
 repomix-output.xml
+
+/recoverage.cloud/wrangler-billing-preview.jsonc
+
+.env.*
+.dev.vars
+.dev.vars.*

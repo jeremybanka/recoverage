@@ -29,6 +29,13 @@
       "when": 1741656864259,
       "tag": "0003_gray_deathbird",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1778224296497,
+      "tag": "0004_abandoned_bloodaxe",
+      "breakpoints": true
     }
   ]
 }

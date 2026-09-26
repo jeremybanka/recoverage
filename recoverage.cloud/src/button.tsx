@@ -17,7 +17,10 @@ export function create(props: CreateProps): Loadable<HtmlEscapedString> {
 	const { disabled } = props
 	return (
 		<button
+			disabled={disabled}
 			hx-post={props[`hx-post`]}
+			hx-target={props[`hx-target`]}
+			hx-confirm={props[`hx-confirm`]}
 			hx-swap={props[`hx-swap`]}
 			type="button"
 			class={css`
@@ -53,6 +56,7 @@ export function x(props: XProps): Loadable<HtmlEscapedString> {
 	const { disabled } = props
 	return (
 		<button
+			disabled={disabled}
 			hx-delete={props[`hx-delete`]}
 			hx-target={props[`hx-target`]}
 			hx-confirm={props[`hx-confirm`]}
@@ -90,6 +94,7 @@ export function copy({
 }: CopyProps): Loadable<HtmlEscapedString> {
 	return (
 		<button
+			disabled={disabled}
 			hx-on:click={`navigator.clipboard.writeText('${text}')
     .then(() => alert('Copied!'))
     .catch(err => alert('Copy failed: ' + err))`}
@@ -122,6 +127,7 @@ export function submit(props: SubmitProps): Loadable<HtmlEscapedString> {
 	const { disabled } = props
 	return (
 		<button
+			disabled={disabled}
 			type="submit"
 			class={css`
         background-color: var(--color-bg-t3);

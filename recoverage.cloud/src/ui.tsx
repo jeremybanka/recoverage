@@ -6,15 +6,19 @@ import type { MiddlewareHandler } from "hono"
 import { Hono } from "hono"
 import { deleteCookie, getSignedCookie } from "hono/cookie"
 import { nanoid } from "nanoid"
-import { Octokit } from "octokit"
 
+import { getUserRole } from "./billing"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
-import type { Bindings } from "./env"
+import { type Bindings, getEnv } from "./env"
+import { createGitHubClient } from "./github-client"
 import { computeHash } from "./hash"
-import { Project, ProjectToken } from "./project"
+import { Page } from "./page"
+import { PricingPage } from "./pricing"
+import { Project, ProjectControls, ProjectToken, TokenControls } from "./project"
 import { projectsAllowed, type Role, tokensAllowed } from "./roles-permissions"
 import * as schema from "./schema"
+import { AccountUsage, accountUsage } from "./usage"
 
 type GithubUserData = Endpoints[`GET /user`][`response`][`data`] & {
 	id: number
@@ -32,9 +36,10 @@ export type UiEnv = {
 export const uiRoutes = new Hono<UiEnv>()
 
 const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
+	const env = getEnv(c.env)
 	const githubAccessTokenCookie = await getSignedCookie(
 		c,
-		c.env.COOKIE_SECRET,
+		env.COOKIE_SECRET,
 		`github-access-token`,
 	)
 
@@ -42,9 +47,7 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 		return c.json({ error: `Unauthorized` }, 401)
 	}
 
-	const octokit = new Octokit({
-		auth: githubAccessTokenCookie,
-	})
+	const octokit = createGitHubClient(githubAccessTokenCookie)
 
 	const { data, status } = await octokit.request(`GET /user`, {
 		request: { fetch: cachedFetch },
@@ -62,7 +65,7 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 
 	const maybeUser = await db.query.users.findFirst({
 		where: eq(schema.users.id, data.id),
-		columns: { role: true },
+		columns: { id: true },
 	})
 
 	if (!maybeUser) {
@@ -72,7 +75,14 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 			500,
 		)
 	}
-	const userRole = maybeUser.role
+	const userRole = await getUserRole({
+		db,
+		stripeSupporterPriceId: env.STRIPE_SUPPORTER_PRICE_ID,
+		userId: maybeUser.id,
+	})
+	if (!userRole) {
+		return c.json({ error: `User did not have a resolvable role.` }, 500)
+	}
 
 	c.set(`drizzle`, db)
 	c.set(`githubUserData`, data)
@@ -80,6 +90,50 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 
 	await next()
 }
+
+uiRoutes.get(`/upgrade`, uiAuth, async (c) => {
+	return c.html(
+		<Page>
+			<PricingPage currentRole={c.get(`userRole`)} config={getEnv(c.env)} />
+		</Page>,
+	)
+})
+
+uiRoutes.get(`/usage`, uiAuth, async (c) => {
+	const userId = c.get(`githubUserData`).id
+	return c.html(
+		<AccountUsage
+			usage={await accountUsage(c.get(`drizzle`), userId)}
+			userId={userId}
+			role={c.get(`userRole`)}
+		/>,
+	)
+})
+
+uiRoutes.get(`/project-usage`, uiAuth, async (c) => {
+	const usage = await accountUsage(c.get(`drizzle`), c.get(`githubUserData`).id)
+	return c.html(
+		<ProjectControls count={usage.projects} role={c.get(`userRole`)} />,
+	)
+})
+
+uiRoutes.get(`/token-usage/:projectId`, uiAuth, async (c) => {
+	const project = await c.get(`drizzle`).query.projects.findFirst({
+		where: and(
+			eq(schema.projects.id, c.req.param(`projectId`)),
+			eq(schema.projects.userId, c.get(`githubUserData`).id),
+		),
+		with: { tokens: { columns: { id: true } } },
+	})
+	if (!project) return c.text(`No project found`, 404)
+	return c.html(
+		<TokenControls
+			projectId={project.id}
+			count={project.tokens.length}
+			role={c.get(`userRole`)}
+		/>,
+	)
+})
 
 uiRoutes.get(`/project`, uiAuth, async (c) => {
 	const db = c.get(`drizzle`)
@@ -96,48 +150,21 @@ uiRoutes.get(`/project`, uiAuth, async (c) => {
 			},
 		},
 	})
-	// console.log(`User`, user)
-	// console.log(`Projects`, projects)
 
 	const userRole = c.get(`userRole`)
-	const numberOfProjectsAllowed = projectsAllowed.get(userRole)
-	const mayCreateProject = projects.length < numberOfProjectsAllowed
-
 	return c.html(
 		<>
-			{projects.map((project) => (
-				<Project
-					{...project}
-					mode="existing"
-					userRole={userRole}
-					key={project.id}
-				/>
-			))}
-			<Project mode="button" disabled={!mayCreateProject} />
-			{/* <Project mode="creator" />
-			<Project
-				mode="existing"
-				id="123"
-				name="my project"
-				tokens={[
-					{
-						id: `123`,
-						name: `my token`,
-						secretShownOnce: `secret`,
-						mode: `existing`,
-					},
-				]}
-				reports={[{ ref: `hahahahhahahahahahahah` }]}
-				userRole="free"
-			/>
-			<Project
-				mode="deleted"
-				id="123"
-				name="my old project"
-				tokens={[]}
-				reports={[{ ref: `123` }]}
-				userRole="free"
-			/> */}
+			<div id="project-list">
+				{projects.map((project) => (
+					<Project
+						{...project}
+						mode="existing"
+						userRole={userRole}
+						key={project.id}
+					/>
+				))}
+			</div>
+			<ProjectControls count={projects.length} role={userRole} />
 		</>,
 	)
 })
@@ -153,14 +180,18 @@ uiRoutes.post(`/project`, uiAuth, async (c) => {
 	})
 
 	if (currentProjects.length >= numberOfProjectsAllowed) {
-		return c.json({ error: `You may not create more projects` }, 401)
+		return c.json(
+			{
+				error: `Your account is at its project limit. Existing projects remain available.`,
+			},
+			403,
+		)
 	}
 
 	const formData = await c.req.formData()
 	const name = type(`string`)(formData.get(`name`))
 
 	if (name instanceof type.errors) {
-		console.log(`returning creation form`)
 		return c.html(<Project mode="creator" />)
 	}
 	const project = (
@@ -169,6 +200,7 @@ uiRoutes.post(`/project`, uiAuth, async (c) => {
 			.values({ userId, name, id: nanoid() })
 			.returning()
 	)[0]
+	c.header(`HX-Trigger`, `usage-changed`)
 	return c.html(
 		<Project
 			{...project}
@@ -198,12 +230,12 @@ uiRoutes.delete(`/project/:projectId`, uiAuth, async (c) => {
 		return c.json({ error: `No project found` }, 404)
 	}
 
-	const result = await db
+	await db
 		.delete(schema.projects)
 		.where(
 			and(eq(schema.projects.id, projectId), eq(schema.projects.userId, userId)),
 		)
-	console.log(result)
+	c.header(`HX-Trigger`, `usage-changed`)
 	return c.html(
 		<Project
 			{...project}
@@ -237,11 +269,15 @@ uiRoutes.post(`/token/:projectId`, uiAuth, async (c) => {
 	}
 	const numberOfTokensAllowed = tokensAllowed.get(c.get(`userRole`))
 	if (project?.tokens.length >= numberOfTokensAllowed) {
-		return c.json({ error: `You may not create more tokens` }, 401)
+		return c.json(
+			{
+				error: `This project is at its token limit. Existing tokens remain usable.`,
+			},
+			403,
+		)
 	}
 
 	if (name instanceof type.errors) {
-		console.log(`returning creation form`)
 		return c.html(<ProjectToken mode="creator" projectId={projectId} />)
 	}
 	const id = nanoid()
@@ -261,6 +297,7 @@ uiRoutes.post(`/token/:projectId`, uiAuth, async (c) => {
 			})
 			.returning()
 	)[0]
+	c.header(`HX-Trigger`, `usage-changed`)
 	return c.html(
 		<ProjectToken {...token} mode="existing" secretShownOnce={secret} />,
 	)
@@ -289,5 +326,6 @@ uiRoutes.delete(`/token/:tokenId`, uiAuth, async (c) => {
 
 	await db.delete(schema.tokens).where(eq(schema.tokens.id, tokenId)).run()
 
+	c.header(`HX-Trigger`, `usage-changed`)
 	return c.html(<ProjectToken {...token} mode="deleted" />)
 })

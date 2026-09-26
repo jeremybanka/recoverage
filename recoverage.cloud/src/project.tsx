@@ -8,7 +8,8 @@ import * as h4 from "./h4"
 import * as header from "./header"
 import type { Json } from "./json"
 import type { Loadable } from "./loadable"
-import { reportsAllowed, type Role, tokensAllowed } from "./roles-permissions"
+import type { Role } from "./roles-permissions"
+import { projectsAllowed, tokensAllowed } from "./roles-permissions"
 import { when } from "./when"
 
 export type ProjectProps =
@@ -33,7 +34,8 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 			return (
 				<button.create
 					hx-post="/ui/project"
-					hx-swap="beforebegin"
+					hx-target="#project-list"
+					hx-swap="beforeend"
 					disabled={props.disabled}
 				>
 					+ New project
@@ -48,12 +50,6 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 		case `existing`:
 		case `deleted`: {
 			const { id, name, tokens, reports, mode, userRole } = props
-			const numberOfTokensAllowed = tokensAllowed.get(userRole)
-			const mayCreateToken = tokens.length < numberOfTokensAllowed
-			const numberOfReportsToDisplay = Math.max(
-				reports.length,
-				reportsAllowed.get(userRole),
-			)
 			return (
 				<div
 					key={id}
@@ -120,32 +116,29 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 								gap: 10px;
 							`}
 						>
-							{Array.from({ length: numberOfReportsToDisplay }).map((_, idx) => {
-								const report = reports[idx]
-								if (!report) {
+							{reports.length === 0 ? (
+								<span
+									class={css`
+										background: transparent;
+										border: 1px solid var(--color-fg-faint);
+										padding: 5px;
+										box-sizing: border-box;
+										height: 46px;
+										width: 80px;
+										box-shadow: inset 0 1px 0 1px #0002;
+									`}
+								/>
+							) : (
+								reports.map((report) => {
+									let coveragePercent: number | undefined
+									if (report?.jsonSummary) {
+										const summary = JSON.parse(report.jsonSummary)
+										coveragePercent = summary.total.statements.pct
+									}
 									return (
 										<span
+											key={report.ref}
 											class={css`
-												background: transparent;
-												border: 1px solid var(--color-fg-faint);
-												padding: 5px;
-												box-sizing: border-box;
-												height: 46px;
-												width: 80px;
-												box-shadow: inset 0 1px 0 1px #0002;
-											`}
-										/>
-									)
-								}
-								let coveragePercent: number | undefined
-								if (report?.jsonSummary) {
-									const summary = JSON.parse(report.jsonSummary)
-									coveragePercent = summary.total.statements.pct
-								}
-								return (
-									<span
-										key={report?.ref ?? idx}
-										class={css`
 												display: flex;
 												box-sizing: border-box;
 												flex-flow: column;
@@ -158,9 +151,9 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 												min-height: 30px;
 												min-width: 80px;
 												`}
-									>
-										<span
-											class={css`
+										>
+											<span
+												class={css`
 													position: relative;
 													box-sizing: border-box;
 													display: flex;
@@ -176,12 +169,12 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 													min-width: 80px;
 													line-break: none;
 												`}
-										>
-											{report.ref}
-											{when(
-												coveragePercent,
-												<span
-													class={css`
+											>
+												{report.ref}
+												{when(
+													coveragePercent,
+													<span
+														class={css`
 															position: absolute;
 															bottom: -12px;
 															margin: auto;
@@ -194,14 +187,15 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 															padding: 1px 3px 2px 6px;
 															box-shadow: 0 2px 0px -1px #0005;
 														`}
-												>
-													{coveragePercent}%
-												</span>,
-											)}
+													>
+														{coveragePercent}%
+													</span>,
+												)}
+											</span>
 										</span>
-									</span>
-								)
-							})}
+									)
+								})
+							)}
 						</div>
 					</section>
 
@@ -212,16 +206,17 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 							gap: 10px;
 						`}
 					>
-						<h4.diagonals>
-							{tokens.length === 0 ? `No Tokens` : `Tokens`}
-						</h4.diagonals>
-						{tokens.map((token) => (
-							<ProjectToken key={token.id} {...token} />
-						))}
-						<ProjectToken
-							mode="button"
+						<h4.diagonals>Tokens</h4.diagonals>
+						<div id={`tokens-${id}`}>
+							{tokens.map((token) => (
+								<ProjectToken key={token.id} {...token} />
+							))}
+						</div>
+						<TokenControls
 							projectId={id}
-							disabled={mode === `deleted` || !mayCreateToken}
+							count={tokens.length}
+							role={userRole}
+							deleted={mode === `deleted`}
 						/>
 						{/* <ProjectToken mode="creator" projectId={id} />
 						<ProjectToken
@@ -261,7 +256,8 @@ export function ProjectToken(
 			return (
 				<button.create
 					hx-post={`/ui/token/${projectId}`}
-					hx-swap="beforebegin"
+					hx-target={`#tokens-${projectId}`}
+					hx-swap="beforeend"
 					disabled={disabled}
 				>
 					+ New token
@@ -362,4 +358,62 @@ export function ProjectToken(
 		}
 	}
 	return null
+}
+
+export function TokenControls({
+	projectId,
+	count,
+	role,
+	deleted = false,
+}: {
+	projectId: string
+	count: number
+	role: Role
+	deleted?: boolean
+}): Loadable<HtmlEscapedString> {
+	const limit = tokensAllowed.get(role)
+	return (
+		<div
+			hx-get={deleted ? undefined : `/ui/token-usage/${projectId}`}
+			hx-trigger="usage-changed from:body"
+			hx-swap="outerHTML"
+		>
+			<p>
+				{count} / {limit} tokens
+			</p>
+			{count >= limit ? (
+				<p>This project is at its token limit. Existing tokens remain usable.</p>
+			) : null}
+			<ProjectToken
+				mode="button"
+				projectId={projectId}
+				disabled={deleted || count >= limit}
+			/>
+		</div>
+	)
+}
+
+export function ProjectControls({
+	count,
+	role,
+}: {
+	count: number
+	role: Role
+}): Loadable<HtmlEscapedString> {
+	const limit = projectsAllowed.get(role)
+	return (
+		<div
+			hx-get="/ui/project-usage"
+			hx-trigger="usage-changed from:body"
+			hx-swap="outerHTML"
+		>
+			{count >= limit ? (
+				<p>
+					Your account is at its project limit. Existing projects remain
+					available.
+				</p>
+			) : null}
+			<Project mode="button" disabled={count >= limit} />
+		</div>
+	)
 }
