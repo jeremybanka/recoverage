@@ -60,7 +60,7 @@
 		"@types/istanbul-lib-coverage": "2.0.6",
 		"@types/istanbul-lib-report": "3.0.3",
 		"@types/istanbul-reports": "3.0.4",
-		"@types/node": "26.6.2",
+		"@types/node": "26.6.3",
 		"concurrently": "10.0.5",
 		"eslint": "10.11.0",
 		"nyc": "18.0.0",
