@@ -90,7 +90,7 @@
         "@types/bun": "npm:bun-types@1.4.2",
         "@types/istanbul-lib-coverage": "2.0.6",
         "@types/node": "26.6.2",
-        "cloudflare": "7.1.0",
+        "cloudflare": "7.2.0",
         "concurrently": "10.0.5",
         "drizzle-kit": "0.31.11",
         "eslint": "10.11.0",
@@ -832,7 +832,7 @@
 
     "cliui": ["cliui@9.0.1", "", { "dependencies": { "string-width": "^7.2.0", "strip-ansi": "^7.1.0", "wrap-ansi": "^9.0.0" } }, "sha512-k7ndgKhwoQveBL+/1tqGJYNz097I7WOvwbmmU2AR5+magtbjPWQTS1C5vzGkBC8Ym8UWRzfKUzUUqFLypY4Q+w=="],
 
-    "cloudflare": ["cloudflare@7.1.0", "", { "bin": { "cloudflare": "bin/cli" } }, "sha512-eb6WtiAbhuqdWmBdVo6fuXQgEBkYjhOeujRDYLEUWEZIECuABvDLz2DUYTwpN/4KyFecM4JtMHgZn5prlFUjLg=="],
+    "cloudflare": ["cloudflare@7.2.0", "", { "bin": { "cloudflare": "bin/cli" } }, "sha512-Y0ieFi/VOGsUeJmOWwuzztTQZ5HgvNqa7I6IaGBf9wS4Q2xjNmRfyHls741HlveI4DSTribs7YHaTjhKvNcRsw=="],
 
     "color-convert": ["color-convert@2.0.1", "", { "dependencies": { "color-name": "~1.1.4" } }, "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ=="],
 
