@@ -42,9 +42,11 @@
 		"cov:check": "bun run cov && bun __scripts__/coverage-check.bun.ts",
 		"dev": "bun --bun tsdown --watch",
 		"postversion": "dprint fmt package.json",
-		"test": "vitest run",
+		"test": "vitest run && bun run test:public-api",
 		"test:watch": "vitest --watch",
-		"watch:types": "tsc --watch --noEmit"
+		"watch:types": "tsc --watch --noEmit",
+		"test:public": "vitest run __tests__/diff-coverage.test.ts && bun run test:public-api",
+		"test:public-api": "bun test __tests__/public"
 	},
 	"dependencies": {
 		"@t3-oss/env-core": "0.13.11",
