@@ -24,7 +24,6 @@
 		"release:version": "changeset version",
 		"test": "cross-env CI=true turbo run test --concurrency=2",
 		"test:watch": "turbo run test:watch --concurrency=30",
-		"verify": "bun run check && bun run test && bun run build",
 		"watch:types": "turbo run watch:types --concurrency=30",
 		"workflows:update": "bun ./scripts/update-workflows.bun.ts"
 	},

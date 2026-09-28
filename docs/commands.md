@@ -10,7 +10,6 @@ Run these commands from the repository root with `bun run <command>`. `mise.toml
 | `test` | Run the normal test suite once and return a failing status when tests fail. |
 | `test:watch` | Watch the available interactive test suites. |
 | `build` | Build distributable artifacts. |
-| `verify` | Run the repository checks, tests, builds, and implemented coverage or compatibility gates. |
 | `change` | Author pending release notes. |
 | `release:version` | Prepare versions and release metadata without publishing. |
 | `release:publish` | Build as required by the release pipeline and publish packages. |
@@ -24,11 +23,9 @@ Run these commands from the repository root with `bun run <command>`. `mise.toml
 - `check:fmt`: `dprint check`.
 - `check:tsc`: `turbo run check:tsc`.
 
-## Verification
+## Command notes
 
-`bun run verify` executes `bun run check && bun run test && bun run build`. CI can run these constituent commands in separate jobs. Check failures must propagate to the caller.
-
-This repository has no implemented coverage-regression or release-compatibility suite. The former empty CI jobs and task entry points have been removed; `verify` covers the implemented checks, tests, and build.
+This repository has no implemented coverage-regression or release-compatibility suite.
 
 ## Migration
 
