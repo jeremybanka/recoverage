@@ -39,13 +39,8 @@
 		"check:eslint": "NODE_OPTIONS=--require=../../scripts/eslint-typescript.cjs eslint -- .",
 		"check:tsc": "tsc --noEmit",
 		"dev": "bun --bun tsdown --watch",
-		"lint": "bun run check",
-		"lint:biome": "bun run check:biome",
-		"lint:eslint": "bun run check:eslint",
-		"lint:types": "bun run check:tsc",
 		"postversion": "dprint fmt package.json",
 		"test": "vitest run",
-		"test:once": "bun run test",
 		"test:watch": "vitest --watch",
 		"watch:types": "tsc --watch --noEmit"
 	},

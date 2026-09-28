@@ -32,4 +32,4 @@ This repository has no implemented coverage-regression or release-compatibility 
 
 ## Migration
 
-`fmt` now applies formatting; use `check:fmt` for the former validation behavior. Package `test` now runs once; use `test:watch` for interactive watching. Existing `test:once` and lint aliases remain for callers, including historical release tests.
+`fmt` now applies formatting; use `check:fmt` for the former validation behavior. Package `test` now runs once; use `test:watch` for interactive watching. Use the canonical commands directly; superseded names have been removed.
