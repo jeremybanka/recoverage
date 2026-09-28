@@ -29,8 +29,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
-      - run: bun fmt
-      - run: bun lint:biome
+      - run: bun run check:fmt
+      - run: bun check:biome
 
   Dependencies:
     runs-on: ubuntu-latest
@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
-      - run: bun lint:deps
+      - run: bun check:deps
 
   ESLint:
     runs-on: ubuntu-latest
@@ -46,7 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
-      - run: bun lint:eslint
+      - run: bun check:eslint
 
   Types:
     runs-on: ubuntu-latest
@@ -54,4 +54,4 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
-      - run: bun lint:types
+      - run: bun check:tsc

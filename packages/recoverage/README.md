@@ -111,8 +111,10 @@ Then, update your package.json with the following scripts and devDependencies:
 ```json
 {
   "scripts": {
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage && recoverage"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "cov": "vitest run --coverage",
+    "cov:check": "bun run cov && recoverage"
   },
   "devDependencies": {
     "typescript": "^6.x",
@@ -212,7 +214,7 @@ git commit -m "Initial commit with base tests"
 Now run the tests and capture your base coverage report:
 
 ```sh
-bun run test:coverage
+bun run cov:check
 ```
 
 This command runs Vitest (which generates coverage-final.json) and then runs recoverage capture to save your base coverage report.
@@ -246,7 +248,7 @@ This command runs Vitest (which generates coverage-final.json) and then runs rec
    With floating changes on your branch, run:
 
    ```sh
-   bun run test:coverage
+   bun run cov:check
    ```
 
    This command will detect that coverage has decreased (fewer cases are covered) and exit with code `1`.
@@ -278,7 +280,7 @@ This command runs Vitest (which generates coverage-final.json) and then runs rec
    With floating changes on your branch, run:
 
    ```sh
-   bun run test:coverage
+   bun run cov:check
    ```
 
    This command will detect that coverage has increased (more cases are covered) and exit with code `0`.

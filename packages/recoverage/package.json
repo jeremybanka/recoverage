@@ -33,16 +33,21 @@
 		"recoverage": "bin/recoverage.bin.js"
 	},
 	"scripts": {
-		"dev": "bun --bun tsdown --watch",
 		"build": "bun --bun tsdown && rm -f dist/*.x.d.ts",
-		"lint:biome": "biome lint -- .",
-		"lint:eslint": "NODE_OPTIONS=--require=../../scripts/eslint-typescript.cjs eslint -- .",
-		"lint:types": "tsc --noEmit",
-		"watch:types": "tsc --watch --noEmit",
-		"lint": "concurrently \"bun:lint:*\"",
-		"test": "vitest",
-		"test:once": "vitest run",
-		"postversion": "dprint fmt package.json"
+		"check": "bun run check:eslint && bun run check:tsc && bun run check:biome",
+		"check:biome": "biome lint -- .",
+		"check:eslint": "NODE_OPTIONS=--require=../../scripts/eslint-typescript.cjs eslint -- .",
+		"check:tsc": "tsc --noEmit",
+		"dev": "bun --bun tsdown --watch",
+		"lint": "bun run check",
+		"lint:biome": "bun run check:biome",
+		"lint:eslint": "bun run check:eslint",
+		"lint:types": "bun run check:tsc",
+		"postversion": "dprint fmt package.json",
+		"test": "vitest run",
+		"test:once": "bun run test",
+		"test:watch": "vitest --watch",
+		"watch:types": "tsc --watch --noEmit"
 	},
 	"dependencies": {
 		"@t3-oss/env-core": "0.13.11",
