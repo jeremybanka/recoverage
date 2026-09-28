@@ -7,6 +7,7 @@ import {
 	mkdtempSync,
 	readdirSync,
 	readFileSync,
+	realpathSync,
 	rmSync,
 	symlinkSync,
 	writeFileSync,
@@ -149,6 +150,11 @@ export class Consumer {
 	public installDataProducer(): void {
 		const released = resolvePackage(`recoverage-0-1-18`)
 		// Fixture provenance, not a constraint on the package under test.
+		if (realpathSync(released) === realpathSync(source)) {
+			throw new Error(
+				`The released data producer resolved to the current workspace.`,
+			)
+		}
 		expect(manifest(released).version).toBe(`0.1.18`)
 		this.installPackage(`recoverage-0-1-18`, released, released)
 	}

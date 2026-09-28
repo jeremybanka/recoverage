@@ -47,7 +47,7 @@
 			"groupName": "Bun"
 		},
 		{
-			"description": "Keep the published compatibility data producer immutable. Add a new alias for another release instead of replacing this fixture.",
+			"description": "Keep the published compatibility data producer immutable. Add a new versioned dependency for another release instead of replacing this fixture.",
 			"matchFileNames": [
 				"packages/recoverage/__tests__/public/consumer/package.json"
 			],

@@ -83,7 +83,7 @@
         "@types/istanbul-lib-coverage": "2.0.6",
         "istanbul-lib-coverage": "3.2.2",
         "recoverage": "workspace:*",
-        "recoverage-0-1-18": "npm:recoverage@0.1.18",
+        "recoverage-0-1-18": "https://registry.npmjs.org/recoverage/-/recoverage-0.1.18.tgz",
         "typescript": "7.0.2",
       },
     },
@@ -1274,7 +1274,7 @@
 
     "recoverage": ["recoverage@workspace:packages/recoverage"],
 
-    "recoverage-0-1-18": ["recoverage@workspace:packages/recoverage"],
+    "recoverage-0-1-18": ["recoverage@https://registry.npmjs.org/recoverage/-/recoverage-0.1.18.tgz", { "dependencies": { "@t3-oss/env-core": "0.13.11", "arktype": "2.2.5", "comline": "0.9.0", "diff": "9.0.0", "istanbul-lib-coverage": "3.2.2", "istanbul-lib-report": "3.0.1", "istanbul-reports": "3.2.0", "simple-git": "4.0.2", "takua": "0.2.3" }, "bin": { "recoverage": "bin/recoverage.bin.js" } }, "sha512-xyNQk4T7IEyEuQva5g3dmIba3xUgAbFYdO5F7eKtxPj8UWE3fvCH074QYiA2nm3xM5bUgX5Eq8VKRGkbOoiQ0w=="],
 
     "recoverage-fixtures": ["recoverage-fixtures@workspace:packages/fixtures"],
 
