@@ -21,11 +21,11 @@
 	"exports": {
 		"./package.json": "./package.json",
 		".": {
-			"types": "./src/recoverage.d.ts",
+			"types": "./dist/recoverage.d.ts",
 			"import": "./dist/recoverage.js"
 		},
 		"./lib": {
-			"types": "./src/recoverage.lib.d.ts",
+			"types": "./dist/recoverage.lib.d.ts",
 			"import": "./dist/recoverage.lib.js"
 		}
 	},

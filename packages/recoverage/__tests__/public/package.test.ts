@@ -1,106 +1,49 @@
-import { spawnSync } from "node:child_process"
-import {
-	cpSync,
-	mkdirSync,
-	mkdtempSync,
-	rmSync,
-	symlinkSync,
-	writeFileSync,
-} from "node:fs"
-import { tmpdir } from "node:os"
+import { rmSync } from "node:fs"
 import path from "node:path"
 
-import { afterEach, beforeEach, describe, expect, it } from "bun:test"
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+} from "bun:test"
 
-const source = path.resolve(import.meta.dirname, `../..`)
-let directory: string
+import { Consumer, packCurrentPackage } from "./support/consumer.ts"
 
-function invoke(command: string, args: string[]) {
-	const result = spawnSync(command, args, {
-		cwd: directory,
-		encoding: `utf8`,
-		timeout: 20_000,
-		env: {
-			...process.env,
-			CI: `false`,
-			RECOVERAGE_CLOUD_TOKEN: ``,
-			S3_ACCESS_KEY_ID: ``,
-			S3_SECRET_ACCESS_KEY: ``,
-			NO_COLOR: `1`,
-		},
-	})
-	expect(result.error).toBeUndefined()
-	return result
-}
+let packed: ReturnType<typeof packCurrentPackage>
+let consumer: Consumer
 
-function git(...args: string[]) {
-	const result = invoke(`git`, args)
-	expect(result.status, result.stderr).toBe(0)
-}
-
-function evaluate(script: string) {
-	const result = invoke(`bun`, [`--eval`, script])
-	expect(result.status, result.stderr).toBe(0)
-	return result.stdout
-}
-
-function coverage(hits: number[]) {
-	const file = path.join(directory, `example.ts`)
-	writeFileSync(
-		path.join(directory, `coverage/coverage-final.json`),
-		JSON.stringify({
-			[file]: {
-				path: file,
-				statementMap: {
-					0: { start: { line: 1, column: 0 }, end: { line: 1, column: 10 } },
-					1: { start: { line: 2, column: 0 }, end: { line: 2, column: 10 } },
-				},
-				s: { 0: hits[0], 1: hits[1] },
-				fnMap: {},
-				f: {},
-				branchMap: {},
-				b: {},
-			},
-		}),
-	)
-}
-
+beforeAll(() => {
+	packed = packCurrentPackage()
+})
 beforeEach(() => {
-	directory = mkdtempSync(path.join(tmpdir(), `recoverage-contract-`))
-	const installed = path.join(directory, `node_modules/recoverage`)
-	mkdirSync(installed, { recursive: true })
-	for (const file of [`package.json`, `bin`, `dist`]) {
-		cpSync(path.join(source, file), path.join(installed, file), {
-			recursive: true,
-		})
-	}
-	symlinkSync(
-		path.join(source, `node_modules`),
-		path.join(installed, `node_modules`),
-	)
-	writeFileSync(
-		path.join(directory, `package.json`),
-		JSON.stringify({ type: `module` }),
-	)
-	writeFileSync(
-		path.join(directory, `.gitignore`),
-		`node_modules/\ncoverage/\ncoverage.sqlite*\n`,
-	)
-	writeFileSync(
-		path.join(directory, `example.ts`),
-		`export const one = 1\nexport const two = 2\n`,
-	)
-	mkdirSync(path.join(directory, `coverage`))
-	git(`init`, `--initial-branch=trunk`)
-	git(`config`, `user.name`, `Recoverage contract`)
-	git(`config`, `user.email`, `contract@example.com`)
-	git(`add`, `.`)
-	git(`commit`, `-m`, `baseline`)
+	consumer = new Consumer(packed.directory)
+})
+afterEach(() => {
+	consumer?.remove()
+})
+afterAll(() => {
+	packed?.remove()
 })
 
-afterEach(() => {
-	rmSync(directory, { recursive: true, force: true })
-})
+function capture(): void {
+	consumer.evaluate(
+		`import { capture } from 'recoverage'; assert.equal(await capture({ defaultBranch: 'trunk', silent: true }), 0);`,
+	)
+}
+
+function branch(): void {
+	consumer.git(`checkout`, `-b`, `feature`)
+	consumer.git(`commit`, `--allow-empty`, `-m`, `feature`)
+}
+
+function succeeds(args: string[]): void {
+	const result = consumer.cli(...args)
+	expect(result.status, result.stderr).toBe(0)
+}
 
 describe(`published package contracts`, () => {
 	for (const [label, before, after, expected] of [
@@ -109,111 +52,152 @@ describe(`published package contracts`, () => {
 		[`decreased coverage`, [1, 1], [1, 0], 1],
 	] as const) {
 		it(`capture/diff preserves return codes for ${label}`, () => {
-			coverage([...before])
-			expect(
-				evaluate(
-					`import { capture } from 'recoverage'; console.log(await capture({ defaultBranch: 'trunk', silent: true }))`,
-				).trim(),
-			).toBe(`0`)
-			git(`checkout`, `-b`, `feature`)
-			git(`commit`, `--allow-empty`, `-m`, `feature`)
-			coverage([...after])
-			expect(
-				evaluate(
-					`import { capture } from 'recoverage'; console.log(await capture({ defaultBranch: 'trunk', silent: true }))`,
-				).trim(),
-			).toBe(`0`)
-			expect(
-				evaluate(
-					`import { diff } from 'recoverage'; console.log('RESULT', await diff('trunk', true))`,
-				),
-			).toContain(`RESULT ${expected}`)
+			consumer.coverage(before)
+			capture()
+			branch()
+			consumer.coverage(after)
+			capture()
+			consumer.evaluate(
+				`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), ${expected});`,
+			)
 		})
 	}
 
 	it(`fails when no baseline coverage has been captured`, () => {
-		coverage([1, 1])
-		git(`checkout`, `-b`, `feature`)
-		git(`commit`, `--allow-empty`, `-m`, `feature`)
-		evaluate(
-			`import { capture } from 'recoverage'; await capture({ defaultBranch: 'trunk', silent: true })`,
+		consumer.coverage([1, 1])
+		branch()
+		capture()
+		consumer.evaluate(
+			`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), 1);`,
 		)
-		expect(
-			evaluate(
-				`import { diff } from 'recoverage'; console.log(await diff('trunk', true))`,
-			).trim(),
-		).toBe(`1`)
 	})
 
-	it(`runs the shipped CLI with configuration and propagates a coverage regression`, () => {
-		writeFileSync(
-			path.join(directory, `recoverage.config.json`),
-			JSON.stringify({ defaultBranch: `trunk` }),
-		)
-		git(`add`, `recoverage.config.json`)
-		git(`commit`, `-m`, `configure default branch`)
-		coverage([1, 1])
-		const binary = `node_modules/recoverage/bin/recoverage.bin.js`
-		const baseline = invoke(`bun`, [binary])
-		expect(baseline.status, baseline.stderr).toBe(0)
-		git(`checkout`, `-b`, `feature`)
-		git(`commit`, `--allow-empty`, `-m`, `feature`)
-		coverage([1, 0])
-		const capture = invoke(`bun`, [binary, `capture`, `--default-branch=trunk`])
-		expect(capture.status, capture.stderr).toBe(0)
-		expect(invoke(`bun`, [binary, `diff`, `-b`, `trunk`]).status).toBe(1)
+	it(`compiles ordinary consumers through both published declaration exports`, () => {
+		consumer.compile()
 	})
 
-	it(`exposes report generation through the lib subpath`, () => {
-		coverage([1, 0])
-		const output = evaluate(`
-import { getCoverageJsonSummary, getCoverageTextReport } from 'recoverage/lib';
-import { createCoverageMap } from './node_modules/recoverage/node_modules/istanbul-lib-coverage/index.js';
-const map = createCoverageMap(await Bun.file('coverage/coverage-final.json').json());
-const summary = getCoverageJsonSummary(map);
-console.log(JSON.stringify(summary.total.statements));
-console.log(getCoverageTextReport(map));
-`)
-		expect(JSON.parse(output.split(`\n`)[0])).toEqual({
-			total: 2,
-			covered: 1,
-			skipped: 0,
-			pct: 50,
+	for (const [label, before, after, expected] of [
+		[`increase`, [1, 0], [1, 1], 0],
+		[`decrease`, [1, 1], [1, 0], 1],
+	] as const) {
+		it(`compares a current ${label} with data captured by recoverage@0.1.18`, () => {
+			consumer.installDataProducer()
+			consumer.coverage(before)
+			consumer.evaluate(
+				`import { capture } from 'recoverage-0-1-18'; assert.equal(await capture({ defaultBranch: 'trunk', silent: true }), 0);`,
+			)
+			branch()
+			consumer.coverage(after)
+			capture()
+			consumer.evaluate(
+				`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), ${expected});`,
+			)
 		})
-		expect(output).toContain(`example.ts`)
-		expect(output).toContain(`50`)
-	})
+	}
 
-	it(`preserves the lib cloud request and error contracts`, () => {
-		coverage([1, 0])
-		const output = evaluate(`
-import assert from 'node:assert/strict';
-import { downloadCoverageReportFromCloud, uploadCoverageReportToCloud, getCoverageJsonSummary } from 'recoverage/lib';
-import { createCoverageMap } from './node_modules/recoverage/node_modules/istanbul-lib-coverage/index.js';
+	it(`accepts consumer-owned Istanbul maps through the lib subpath`, () => {
+		consumer.coverage([1, 0])
+		consumer.evaluate(`
+import { getCoverageJsonSummary, getCoverageTextReport } from 'recoverage/lib';
+import { createCoverageMap } from 'istanbul-lib-coverage';
 const map = createCoverageMap(await Bun.file('coverage/coverage-final.json').json());
 const summary = getCoverageJsonSummary(map);
-const requests = [];
-const server = Bun.serve({ hostname: '127.0.0.1', port: 0, async fetch(request) {
-  requests.push({ method: request.method, path: new URL(request.url).pathname, authorization: request.headers.get('Authorization'), body: request.method === 'PUT' ? await request.json() : undefined });
-  return new Response(requests.length > 2 ? 'unavailable' : 'coverage contents', { status: requests.length > 2 ? 503 : 200 });
+assert.equal(summary.total.statements.total, 2);
+assert.equal(summary.total.statements.covered, 1);
+assert.equal(summary.total.statements.pct, 50);
+assert.equal(typeof getCoverageTextReport(map), 'string');
+`)
+	})
+
+	it(`returns cloud results and errors without prescribing HTTP implementation details`, () => {
+		consumer.coverage([1, 0])
+		consumer.evaluate(`
+import { downloadCoverageReportFromCloud, uploadCoverageReportToCloud, getCoverageJsonSummary } from 'recoverage/lib';
+import { createCoverageMap } from 'istanbul-lib-coverage';
+const map = createCoverageMap(await Bun.file('coverage/coverage-final.json').json());
+const summary = getCoverageJsonSummary(map);
+let status = 200;
+const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch() {
+  return new Response('coverage contents', { status });
 } });
 try {
   assert.equal(await downloadCoverageReportFromCloud('example', 'token', server.url.href), 'coverage contents');
-  assert.deepEqual(await uploadCoverageReportToCloud('example', map, summary, 'token', server.url.href), { success: true });
-  const error = await downloadCoverageReportFromCloud('example', 'token', server.url.href);
-  assert(error instanceof Error);
-  assert.match(error.message, /503.*unavailable/);
-  assert.equal(requests[0].method, 'GET');
-  assert.equal(requests[1].method, 'PUT');
-  for (const request of requests) {
-    assert.equal(request.path, '/reporter/example');
-    assert.equal(request.authorization, 'Bearer token');
-  }
-  assert.deepEqual(requests[1].body.jsonSummary, summary);
-  assert.deepEqual(Object.keys(requests[1].body.mapData), map.files());
-  console.log('cloud contracts passed');
+  const uploaded = await uploadCoverageReportToCloud('example', map, summary, 'token', server.url.href);
+  assert(!(uploaded instanceof Error));
+  assert.equal(uploaded.success, true);
+  status = 503;
+  assert(await downloadCoverageReportFromCloud('example', 'token', server.url.href) instanceof Error);
+  assert(await uploadCoverageReportToCloud('example', map, summary, 'token', server.url.href) instanceof Error);
 } finally { server.stop(true); }
 `)
-		expect(output).toContain(`cloud contracts passed`)
+	})
+})
+
+describe(`documented installed CLI behavior`, () => {
+	for (const flag of [`--default-branch`, `--defaultBranch`, `-b`]) {
+		it(`honors ${flag} on capture, diff, and the combined command`, () => {
+			consumer.coverage([1, 1])
+			succeeds([`capture`, flag, `trunk`])
+			succeeds([`diff`, flag, `trunk`])
+			succeeds([flag, `trunk`])
+		})
+	}
+
+	it(`defaults to main and propagates a regression from the combined command`, () => {
+		consumer.git(`branch`, `-m`, `main`)
+		consumer.coverage([1, 1])
+		succeeds([`capture`])
+		succeeds([`diff`])
+		branch()
+		consumer.coverage([1, 0])
+		expect(consumer.cli().status).toBe(1)
+	})
+
+	it(`uses configuration for all coverage commands and lets CLI options override it`, () => {
+		consumer.coverage([1, 1])
+		consumer.configure({ defaultBranch: `trunk` })
+		for (const command of [[`capture`], [`diff`], []]) succeeds(command)
+		consumer.configure({ defaultBranch: `no-such-branch` })
+		for (const command of [[`capture`], [`diff`], []])
+			succeeds([...command, `--default-branch=trunk`])
+	})
+
+	for (const invalid of [`{invalid`, { defaultBranch: 123 }]) {
+		it(`rejects invalid config without capturing coverage: ${JSON.stringify(invalid)}`, () => {
+			consumer.coverage([1, 0])
+			capture()
+			branch()
+			consumer.coverage([1, 1])
+			consumer.configure(invalid)
+			const result = consumer.cli(`capture`, `-b`, `trunk`)
+			expect(result.status).not.toBe(0)
+			rmSync(path.join(consumer.directory, `recoverage.config.json`))
+			// Observe absence of capture through the public API, without reading tables.
+			consumer.evaluate(
+				`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), 1);`,
+			)
+		})
+	}
+
+	it(`keeps unknown-option warnings advisory`, () => {
+		consumer.coverage([1, 1])
+		capture()
+		const result = consumer.cli(`diff`, `-b`, `trunk`, `--unknown-option`)
+		expect(result.status, result.stderr).toBe(0)
+		expect(result.stderr.trim().length).toBeGreaterThan(0)
+	})
+
+	it(`provides help and completion without running coverage`, () => {
+		rmSync(path.join(consumer.directory, `.git`), { recursive: true })
+		const help = consumer.cli(`help`)
+		expect(help.status, help.stderr).toBe(0)
+		expect(help.stdout).toContain(`capture`)
+		expect(help.stdout).toContain(`diff`)
+		consumer.configure(`{invalid`)
+		for (const shell of [`bash`, `zsh`, `fish`, `nushell`, `carapace`]) {
+			const completion = consumer.cli(`completion`, shell)
+			expect(completion.status, completion.stderr).toBe(0)
+			expect(completion.stdout.trim().length).toBeGreaterThan(0)
+		}
 	})
 })

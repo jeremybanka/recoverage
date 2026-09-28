@@ -77,6 +77,16 @@
         "yalc": "1.0.0-pre.53",
       },
     },
+    "packages/recoverage/__tests__/public/consumer": {
+      "name": "recoverage-public-consumer",
+      "devDependencies": {
+        "@types/istanbul-lib-coverage": "2.0.6",
+        "istanbul-lib-coverage": "3.2.2",
+        "recoverage": "workspace:*",
+        "recoverage-0-1-18": "npm:recoverage@0.1.18",
+        "typescript": "7.0.2",
+      },
+    },
     "recoverage.cloud": {
       "name": "recoverage.cloud",
       "dependencies": {
@@ -1264,7 +1274,11 @@
 
     "recoverage": ["recoverage@workspace:packages/recoverage"],
 
+    "recoverage-0-1-18": ["recoverage@workspace:packages/recoverage"],
+
     "recoverage-fixtures": ["recoverage-fixtures@workspace:packages/fixtures"],
+
+    "recoverage-public-consumer": ["recoverage-public-consumer@workspace:packages/recoverage/__tests__/public/consumer"],
 
     "recoverage.cloud": ["recoverage.cloud@workspace:recoverage.cloud"],
 

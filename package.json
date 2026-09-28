@@ -4,7 +4,11 @@
 	"type": "module",
 	"description": "",
 	"main": "index.js",
-	"workspaces": ["packages/*", "recoverage.cloud"],
+	"workspaces": [
+		"packages/*",
+		"recoverage.cloud",
+		"packages/recoverage/__tests__/public/consumer"
+	],
 	"scripts": {
 		"bench": "cd lib && vitest bench",
 		"build": "turbo run build",
