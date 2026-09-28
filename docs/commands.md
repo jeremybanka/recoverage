@@ -10,7 +10,7 @@ Following the [mise Node.js cookbook](https://mise.jdx.dev/mise-cookbook/nodejs.
 | `check:fmt` | Validate formatting without rewriting maintained files; language-specific validators are listed below. |
 | `check` | Run every static check listed below. Generated prerequisites and caches may be written; source fixes are explicit. |
 | `test` | Run the normal test suite once and return a failing status when tests fail. |
-| `check:semver` | Check released public contracts against the current package and require appropriate release notes for breaks. |
+| `test:semver` | Check released public contracts against the current package and require appropriate release notes for breaks. |
 | `test:tooling` | Test release-certification policy. |
 | `test:watch` | Watch the available interactive test suites. |
 | `cov` | Run tests with coverage, including the CLI's Bun subprocesses. |
@@ -39,13 +39,13 @@ The Recoverage CI job generates coverage on pushes to `main` and `paid-coverage-
 
 Coverage and comparisons run uncached. Coverage tasks preserve the caller’s toolchain and certificate environment for subprocess installs, while the harness clears hosted report credentials. Neither command publishes hosted baselines. Using the PR target commit rather than a moving branch or latest artifact keeps the baseline reproducible; tests and dependency installation run twice for a PR. Coverage collection and comparison failures propagate as job failures.
 
-`check:semver` runs outside Turbo caching on a clean checkout. It builds the package and requires the current public suite to pass before break-check restores contracts from the newest stable `recoverage@X.Y.Z` tag on `origin`. Missing release tags, missing released tests, fetch errors, and failing current builds/tests fail the check. The Compatibility Record CI job checks both pull requests and main.
+`test:semver` runs outside Turbo caching on a clean checkout. It builds the package and requires the current public suite to pass before break-check restores contracts from the newest stable `recoverage@X.Y.Z` tag on `origin`. Missing release tags, missing released tests, fetch errors, and failing current builds/tests fail the check. The Break Check CI job checks both pull requests and main.
 
 Public contracts include `packages/recoverage/__tests__/diff-coverage.test.ts`, its `sample-package-*` fixtures, and `packages/recoverage/__tests__/public/**`. The original integration tests exercise installed-package coverage improvements and regressions, so releases before the expanded public suite still provide a meaningful baseline. At the current `recoverage@0.1.18` baseline, only the original coverage improvement/regression integration tests are historical contracts. The expanded public suite checks current behavior immediately and becomes part of the historical baseline once a release contains it. New tests cover the shipped CLI, capture/diff return codes, configuration, missing coverage, and the `recoverage/lib` report and cloud APIs. Internal unit tests and the web application are outside this compatibility contract. Run `bun run --cwd packages/recoverage test:public` to exercise current contracts.
 
 A failing released contract requires a pending changeset for `recoverage` with a minor or major bump before 1.0, a major bump from 1.0 onward, and `💥 BREAKING CHANGE:` in that same note. Patch notes, unrelated packages, and unmarked feature notes cannot certify a break. Once Changesets consumes notes in a version PR, the actual package version must cross the corresponding compatibility boundary and its exact changelog section must retain the breaking-change notice. Add or revise public tests when intentionally changing a contract; do not delete coverage to make the check pass.
 
-The aggregate `check` remains the static-check suite; `check:semver` additionally needs Git release history and executes package integration tests.
+The aggregate `check` remains the static-check suite; `test:semver` additionally needs Git release history and executes package integration tests.
 
 ## Migration
 

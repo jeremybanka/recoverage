@@ -62,8 +62,8 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: bun packages/recoverage/__scripts__/coverage-check.bun.ts "$BASE_SHA"
 
-  CompatibilityRecord:
-    name: Compatibility Record
+  BreakCheck:
+    name: Break Check
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -72,4 +72,4 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/setup-test-git
-      - run: bun run check:semver
+      - run: bun run test:semver

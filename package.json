@@ -28,7 +28,7 @@
 		"test:watch": "turbo run test:watch --concurrency=30",
 		"watch:types": "turbo run watch:types --concurrency=30",
 		"workflows:update": "bun ./scripts/update-workflows.bun.ts",
-		"check:semver": "bun scripts/check-semver.ts",
+		"test:semver": "bun scripts/test-semver.ts",
 		"test:tooling": "bun test scripts/__tests__"
 	},
 	"keywords": [],
