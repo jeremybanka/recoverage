@@ -89,6 +89,12 @@
 			"dependsOn": ["test:build", "^build"],
 			"cache": false,
 			"persistent": true
+		},
+		"cov": {
+			"dependsOn": ["test:build", "^build", "gen"],
+			"cache": false,
+			"outputs": ["coverage/**"],
+			"inputs": ["$TURBO_DEFAULT$", "../../packages/recoverage/__scripts__/**"]
 		}
 	}
 }

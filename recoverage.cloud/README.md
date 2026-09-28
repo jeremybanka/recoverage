@@ -24,7 +24,7 @@ bun run --filter=recoverage.cloud dev
 Useful scripts:
 
 - `bun run --filter=recoverage.cloud test` - run the app tests once.
-- `bun run --filter=recoverage.cloud lint` - run Biome, ESLint, and type checks.
+- `bun run --filter=recoverage.cloud check` - run Biome, ESLint, and type checks.
 - `bun run --filter=recoverage.cloud db:gen` - generate Drizzle migrations.
 - `bun run --filter=recoverage.cloud db:up` - apply D1 migrations.
 

@@ -39,3 +39,24 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
       - run: bun run build
+
+  Recoverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # This job compares local reports and needs no hosted-service or cache secrets.
+    env:
+      TURBO_TOKEN: ""
+      TURBO_TEAM: ""
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/setup-test-git
+      - run: bun run cov
+      - name: Compare each package with the PR target commit
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: bun packages/recoverage/__scripts__/coverage-check.bun.ts "$BASE_SHA"

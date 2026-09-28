@@ -15,6 +15,8 @@
 		"check:eslint": "turbo run check:eslint",
 		"check:fmt": "dprint check",
 		"check:tsc": "turbo run check:tsc",
+		"cov": "cross-env CI=true turbo run cov --concurrency=2 --env-mode=loose",
+		"cov:check": "bun run cov && bun packages/recoverage/__scripts__/coverage-check.bun.ts",
 		"fmt": "dprint fmt",
 		"gen": "turbo run gen",
 		"lint:fix:biome": "biome lint --write *",
