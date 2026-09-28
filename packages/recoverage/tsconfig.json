@@ -6,6 +6,7 @@
 		"**/*.config.ts",
 		"__scripts__/**/*.ts"
 	],
+	"exclude": ["dist", "__tests__/public/consumer"],
 	"compilerOptions": {
 		"allowJs": false,
 		"declaration": true,
