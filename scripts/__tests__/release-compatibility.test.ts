@@ -1,6 +1,26 @@
 import { describe, expect, it } from "bun:test"
 
-import { certifyBreakingChange } from "../release-compatibility.ts"
+import {
+	certifyBreakingChange,
+	hasReleasedPublicTests,
+} from "../release-compatibility.ts"
+
+it(`requires an executable public contract in the released baseline`, () => {
+	const fixtures = [
+		`packages/recoverage/__tests__/sample-package-01/.gitignore`,
+		`packages/recoverage/__tests__/sample-package-01/false-case.test.ts`,
+		`packages/recoverage/__tests__/public/fixture.ts`,
+	]
+	expect(hasReleasedPublicTests([])).toBe(false)
+	expect(hasReleasedPublicTests(fixtures)).toBe(false)
+	for (const contract of [
+		`packages/recoverage/__tests__/diff-coverage.test.ts`,
+		`packages/recoverage/__tests__/public/package.test.ts`,
+		`packages/recoverage/__tests__/public/nested/api.spec.ts`,
+	]) {
+		expect(hasReleasedPublicTests([...fixtures, contract])).toBe(true)
+	}
+})
 
 describe(`breaking release certification`, () => {
 	const baseline = {

@@ -7,6 +7,14 @@ type Changeset = {
 
 const breakingMarker = /💥\s+BREAKING CHANGE:/
 
+export function hasReleasedPublicTests(files: string[]): boolean {
+	return files.some((file) =>
+		/^packages\/recoverage\/__tests__\/(?:diff-coverage\.test\.ts|public\/.*\.(?:test|spec)\.[cm]?[jt]sx?)$/.test(
+			file,
+		),
+	)
+}
+
 export function certifyBreakingChange({
 	baselineVersion,
 	currentVersion,

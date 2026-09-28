@@ -5,7 +5,10 @@ import path from "node:path"
 import { readChangesets } from "@changesets/read"
 import { breakCheck } from "break-check"
 
-import { certifyBreakingChange } from "./release-compatibility.ts"
+import {
+	certifyBreakingChange,
+	hasReleasedPublicTests,
+} from "./release-compatibility.ts"
 
 const root = path.resolve(import.meta.dirname, `..`)
 const packageDirectory = path.join(root, `packages/recoverage`)
@@ -38,12 +41,18 @@ const outcome = await breakCheck({
 	certifyCommand: `false`,
 })
 
-console.log(outcome.summary)
 if (!(`breakingChangesFound` in outcome)) {
+	console.error(outcome.summary)
 	throw new Error(
 		`Compatibility was not established; a release and public tests are required.`,
 	)
 }
+if (!hasReleasedPublicTests(outcome.testsFound)) {
+	throw new Error(
+		`The release baseline contains no executable public contracts; fixtures and helpers alone cannot establish compatibility.`,
+	)
+}
+console.log(outcome.summary)
 console.log(`Release baseline: ${outcome.lastReleaseTag}`)
 if (outcome.breakingChangesFound) {
 	console.error(outcome.testResult)
