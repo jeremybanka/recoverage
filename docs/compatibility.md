@@ -11,7 +11,7 @@ The public suite uses an npm package archive and invokes its declared CLI or imp
 | Coverage API | `capture` accepts a selected branch and `silent`; `diff` accepts a selected branch. Unchanged/increased coverage succeeds, decreased coverage fails, and missing baseline data fails. |
 | CLI | `capture`, `diff`, and the combined command accept the documented branch aliases. The default branch is `main`; configuration applies to coverage commands and CLI options take precedence. Invalid configuration fails before saving coverage. Unknown-option warnings remain advisory. |
 | Help and completion | Help is available without Git or coverage. Completion generation for the five documented shells works without Git, coverage, or valid application configuration. |
-| Library reports | Consumer-owned Istanbul coverage maps produce the corresponding statement counts/percentage and a text report. |
+| Library reports | Consumer-owned Istanbul coverage maps produce the corresponding statement counts/percentage and a nonempty text report for a nonempty map. |
 | Cloud library results | Successful downloads return response content; successful uploads report success; unsuccessful HTTP responses return an `Error`. |
 | TypeScript | Normal consumer calls and result assignments compile through both package entrypoints with the fixture's pinned compiler. Added options or result properties remain compatible. |
 | Saved coverage | The current package can compare improved and decreased coverage against baseline data created by the published `recoverage@0.1.18` capture API. |
