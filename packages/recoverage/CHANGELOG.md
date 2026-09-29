@@ -1,5 +1,11 @@
 # recoverage
 
+## 0.1.19
+
+### Patch Changes
+
+- 409109d: 🐛 Point the `recoverage` and `recoverage/lib` TypeScript exports to their shipped declarations.
+
 ## 0.1.18
 
 ### Patch Changes
