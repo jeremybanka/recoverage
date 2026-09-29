@@ -33,7 +33,7 @@
 		"recoverage": "bin/recoverage.bin.js"
 	},
 	"scripts": {
-		"build": "bun --bun tsdown && rm -f dist/*.x.d.ts",
+		"build": "bun --bun tsdown",
 		"check": "bun run check:eslint && bun run check:tsc && bun run check:biome",
 		"check:biome": "biome lint -- .",
 		"check:eslint": "NODE_OPTIONS=--require=../../scripts/eslint-typescript.cjs eslint -- .",
