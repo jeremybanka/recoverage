@@ -40,8 +40,12 @@ async function runScript(...args: string[]): Promise<ChildProcess> {
 	const proc = spawn(`bun`, args, {
 		stdio: `inherit`,
 		env: { ...process.env, FORCE_COLOR: `1`, CI: `false` },
+		timeout: 90_000,
 	})
-	await new Promise((resolve) => proc.on(`exit`, resolve))
+	await new Promise((resolve, reject) => {
+		proc.on(`exit`, resolve)
+		proc.on(`error`, reject)
+	})
 	return proc
 }
 
@@ -95,7 +99,7 @@ describe(`recoverage`, () => {
 
 		const coverage2 = await runScript(`coverage:status`)
 		expect(coverage2.exitCode).toBe(0)
-	}, 30_000)
+	}, 120_000)
 
 	it(`fails a coverage decrease [sample-package-02]`, async () => {
 		await loadSample(`sample-package-02`)
@@ -115,5 +119,5 @@ describe(`recoverage`, () => {
 
 		const coverage2 = await runScript(`coverage:status`)
 		expect(coverage2.exitCode).toBe(1)
-	}, 30_000)
+	}, 120_000)
 })

@@ -1,0 +1,5 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": { "types": ["bun"] },
+	"include": ["test-semver.ts", "release-compatibility.ts", "__tests__/**/*.ts"]
+}

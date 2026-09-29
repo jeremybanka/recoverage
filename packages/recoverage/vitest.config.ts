@@ -2,7 +2,11 @@ import type { ViteUserConfigExport } from "vitest/config"
 import { defineConfig } from "vitest/config"
 
 const config: ViteUserConfigExport = defineConfig({
-	test: { globals: true, include: [`__tests__/*.test.ts`] },
+	test: {
+		globals: true,
+		include: [`__tests__/*.test.ts`],
+		setupFiles: [`__tests__/setup.ts`],
+	},
 })
 
 export default config

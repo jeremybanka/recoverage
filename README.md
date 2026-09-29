@@ -19,3 +19,7 @@ the actual package:
 
 This root exists mainly for workspace and repository-level tooling. The package
 README is the source of truth for using `recoverage`.
+
+## Repository commands
+
+See [the command guide](docs/commands.md) for formatting, static checks, tests, coverage where available, and release commands.

@@ -21,11 +21,11 @@
 	"exports": {
 		"./package.json": "./package.json",
 		".": {
-			"types": "./src/recoverage.d.ts",
+			"types": "./dist/recoverage.d.ts",
 			"import": "./dist/recoverage.js"
 		},
 		"./lib": {
-			"types": "./src/recoverage.lib.d.ts",
+			"types": "./dist/recoverage.lib.d.ts",
 			"import": "./dist/recoverage.lib.js"
 		}
 	},
@@ -33,16 +33,20 @@
 		"recoverage": "bin/recoverage.bin.js"
 	},
 	"scripts": {
-		"dev": "bun --bun tsdown --watch",
 		"build": "bun --bun tsdown && rm -f dist/*.x.d.ts",
-		"lint:biome": "biome lint -- .",
-		"lint:eslint": "NODE_OPTIONS=--require=../../scripts/eslint-typescript.cjs eslint -- .",
-		"lint:types": "tsc --noEmit",
+		"check": "bun run check:eslint && bun run check:tsc && bun run check:biome",
+		"check:biome": "biome lint -- .",
+		"check:eslint": "NODE_OPTIONS=--require=../../scripts/eslint-typescript.cjs eslint -- .",
+		"check:tsc": "tsc --noEmit",
+		"cov": "bun __scripts__/coverage.bun.ts",
+		"cov:check": "bun run cov && bun __scripts__/coverage-check.bun.ts",
+		"dev": "bun --bun tsdown --watch",
+		"postversion": "dprint fmt package.json",
+		"test": "vitest run && bun run test:public-api",
+		"test:watch": "vitest --watch",
 		"watch:types": "tsc --watch --noEmit",
-		"lint": "concurrently \"bun:lint:*\"",
-		"test": "vitest",
-		"test:once": "vitest run",
-		"postversion": "dprint fmt package.json"
+		"test:public": "vitest run __tests__/diff-coverage.test.ts && bun run test:public-api",
+		"test:public-api": "bun test __tests__/public"
 	},
 	"dependencies": {
 		"@t3-oss/env-core": "0.13.11",
@@ -58,11 +62,14 @@
 	"devDependencies": {
 		"@types/bun": "npm:bun-types@1.4.2",
 		"@types/istanbul-lib-coverage": "2.0.6",
+		"@types/istanbul-lib-instrument": "1.7.8",
 		"@types/istanbul-lib-report": "3.0.3",
 		"@types/istanbul-reports": "3.0.4",
 		"@types/node": "26.6.3",
+		"@vitest/coverage-istanbul": "4.1.11",
 		"concurrently": "10.0.5",
 		"eslint": "10.11.0",
+		"istanbul-lib-instrument": "6.0.3",
 		"nyc": "18.0.0",
 		"recoverage-fixtures": "workspace:*",
 		"tsdown": "0.23.0",
