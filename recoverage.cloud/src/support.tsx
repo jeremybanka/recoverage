@@ -2,6 +2,7 @@ import type { HtmlEscapedString } from "hono/utils/html"
 
 import type { BillingConfig } from "./billing-config"
 import type { Loadable } from "./loadable"
+import { panel } from "./presentation"
 
 export function BillingSupport({
 	config,
@@ -9,7 +10,7 @@ export function BillingSupport({
 	config: BillingConfig
 }): Loadable<HtmlEscapedString> {
 	return (
-		<aside aria-label="Billing support">
+		<aside aria-label="Billing support" class={panel}>
 			<p>
 				Canceling a subscription stops future renewals; it does not request a
 				refund. For missing paid access, an unexpected charge, or a refund

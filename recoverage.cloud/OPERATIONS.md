@@ -119,12 +119,15 @@ The probe requires the generated preview configuration and its exact canonical
 HTTPS workers.dev origin; custom domains and production aliases are rejected.
 Use the actual URL reported by deployment, not an assumed account subdomain.
 
-The probe creates a tiny baseline and attempts a bounded 2.1 MB replacement. It
-requires the storage-specific `413` and verifies the original is still readable.
-Delete the disposable project afterward. The local D1 emulator does not enforce
-the hosted 2,000,000-byte limit, so passing local mocks is insufficient evidence
-of this hosted behavior. Unexpected error shapes remain `500` until confirmed;
-inspect them only in the isolated preview without logging report contents.
+The probe creates a tiny baseline and observes up to three replacements (2.1,
+3.0, and 3.9 MB of path data), restoring the baseline after each accepted write
+and in cleanup. An observed storage-specific `413` must preserve the baseline.
+It separately verifies the unchanged 4,000,000-byte ingress guard. If all bounded
+candidates fit, it reports **boundary not reached**, rather than inventing a cap
+or treating successful storage as a test failure. Delete the disposable project
+afterward. The September 30 sandbox run accepted all three sizes; this does not
+guarantee those sizes in another environment. Unexpected database errors remain
+`500` until diagnosed without logging report contents.
 
 The local `dev:stripe` helper also requires a test key in `.dev.vars`, uses that
 same key for Stripe CLI forwarding, and rejects remote/configuration overrides.
@@ -212,8 +215,9 @@ See [Workers rate limits](https://developers.cloudflare.com/workers/runtime-apis
 The shared ingress guard stops after 4,000,000 streamed bytes, even without a
 trustworthy Content-Length. This bounds request buffers before JSON parsing and
 allows framing/escaping headroom; it does not promise that an upload fits storage.
-D1's 2,000,000-byte constraint applies to the stored row including coverage,
-summary, and metadata. See [D1 limits](https://developers.cloudflare.com/d1/platform/limits/).
+Cloudflare documents a 2,000,000-byte row/string/BLOB limit, but the isolated
+September 30 sandbox accepted rows through 3,900,085 bytes. Keep the documented
+limit and observed behavior distinct; neither is a plan entitlement. See [D1 limits](https://developers.cloudflare.com/d1/platform/limits/).
 The error mapper inspects D1 errors and their causes, following the
 [Worker binding's error wrapper](https://github.com/cloudflare/workerd/blob/main/src/cloudflare/internal/d1-api.ts).
 It does not interpret arbitrary SQL parameters or unrelated errors as a size failure.
@@ -309,7 +313,12 @@ verification before considering re-enablement.
 
 ## Logs, retention, and monitoring
 
-Request logs contain route category, method, status, and elapsed time. Webhook
+Request logs contain a server-generated request ID, route category, method,
+status, and elapsed time. The response `X-Request-Id` and safe 500 JSON identify
+the same request. Failure logs add only a fixed category (database, upstream
+authentication/rate limit/unavailable, or unclassified), never the raw error.
+Use the request ID to investigate transient failures; a retry succeeding does
+not explain the original cause. Webhook
 logs add event ID/type and outcome. Database query/parameter logging and OAuth
 access-token/report-body logging are disabled. Keep secret values and payloads
 out of support tickets and command output too.
@@ -366,7 +375,8 @@ not evidence that a real payment or production deployment occurred.
   including concurrent report inserts, 100-report bursts, downgrade replacements,
   throttle/size failures, signed webhook ordering, rotation, and mode isolation.
 - Isolated preview has verified OAuth, D1 binding, Stripe price/endpoint/version,
-  signed delivery, hosted-size rejection, and preserved replacement data.
+  signed delivery, bounded hosted-size observations, ingress rejection, and
+  preserved replacement data. Record an unreached provider boundary explicitly.
 - In the consolidated sandbox candidate: exercise signup, purchase, renewal,
   failed payment, card update, cancellation, downgrade, duplicate and reordered
   deliveries, and recovery after an unsuccessful lookup in Stripe test mode.
@@ -375,3 +385,22 @@ not evidence that a real payment or production deployment occurred.
   been rehearsed.
 - Deploy live with checkout off, verify live-mode resources and signed delivery,
   then explicitly enable checkout only after the complete launch gate passes.
+
+
+## Offline acceptance and support readiness
+
+See [acceptance evidence](ACCEPTANCE.md) for the distinction between real hosted
+checks and offline regressions using Varmint responses. Ordinary CI cannot
+record or contact providers; an unrecorded request fails closed.
+
+The selected public support address is `support@recoverage.cloud`. The selected
+policy is: “Email support@recoverage.cloud to request a full refund of your most
+recent $1 subscription payment. Cancel future renewals in Manage billing; a
+refund does not automatically cancel your subscription.” This is the owner's
+delegated product-policy choice, not a claim about statutory rights.
+
+The address is not yet provisioned or verified. Before publishing it, configure
+its receiving/forwarding destination through the domain's supported email setup,
+verify receipt and replies, and send operational notifications to an inbox the
+owner monitors. Destination and provider access are still needed. Keep the
+approved test-only support/refund placeholders in the sandbox until then.

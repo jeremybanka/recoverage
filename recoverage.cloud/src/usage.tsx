@@ -3,6 +3,7 @@ import type { DrizzleD1Database } from "drizzle-orm/d1"
 import type { HtmlEscapedString } from "hono/utils/html"
 
 import type { Loadable } from "./loadable"
+import { inset, panel } from "./presentation"
 import {
 	hostedReportsAllowed,
 	projectsAllowed,
@@ -49,6 +50,7 @@ export function AccountUsage({
 	return (
 		<section
 			id="account-usage"
+			class={panel}
 			aria-label="Account usage"
 			hx-get="/ui/usage"
 			hx-trigger="usage-changed from:body"
@@ -80,7 +82,7 @@ export function AccountUsage({
 
 export function StorageHelp(): Loadable<HtmlEscapedString> {
 	return (
-		<p>
+		<p class={inset}>
 			Individual reports have the same storage limit on every plan. If a report
 			is too large, reduce the files included in coverage or split it into
 			smaller reports. Upgrading does not increase this limit.

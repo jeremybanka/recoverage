@@ -1,0 +1,23 @@
+[
+	{
+		"provider": "stripe",
+		"method": "GET",
+		"path": "/v1/subscriptions",
+		"query": [
+			[
+				"customer",
+				"cus_VMCYwFbtTbAnu5"
+			],
+			[
+				"limit",
+				"100"
+			],
+			[
+				"status",
+				"all"
+			]
+		],
+		"body": [],
+		"credentialCase": "accepted"
+	}
+]

@@ -21,7 +21,12 @@ function terminal(status: Stripe.Subscription.Status): boolean {
 	return status === `canceled` || status === `incomplete_expired`
 }
 
-function newAttempt(userId: number, priceId: string, origin: string): Attempt {
+function newAttempt(
+	userId: number,
+	priceId: string,
+	origin: string,
+	now: number,
+): Attempt {
 	return {
 		userId,
 		attemptId: crypto.randomUUID(),
@@ -29,7 +34,7 @@ function newAttempt(userId: number, priceId: string, origin: string): Attempt {
 		origin,
 		// Shorter than Stripe's 24-hour idempotency retention. An old request
 		// cannot create a new session once this immutable deadline has passed.
-		expiresAt: Math.floor(Date.now() / 1000) + 60 * 60,
+		expiresAt: now + 60 * 60,
 		stripeSessionId: null,
 	}
 }
@@ -109,6 +114,7 @@ export async function supporterCheckout({
 	priceId,
 	origin,
 	livemode,
+	nowSeconds = () => Math.floor(Date.now() / 1000),
 }: {
 	db: Database
 	stripe: Stripe
@@ -116,10 +122,12 @@ export async function supporterCheckout({
 	priceId: string
 	origin: string
 	livemode: boolean
+	/** Application-owned clock; explicit in deterministic recorded-response tests. */
+	nowSeconds?: () => number
 }): Promise<{ url: string }> {
 	await db
 		.insert(schema.stripeCheckoutAttempts)
-		.values(newAttempt(userId, priceId, origin))
+		.values(newAttempt(userId, priceId, origin, nowSeconds()))
 		.onConflictDoNothing({ target: schema.stripeCheckoutAttempts.userId })
 
 	// Compare-and-swap may lose to another request advancing the same expired
@@ -174,7 +182,7 @@ export async function supporterCheckout({
 					items.data[0]?.quantity !== 1
 				) {
 					throw new CheckoutUnavailable(
-						Math.max(1, session.expires_at - Math.floor(Date.now() / 1000)),
+						Math.max(1, session.expires_at - nowSeconds()),
 					)
 				}
 				if (!session.url)
@@ -198,21 +206,19 @@ export async function supporterCheckout({
 			}
 		}
 
-		if (session || attempt.expiresAt <= Math.floor(Date.now() / 1000)) {
+		if (session || attempt.expiresAt <= nowSeconds()) {
 			// An adopted legacy session did not consume this attempt's Stripe
 			// idempotency key. A concurrent request may still be creating with it,
 			// so only the fixed deadline makes replacement safe in that case.
 			if (
 				session?.metadata?.[`recoverageAttemptId`] !== attempt.attemptId &&
-				attempt.expiresAt > Math.floor(Date.now() / 1000)
+				attempt.expiresAt > nowSeconds()
 			) {
-				throw new CheckoutUnavailable(
-					attempt.expiresAt - Math.floor(Date.now() / 1000),
-				)
+				throw new CheckoutUnavailable(attempt.expiresAt - nowSeconds())
 			}
 			await db
 				.update(schema.stripeCheckoutAttempts)
-				.set(newAttempt(userId, priceId, origin))
+				.set(newAttempt(userId, priceId, origin, nowSeconds()))
 				.where(
 					and(
 						eq(schema.stripeCheckoutAttempts.userId, userId),
@@ -226,12 +232,12 @@ export async function supporterCheckout({
 		// creation. Let that attempt expire before accepting the new price.
 		if (attempt.priceId !== priceId)
 			throw new CheckoutUnavailable(
-				Math.max(1, attempt.expiresAt - Math.floor(Date.now() / 1000)),
+				Math.max(1, attempt.expiresAt - nowSeconds()),
 			)
 		// Stripe requires at least 30 minutes until expires_at on first creation.
 		// Preserve the old attempt until it is safe to rotate, even if its first
 		// response was lost. Earlier rotation could leave two payable sessions.
-		const remaining = attempt.expiresAt - Math.floor(Date.now() / 1000)
+		const remaining = attempt.expiresAt - nowSeconds()
 		if (remaining <= 30 * 60)
 			throw new CheckoutUnavailable(Math.max(1, remaining))
 		session = await stripe.checkout.sessions.create(

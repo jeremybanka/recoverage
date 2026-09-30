@@ -5,6 +5,7 @@ import type { DrizzleD1Database } from "drizzle-orm/d1"
 import type { MiddlewareHandler } from "hono"
 import { Hono } from "hono"
 import { deleteCookie, getSignedCookie } from "hono/cookie"
+import { css } from "hono/css"
 import { nanoid } from "nanoid"
 
 import { getUserRole } from "./billing"
@@ -32,6 +33,7 @@ export type UiEnv = {
 		githubUserData: GithubUserData
 		userRole: Role
 		projectScope: string
+		requestId: string
 	}
 }
 export const uiRoutes = new Hono<UiEnv>()
@@ -206,7 +208,14 @@ uiRoutes.get(`/project`, uiAuth, async (c) => {
 	const userRole = c.get(`userRole`)
 	return c.html(
 		<>
-			<div id="project-list">
+			<div
+				id="project-list"
+				class={css`
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+			`}
+			>
 				{projects.map((project) => (
 					<Project
 						{...project}

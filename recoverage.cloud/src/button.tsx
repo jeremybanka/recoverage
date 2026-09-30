@@ -32,8 +32,8 @@ export function create(props: CreateProps): Loadable<HtmlEscapedString> {
         justify-self: left;
         align-self: flex-start;
         border-radius: 0px 0 5px 0;
-        &:active {
-          background-color: var(--bg-color-s2);
+        &:active:not(:disabled) {
+          background-color: var(--color-bg-s2);
           box-shadow: inset 0 1px 0 1px #0002;
         }
       `}
@@ -72,8 +72,8 @@ export function x(props: XProps): Loadable<HtmlEscapedString> {
         justify-self: left;
         align-self: flex-start;
         border-radius: 0 0 0 5px;
-        &:active {
-          background-color: var(--bg-color-s2);
+        &:active:not(:disabled) {
+          background-color: var(--color-bg-s2);
           box-shadow: inset 0 1px 0 1px #0002;
         }
       `}
@@ -108,8 +108,8 @@ export function copy({
         justify-self: left;
         align-self: flex-start;
         border-radius: 5px 0 5px 0;
-        &:active {
-          background-color: var(--bg-color-s2);
+        &:active:not(:disabled) {
+          background-color: var(--color-bg-s2);
           box-shadow: inset 0 1px 0 1px #0002;
         }
       `}
@@ -136,8 +136,8 @@ export function submit(props: SubmitProps): Loadable<HtmlEscapedString> {
         border: 1px solid ${disabled ? `var(--color-fg-superlight)` : `var(--color-fg)`};
         padding: 10px;
         border-radius: 0 0 5px 0;
-        &:active {
-          background-color: var(--bg-color-s2);
+        &:active:not(:disabled) {
+          background-color: var(--color-bg-s2);
           box-shadow: inset 0 1px 0 1px #0002;
         }
       `}

@@ -52,31 +52,88 @@ const initial = await fetch(url, {
 })
 if (!initial.ok)
 	throw new Error(`Preview baseline upload failed: ${initial.status}`)
-// A bounded 2.1 MB valid report, below the ingress guard but above D1's limit.
-const mapData = {
-	file: {
-		path: `x`.repeat(2_100_000),
-		statementMap: {},
-		fnMap: {},
-		branchMap: {},
-		s: {},
-		f: {},
-		b: {},
-	},
+// Observe the hosted boundary rather than assuming a provider row-size limit.
+// All three candidates stay below the unchanged 4 MB request guard.
+const baseline = JSON.stringify({ mapData: {}, jsonSummary })
+const observations: {
+	pathBytes: number
+	requestBytes: number
+	status: number
+	code?: string
+}[] = []
+async function preserved() {
+	const retained = await fetch(url, { headers })
+	if (!retained.ok || JSON.stringify(await retained.json()) !== `{}`)
+		throw new Error(`The probe baseline was not preserved.`)
 }
-const rejected = await fetch(url, {
-	method: `PUT`,
-	headers,
-	body: JSON.stringify({ mapData, jsonSummary }),
-})
-const result = (await rejected.json()) as { code?: string }
-if (rejected.status !== 413 || result.code !== `REPORT_TOO_LARGE`)
-	throw new Error(
-		`Hosted D1 size verification failed: HTTP ${rejected.status}. Inspect the error shape in the isolated environment.`,
+async function restore() {
+	const response = await fetch(url, { method: `PUT`, headers, body: baseline })
+	if (!response.ok)
+		throw new Error(
+			`Probe cleanup failed: HTTP ${response.status}; restore the disposable ref before continuing.`,
+		)
+	await preserved()
+}
+try {
+	for (const pathBytes of [2_100_000, 3_000_000, 3_900_000]) {
+		const mapData = {
+			file: {
+				path: `x`.repeat(pathBytes),
+				statementMap: {},
+				fnMap: {},
+				branchMap: {},
+				s: {},
+				f: {},
+				b: {},
+			},
+		}
+		const body = JSON.stringify({ mapData, jsonSummary })
+		const requestBytes = new TextEncoder().encode(body).length
+		if (requestBytes >= 4_000_000)
+			throw new Error(`Probe exceeds its reviewed ingress budget.`)
+		const response = await fetch(url, { method: `PUT`, headers, body })
+		const result = (await response.json()) as { code?: string }
+		observations.push({
+			pathBytes,
+			requestBytes,
+			status: response.status,
+			...(result.code ? { code: result.code } : {}),
+		})
+		if (response.status === 413 && result.code === `REPORT_TOO_LARGE`) {
+			await preserved()
+			break
+		}
+		if (!response.ok)
+			throw new Error(`Unexpected probe response: HTTP ${response.status}`)
+		const stored = await fetch(url, { headers })
+		if (
+			!stored.ok ||
+			JSON.stringify(await stored.json()) !== JSON.stringify(mapData)
+		)
+			throw new Error(`Accepted report did not round-trip correctly.`)
+		await restore()
+	}
+	const ingress = await fetch(url, {
+		method: `PUT`,
+		headers,
+		body: ` `.repeat(4_000_001),
+	})
+	const ingressResult = (await ingress.json()) as { code?: string }
+	if (ingress.status !== 413 || ingressResult.code !== `REQUEST_TOO_LARGE`)
+		throw new Error(`Ingress limit was not enforced: HTTP ${ingress.status}`)
+	await preserved()
+	console.info(
+		JSON.stringify({
+			ref,
+			observations,
+			ingress: `rejected and baseline preserved`,
+			storageBoundary: observations.some(
+				(value) => value.code === `REPORT_TOO_LARGE`,
+			)
+				? `observed`
+				: `not reached; accepted sizes are observations, not a storage guarantee`,
+		}),
 	)
-const retained = await fetch(url, { headers })
-if (!retained.ok || JSON.stringify(await retained.json()) !== `{}`)
-	throw new Error(`Rejected replacement did not preserve the original report.`)
-console.info(
-	`Hosted size rejection and replacement preservation verified. Delete the disposable preview project when finished. Report ref: ${ref}`,
-)
+} finally {
+	await restore()
+}

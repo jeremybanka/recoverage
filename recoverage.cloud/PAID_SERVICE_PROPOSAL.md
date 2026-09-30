@@ -33,7 +33,9 @@ constraints; upgrading does not increase the size of an individual report.
 Cloudflare currently documents a maximum of 2,000,000 bytes for a string, BLOB,
 or complete table row. The report's coverage JSON, summary, identifiers, timestamp,
 and row overhead must fit together. This is not a guaranteed 2 MB upload allowance.
-D1 remains the authority on whether a stored row fits. See the
+The isolated September 30 sandbox accepted rows through 3,900,085 bytes; the
+documented bound and observed behavior disagree. D1 remains the authority on
+whether a stored row fits; no additional app storage cap is inferred. See the
 [official D1 limits](https://developers.cloudflare.com/d1/platform/limits/).
 
 Remove the former size entitlements from the permission model, pricing UI, and

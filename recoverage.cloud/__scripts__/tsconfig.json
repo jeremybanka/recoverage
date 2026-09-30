@@ -2,6 +2,7 @@
 	"extends": "../../tsconfig.json",
 	"include": [
 		"*.ts",
+		"../acceptance/*.ts",
 		"../__tests__/report-fixture.ts",
 		"../src/billing-config.ts",
 		"../src/portal-config.ts",

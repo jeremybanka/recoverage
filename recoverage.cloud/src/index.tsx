@@ -16,6 +16,7 @@ import { redactWebhookPayloads } from "./maintenance"
 import { Page, SplashPage } from "./page"
 import { RoleBadge } from "./pricing"
 import { reporterRoutes } from "./reporter"
+import { failureCategory } from "./request-diagnostics"
 import * as schema from "./schema"
 import { shieldsRoutes } from "./shields"
 import { BillingSupport } from "./support"
@@ -43,9 +44,13 @@ function requestCategory(path: string): string {
 
 app.use(`*`, async (c, next) => {
 	const started = Date.now()
+	const requestId = crypto.randomUUID()
+	c.set(`requestId`, requestId)
+	c.header(`X-Request-Id`, requestId)
 	await next()
 	console.info({
 		event: `request`,
+		requestId: c.get(`requestId`),
 		route: requestCategory(c.req.path),
 		method: c.req.method,
 		status: c.res.status,
@@ -53,14 +58,17 @@ app.use(`*`, async (c, next) => {
 	})
 })
 
-app.onError((_error, c) => {
+app.onError((error, c) => {
 	console.error({
 		event: `request_failed`,
+		requestId: c.get(`requestId`),
+		category: failureCategory(error),
 		route: requestCategory(c.req.path),
 	})
 	return c.json(
 		{
 			code: `INTERNAL_ERROR`,
+			requestId: c.get(`requestId`),
 			error: `The service could not complete this request. Please retry later.`,
 		},
 		500,
@@ -180,10 +188,14 @@ app.get(`/`, async (c) => {
 				/>
 			</Page>,
 		)
-	} catch {
-		console.error({ event: `account_load_failed` })
-		deleteCookie(c, `github-access-token`)
-		return c.html(<SplashPage />)
+	} catch (error) {
+		// A transient database/provider failure must not destroy a valid login.
+		if (error instanceof Error && `status` in error && error.status === 401) {
+			deleteCookie(c, `github-access-token`, { path: `/` })
+			c.header(`Cache-Control`, `no-store`)
+			return c.html(<SplashPage />)
+		}
+		throw error
 	}
 })
 

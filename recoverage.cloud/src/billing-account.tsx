@@ -5,8 +5,10 @@ import type { HtmlEscapedString } from "hono/utils/html"
 
 import { deriveRole } from "./billing"
 import { checkoutEnabled } from "./billing-config"
+import * as button from "./button"
 import type { Loadable } from "./loadable"
 import { type PortalConfig, portalEnabled } from "./portal-config"
+import { inset, navigation, panel } from "./presentation"
 import { roleLabel } from "./pricing"
 import type { Role } from "./roles-permissions"
 import * as schema from "./schema"
@@ -71,7 +73,7 @@ export function BillingReturnNotice({
 }): Loadable<HtmlEscapedString> | null {
 	if (state === `success`) {
 		return (
-			<p role="status">
+			<p role="status" class={inset}>
 				{confirmedSupporterSubscription(account, config)
 					? `Your account has a confirmed paid Supporter subscription.`
 					: `We have not confirmed a paid Supporter subscription yet. Refresh this page shortly, or contact billing support if confirmation does not arrive. Do not purchase again while waiting.`}
@@ -80,7 +82,7 @@ export function BillingReturnNotice({
 	}
 	if (state === `cancel`) {
 		return (
-			<p role="status">
+			<p role="status" class={inset}>
 				You returned from Checkout. Leaving Checkout does not change your plan.
 				Your current account status is shown below.
 			</p>
@@ -152,7 +154,7 @@ export function BillingAccountPage({
 	return (
 		<>
 			<h1>Plan and billing</h1>
-			<p>
+			<p class={navigation}>
 				<a href="/">Back to your projects</a> ·{` `}
 				<a href="/ui/upgrade">Compare plans</a>
 			</p>
@@ -161,66 +163,69 @@ export function BillingAccountPage({
 				account={account}
 				config={config}
 			/>
-			<h2>Current plan: {roleLabel(account.role)}</h2>
-			{returnState === `success` ? (
-				<p>
-					<a href="/ui/billing?billing=success">Refresh status</a>
-				</p>
-			) : null}
-			{account.manualRoleOverride ? (
-				<p>
-					Your plan is assigned by a maintainer. It is separate from the
-					subscription status below; changing or canceling billing does not
-					remove this assignment.
-				</p>
-			) : null}
-			{displayed.length ? (
-				displayed.map((subscription) => (
-					<p key={subscription.stripeSubscriptionId}>
-						{subscriptionDescription(subscription, config, now)}
+			<section class={panel}>
+				<h2>Current plan: {roleLabel(account.role)}</h2>
+				{returnState === `success` ? (
+					<p>
+						<a href="/ui/billing?billing=success">Refresh status</a>
 					</p>
-				))
-			) : (
-				<p>No subscription has been confirmed for this account.</p>
-			)}
-			{current.length > 1 ? (
-				<p>
-					Multiple subscriptions are on this account. Contact billing support to
-					review them before making another purchase.
-				</p>
-			) : null}
-			{account.hasCustomer ? (
-				portalEnabled(config) ? (
-					<>
-						<form method="post" action="/billing/portal">
-							<button type="submit">Manage billing</button>
-						</form>
-						<p>
-							Update your payment method, view invoices, or schedule cancellation
-							in Stripe. Cancellation can be undone before the paid period ends.
+				) : null}
+				{account.manualRoleOverride ? (
+					<p>
+						Your plan is assigned by a maintainer. It is separate from the
+						subscription status below; changing or canceling billing does not
+						remove this assignment.
+					</p>
+				) : null}
+				{displayed.length ? (
+					displayed.map((subscription) => (
+						<p key={subscription.stripeSubscriptionId}>
+							{subscriptionDescription(subscription, config, now)}
 						</p>
-					</>
+					))
 				) : (
+					<p>No subscription has been confirmed for this account.</p>
+				)}
+				{current.length > 1 ? (
 					<p>
-						Billing management is temporarily unavailable.{` `}
-						<a href="/support">Contact billing support</a> for help.
+						Multiple subscriptions are on this account. Contact billing support
+						to review them before making another purchase.
 					</p>
-				)
-			) : null}
-			{!current.length &&
-			!account.manualRoleOverride &&
-			returnState !== `success` ? (
-				checkoutEnabled(config) ? (
-					<p>
-						<a href="/ui/upgrade">
-							{latest ? `Subscribe again` : `Upgrade to Supporter`}
-						</a>
-					</p>
-				) : (
-					<p>New subscriptions are currently unavailable.</p>
-				)
-			) : null}
-			<p>
+				) : null}
+				{account.hasCustomer ? (
+					portalEnabled(config) ? (
+						<>
+							<form method="post" action="/billing/portal">
+								<button.submit>Manage billing</button.submit>
+							</form>
+							<p>
+								Update your payment method, view invoices, or schedule
+								cancellation in Stripe. Cancellation can be undone before the
+								paid period ends.
+							</p>
+						</>
+					) : (
+						<p>
+							Billing management is temporarily unavailable.{` `}
+							<a href="/support">Contact billing support</a> for help.
+						</p>
+					)
+				) : null}
+				{!current.length &&
+				!account.manualRoleOverride &&
+				returnState !== `success` ? (
+					checkoutEnabled(config) ? (
+						<p>
+							<a href="/ui/upgrade">
+								{latest ? `Subscribe again` : `Upgrade to Supporter`}
+							</a>
+						</p>
+					) : (
+						<p>New subscriptions are currently unavailable.</p>
+					)
+				) : null}
+			</section>
+			<p class={inset}>
 				Your existing projects, reports, and tokens are retained after a
 				downgrade. Existing reports remain readable and replaceable. Creating new
 				items is restricted when you reach your current plan’s limits.

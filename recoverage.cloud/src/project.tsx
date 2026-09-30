@@ -207,7 +207,14 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 						`}
 					>
 						<h4.diagonals>Tokens</h4.diagonals>
-						<div id={`tokens-${id}`}>
+						<div
+							id={`tokens-${id}`}
+							class={css`
+							display: flex;
+							flex-direction: column;
+							gap: 10px;
+						`}
+						>
 							{tokens.map((token) => (
 								<ProjectToken key={token.id} {...token} />
 							))}

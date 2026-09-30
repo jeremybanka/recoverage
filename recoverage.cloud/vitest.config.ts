@@ -3,6 +3,8 @@ import path from "node:path"
 import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-plugin"
 import { defineConfig } from "vitest/config"
 
+import { replayProvider } from "./acceptance/replay"
+
 export default defineConfig(async () => {
 	const migrationsPath = path.join(import.meta.dirname, `drizzle`)
 	const migrations = await readD1Migrations(migrationsPath)
@@ -15,6 +17,7 @@ export default defineConfig(async () => {
 					configPath: `./wrangler.jsonc`,
 				},
 				miniflare: {
+					outboundService: replayProvider,
 					bindings: {
 						TEST_MIGRATIONS: migrations,
 						STRIPE_MODE: `test`,

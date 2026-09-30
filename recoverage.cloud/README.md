@@ -53,10 +53,12 @@ The paid-tier branch offers Free (3 hosted reports), Supporter ($1/month for
 are counted across all projects owned by a GitHub account. Updating an existing
 report does not consume another slot, including when the account is at its limit.
 
-All plans use the same D1 storage constraints. Cloudflare currently limits a
-string, BLOB, or entire row to 2,000,000 bytes; a report row also contains its
+All plans use the same D1 storage constraints. Cloudflare documents a limit of
+2,000,000 bytes for a string, BLOB, or entire row; a report row also contains its
 summary and metadata, so this is not a promised upload size. There are no
-plan-specific report byte allowances. See [D1 limits](https://developers.cloudflare.com/d1/platform/limits/),
+plan-specific report byte allowances. The isolated sandbox accepted larger
+rows through 3,900,085 bytes on September 30, 2026; that observation is not a
+portable guarantee or a different plan limit. See [D1 limits](https://developers.cloudflare.com/d1/platform/limits/),
 the [paid service plan](PAID_SERVICE_PROPOSAL.md), and the
 [launch status](LAUNCH_READINESS_PROPOSAL.md).
 

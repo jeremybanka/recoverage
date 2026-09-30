@@ -2,7 +2,9 @@ import { css } from "hono/css"
 import type { HtmlEscapedString } from "hono/utils/html"
 
 import { type BillingConfig, checkoutEnabled } from "./billing-config"
+import * as button from "./button"
 import type { Loadable } from "./loadable"
+import { navigation, panel } from "./presentation"
 import {
 	hostedReportsAllowed,
 	projectsAllowed,
@@ -25,35 +27,15 @@ export function roleLabel(role: Role): string {
 
 function roleBadgeStyle(role: Role): string {
 	return [
-		`border: 1px solid ${
-			role === `supporter`
-				? `color-mix(in srgb, var(--hyperlink) 45%, white 20%)`
-				: `var(--color-fg-faint)`
-		}`,
-		`background: ${
-			role === `supporter`
-				? `linear-gradient(180deg, color-mix(in srgb, var(--hyperlink) 10%, var(--color-bg-t3)), var(--color-bg-t2))`
-				: `linear-gradient(180deg, var(--color-bg-t3), var(--color-bg-t2))`
-		}`,
+		`border: 1px solid var(--color-fg-light)`,
 		`color: ${role === `supporter` ? `var(--hyperlink)` : `var(--color-fg)`}`,
 	].join(`; `)
 }
 
-function pricingCardStyle({
-	accent,
-	highlighted,
-}: {
-	accent: string
-	highlighted: boolean
-}): string {
+function pricingCardStyle(highlighted: boolean): string {
 	return [
-		`border: 1px solid ${
-			highlighted
-				? `color-mix(in srgb, ${accent} 55%, var(--color-fg-faint))`
-				: `var(--color-fg-light)`
-		}`,
-		`background: linear-gradient(180deg, color-mix(in srgb, ${accent} 6%, var(--color-bg-t3)), var(--color-bg-t2))`,
-		`border-radius: ${highlighted ? `0 16px 4px 4px` : `4px 4px 0 16px`}`,
+		`border-color: ${highlighted ? `var(--color-fg)` : `var(--color-fg-light)`}`,
+		`margin: 0`,
 	].join(`; `)
 }
 
@@ -73,9 +55,9 @@ export function RoleBadge({
 				align-items: center;
 				gap: 6px;
 				padding: 3px 9px 4px;
-				box-shadow:
-					inset 0 1px 0 #fff1,
-					0 4px 0 -2px #0003;
+				background: var(--color-bg-t3);
+				box-shadow: 0 3px 0 -2px #0003;
+				border-radius: 5px 0 5px 0;
 				text-decoration: none;
 				font-size: 13px;
 				font-weight: 700;
@@ -89,9 +71,8 @@ export function RoleBadge({
 				}
 				&:active {
 					transform: translateY(1px);
-					box-shadow:
-						inset 0 1px 0 #fff1,
-						0 2px 0 -1px #0003;
+					background: var(--color-bg-s2);
+					box-shadow: inset 0 1px 0 1px #0002;
 				}
 			`}
 		>
@@ -114,19 +95,7 @@ function PricingCard({
 	role: Role
 }): Loadable<HtmlEscapedString> {
 	return (
-		<section
-			style={pricingCardStyle({ accent, highlighted })}
-			class={css`
-				display: flex;
-				flex-direction: column;
-				gap: 14px;
-				padding: 16px 16px 18px;
-				box-shadow:
-					inset 0 1px 0 #fff1,
-					0 8px 20px #00000024,
-					0 4px 0 -2px #0003;
-			`}
-		>
+		<section style={pricingCardStyle(highlighted)} class={panel}>
 			<header
 				class={css`
 					display: flex;
@@ -164,7 +133,7 @@ function PricingCard({
 							class={css`
 								font-size: 15px;
 								font-weight: 400;
-								color: var(--color-fg-light);
+								color: var(--color-fg);
 							`}
 						>
 							/mo
@@ -176,7 +145,7 @@ function PricingCard({
 			<p
 				class={css`
 					margin: 0;
-					color: var(--color-fg-light);
+					color: var(--color-fg);
 				`}
 			>
 				{description}
@@ -185,7 +154,7 @@ function PricingCard({
 				class={css`
 					display: grid;
 					grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-					gap: 10px 14px;
+					gap: 10px;
 					list-style: none;
 					margin: 0;
 					padding: 0;
@@ -211,15 +180,13 @@ export function PricingPage({
 	return (
 		<>
 			<h1>Plans</h1>
-			<p>
+			<p class={navigation}>
 				<a href="/ui/billing">Plan and billing</a>
 			</p>
-			<StorageHelp />
-			<BillingSupport config={config} />
 			<p
 				class={css`
 					margin-top: 0;
-					color: var(--color-fg-light);
+					color: var(--color-fg);
 					max-width: 40ch;
 				`}
 			>
@@ -230,7 +197,7 @@ export function PricingPage({
 				class={css`
 					display: flex;
 					flex-direction: column;
-					gap: 14px;
+					gap: 10px;
 					margin-top: 6px;
 				`}
 			>
@@ -247,12 +214,12 @@ export function PricingPage({
 								class={css`
 									display: inline-flex;
 									align-items: center;
-									padding: 7px 12px 8px;
+									padding: 5px 10px;
 									border: 1px solid var(--color-fg-faint);
-									background: var(--color-bg-t3);
-									box-shadow:
-										inset 0 1px 0 #fff1,
-										0 4px 0 -2px #0003;
+									background: var(--color-bg-t1);
+									box-shadow: inset 0 1px 0 1px #0002;
+									flex-wrap: wrap;
+									gap: 5px;
 									color: var(--success);
 									font-size: 13px;
 									font-weight: 700;
@@ -266,27 +233,7 @@ export function PricingPage({
 							<p>New subscriptions are currently unavailable.</p>
 						) : (
 							<form method="post" action="/billing/checkout">
-								<button
-									type="submit"
-									class={css`
-										cursor: pointer;
-										border: 1px solid color-mix(in srgb, var(--hyperlink) 45%, white 20%);
-										background: linear-gradient(
-											180deg,
-											color-mix(in srgb, var(--hyperlink) 18%, var(--color-bg-t3)),
-											color-mix(in srgb, var(--hyperlink) 8%, var(--color-bg-t2))
-										);
-										box-shadow:
-											inset 0 1px 0 #fff1,
-											0 4px 0 -2px #0003;
-										color: white;
-										padding: 8px 14px 9px;
-										font-size: 14px;
-										font-weight: 700;
-									`}
-								>
-									Upgrade to Supporter
-								</button>
+								<button.submit>Upgrade to Supporter</button.submit>
 							</form>
 						),
 					description: `Built for the in-between shape: plenty of room whether you spread reports across repos or stack them inside a monorepo.`,
@@ -294,11 +241,13 @@ export function PricingPage({
 					role: `supporter`,
 				})}
 			</div>
+			<StorageHelp />
+			<BillingSupport config={config} />
 			<p
 				class={css`
 					margin-top: 18px;
 					font-size: 13px;
-					color: var(--color-fg-light);
+					color: var(--color-fg);
 				`}
 			>
 				Checkout happens in Stripe and returns you here when it completes or is

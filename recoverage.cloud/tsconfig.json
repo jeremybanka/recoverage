@@ -1,6 +1,6 @@
 {
 	"extends": "../tsconfig.json",
-	"include": ["src", "__tests__", "**/*.config.ts"],
+	"include": ["src", "__tests__", "acceptance", "**/*.config.ts"],
 	"compilerOptions": {
 		"jsx": "react-jsx",
 		"jsxImportSource": "hono/jsx",

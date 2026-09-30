@@ -44,6 +44,15 @@ afterEach(() => {
 	vi.restoreAllMocks()
 })
 
+async function render(
+	component: ReturnType<typeof BillingAccountPage> | null,
+): Promise<string> {
+	const response = await new Hono()
+		.get(`/`, (c) => c.html(component ?? ``))
+		.request(`/`)
+	return response.text()
+}
+
 function account(overrides: Partial<BillingAccount> = {}): BillingAccount {
 	return {
 		role: `free`,
@@ -273,28 +282,28 @@ test(`checkout return flags cannot confirm payment, including manually assigned 
 		account({ subscriptions: [subscription({ latestInvoicePaidAt: null })] }),
 		account({ subscriptions: [subscription({ priceId: `price_other` })] }),
 	]) {
-		const text = String(
-			await BillingReturnNotice({ state: `success`, account: state, config }),
+		const text = await render(
+			BillingReturnNotice({ state: `success`, account: state, config }),
 		)
 		expect(text).toContain(`not confirmed`)
 		expect(text).not.toContain(`has a confirmed paid`)
 	}
 	const paid = account({ role: `supporter`, subscriptions: [subscription()] })
 	expect(
-		String(
-			await BillingReturnNotice({ state: `success`, account: paid, config }),
+		await render(
+			BillingReturnNotice({ state: `success`, account: paid, config }),
 		),
 	).toContain(`has a confirmed paid`)
 	expect(
-		String(
-			await BillingReturnNotice({ state: `cancel`, account: paid, config }),
+		await render(
+			BillingReturnNotice({ state: `cancel`, account: paid, config }),
 		),
 	).toContain(`does not change your plan`)
 })
 
 test(`pending Checkout return offers refresh instead of another purchase`, async () => {
-	const html = String(
-		await BillingAccountPage({
+	const html = await render(
+		BillingAccountPage({
 			account: account({ hasCustomer: true }),
 			config: {
 				...config,
@@ -330,8 +339,8 @@ test(`billing page distinguishes payment status from effective role, dates, canc
 		],
 	] as const
 	for (const [billing, message] of cases) {
-		const html = String(
-			await BillingAccountPage({
+		const html = await render(
+			BillingAccountPage({
 				account: account({
 					role: `free`,
 					hasCustomer: true,
@@ -346,8 +355,8 @@ test(`billing page distinguishes payment status from effective role, dates, canc
 		expect(html).toContain(`retained after a downgrade`)
 		expect(html).not.toContain(`action="/billing/checkout"`)
 	}
-	const manual = String(
-		await BillingAccountPage({
+	const manual = await render(
+		BillingAccountPage({
 			account: account({ role: `admin`, manualRoleOverride: `admin` }),
 			config,
 		}),

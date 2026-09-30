@@ -1,6 +1,6 @@
 // An ingress guard, not a plan entitlement or a promise that a row will fit D1.
-// Allow JSON framing/escaping headroom over D1's 2,000,000-byte row limit,
-// while bounding the buffers and parsed objects allocated by one upload.
+// Bound buffers and parsed objects allocated by one upload. Hosted D1 accepted
+// rows up to 3.9 MB in acceptance testing; its rejection boundary is not an app cap.
 export const reportRequestBytes = 4_000_000
 
 export class ReportRequestTooLarge extends Error {}
