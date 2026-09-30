@@ -1,5 +1,6 @@
 import { eq, sql } from "drizzle-orm"
 import type { DrizzleD1Database } from "drizzle-orm/d1"
+import { css } from "hono/css"
 import type { HtmlEscapedString } from "hono/utils/html"
 
 import type { Loadable } from "./loadable"
@@ -56,12 +57,14 @@ export function AccountUsage({
 			hx-trigger="usage-changed from:body"
 			hx-swap="outerHTML"
 		>
-			<p>
-				Hosted reports: {usage.reports} /{` `}
-				{exempt ? `exempt from report-count limit` : reportLimit}
-			</p>
-			<p>
-				Projects: {usage.projects} / {projectLimit}
+			<p class={css`display: flex; flex-wrap: wrap; gap: 5px 20px;`}>
+				<span>
+					Projects: {usage.projects} / {projectLimit}
+				</span>
+				<span>
+					Hosted reports: {usage.reports} /{` `}
+					{exempt ? `exempt from report-count limit` : reportLimit}
+				</span>
 			</p>
 			{!exempt && usage.reports >= reportLimit ? (
 				<p>

@@ -158,3 +158,15 @@ Source fidelity can be verified now, but final visual approval requires supporte
 6. Long project names, support addresses, labels and narrow forms: no horizontal page overflow or clipped actions. Existing name-form flex overflow risk predates this work and is not established as a rendered failure.
 
 Do not claim screenshot parity, mobile pixel accuracy, or measured accessibility compliance from this source-only audit. Those checks remain a specific evidence gap, not a reason to discard the verified improvements.
+
+## Rendered Safari Technology Preview follow-up
+
+A separate browser review inspected live `recoverage.cloud` and the stable billing preview at commit `a0236f1ce86d1e4a1c52b30e7006b01ed9a2e924`, using the user's Safari Technology Preview. Screenshots remain in the browser review thread. At a 1598×1146 window in light theme, the square frame, dot texture, raised tints, crisp shallow shadows, TL/BR card corners and approximately 10px project spacing matched the existing site vocabulary. Home, billing, plans and support rendered without clipping or an internal error. The account remained active Supporter.
+
+The review identified three corrections:
+
+- Full support/refund copy plus usage occupied roughly 224px above projects; the first project began around 634px from the screen top. Home now links to full support details instead of repeating the policy card, and usage counts share a wrapping row. Billing, plans and support retain the full copy and quota warnings remain visible.
+- Support had no return navigation. It now links to projects, billing and plans using the shared navigation styling.
+- Home's visited navigation used browser-default dark purple. Its navigation now uses the same normal, visited and active theme tokens as billing and plans.
+
+At native page zoom 300% in a 1282px window (approximately 427 CSS pixels), sampled home, billing, plans and support views showed no overlap or horizontal overflow. Quota items wrapped, the active badge remained inside its card, and the long fixture project name and delete control fit. This establishes zoom/reflow behavior, not mobile emulation. The reviewer restored 100% zoom and the original window size. Dark theme, actual mobile devices and comprehensive keyboard/accessibility checks remain unverified. A rendered recheck of the three corrections is required after deployment.

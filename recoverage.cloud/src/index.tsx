@@ -14,6 +14,7 @@ import { getEnv, GITHUB_CALLBACK_ENDPOINT, githubSignInConfigured } from "./env"
 import { createGitHubClient } from "./github-client"
 import { redactWebhookPayloads } from "./maintenance"
 import { Page, SplashPage } from "./page"
+import { navigation } from "./presentation"
 import { RoleBadge } from "./pricing"
 import { reporterRoutes } from "./reporter"
 import { failureCategory } from "./request-diagnostics"
@@ -86,6 +87,11 @@ app.get(`/support`, (c) => {
 	return c.html(
 		<Page>
 			<h1>Help and billing support</h1>
+			<nav aria-label="Account navigation" class={navigation}>
+				<a href="/">Back to your projects</a> ·{` `}
+				<a href="/ui/billing">Plan and billing</a> ·{` `}
+				<a href="/ui/upgrade">Compare plans</a>
+			</nav>
 			<StorageHelp />
 			<BillingSupport config={config} />
 			{!config.BILLING_SUPPORT_EMAIL ? (
@@ -171,12 +177,12 @@ app.get(`/`, async (c) => {
 					account={account}
 					config={env}
 				/>
-				<p>
+				<nav aria-label="Account navigation" class={navigation}>
 					<a href="/ui/billing">Plan and billing</a> ·{` `}
-					<a href="/ui/upgrade">Compare plans</a>
-				</p>
+					<a href="/ui/upgrade">Compare plans</a> ·{` `}
+					<a href="/support">Help and billing support</a>
+				</nav>
 				<AccountUsage usage={usage} role={userRole} userId={user.id} />
-				<BillingSupport config={env} />
 				<h2>Your Projects</h2>
 				<div
 					hx-get="/ui/project"
