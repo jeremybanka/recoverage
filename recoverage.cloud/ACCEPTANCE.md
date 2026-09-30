@@ -79,15 +79,39 @@ language. Existing Hono rendering tests exercise actual rendering. Supported
 browser control was unavailable for this pass; no screenshots, viewport checks
 or rendered visual approval are claimed.
 
+## Sandbox deployment and rollback follow-up
+
+Source `b43cd93995817a8129078149a5ca488ba90442bb` passed all 18 reported GitHub
+checks (preview teardown intentionally skipped), including compatibility against
+`recoverage@0.1.19`. Cloud coverage is 85.16% statements, +14.11 percentage points
+against main `a4d86f2f817e8a4f03f3989b27dfb4394c93006a`; 169 Worker tests pass.
+
+The dedicated sandbox deployed that source as Worker version
+`2e57a680-6f75-4e47-a9a9-b1d307804d97`. A real deployment rollback to the previously
+tested schema-compatible version `b1eb15ce-99af-4f27-8e4f-fbea8523012b` succeeded:
+Checkout returned 503 while paused, then the new version was restored at 100%
+traffic with Checkout enabled and anonymous Checkout returning 401. Public home
+and support returned 200. Exact nonsecret bindings and secret names matched;
+project records, report metadata/lengths, token counts and subscription/payment
+facts for the two lifecycle accounts matched before and after. No D1 writes,
+Stripe mutations, new credentials, live deployment or main merge were involved.
+
+The first Python urllib smoke client received 403; the already-used unauthenticated
+curl client returned 200. The corrected harness completed rollback/restoration.
+This client discrepancy is separate from the earlier authenticated billing 500.
+The exclusive deployment window was released after verification. Generic PR
+preview also passed deployment, with Stripe test mode and Checkout disabled.
+
 ## Operational completion still required
 
 - Provision/verify `support@recoverage.cloud` and an operational alert destination.
   The owner selected the address; a forwarding/receiving inbox has not been supplied.
   The refund-policy choice and receiving/reply test are in OPERATIONS.md.
 - Configure account notifications and prove delivery to the selected destination.
-- Rehearse a retained schema-compatible rollback Worker against a migrated copy
-  before live launch. The generated SQL migration rehearsal passes locally;
-  that is not a deployed rollback or a production-data export/import rehearsal.
+- The generated SQL rehearsal and actual sandbox Worker rollback now pass.
+  Before live launch, rehearse export/import and migration of a representative
+  production-data copy in a private disposable database; no production export
+  or restoration is claimed here.
 - Inspect the new interface in a supported browser in both themes and at narrow
   widths. Source/HTML evidence is extensive but cannot establish final appearance.
 - The historical intermittent 500 has not been reproduced with its original cause.
