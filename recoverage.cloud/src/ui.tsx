@@ -50,14 +50,32 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 
 	const octokit = createGitHubClient(githubAccessTokenCookie)
 
-	const { data, status } = await octokit.request(`GET /user`, {
-		request: { fetch: cachedFetch },
-	})
-
-	if (status !== 200) {
-		deleteCookie(c, `github-access-token`)
-		return c.json({ error: `Unauthorized` }, 401)
+	const userResponse = await octokit
+		.request(`GET /user`, {
+			request: { fetch: cachedFetch },
+		})
+		.catch((error: unknown) => {
+			// Only an actual authentication rejection should end the session.
+			// Outages and rate limits must propagate without discarding the cookie.
+			if (error instanceof Error && `status` in error && error.status === 401)
+				return null
+			throw error
+		})
+	if (!userResponse) {
+		deleteCookie(c, `github-access-token`, { path: `/` })
+		c.header(`Cache-Control`, `no-store`)
+		if (c.req.header(`HX-Request`) === `true`) c.header(`HX-Redirect`, `/`)
+		return c.json(
+			{
+				error: `Your GitHub session has expired or been revoked. Please sign in again.`,
+				loginUrl: `/oauth/github`,
+			},
+			401,
+		)
 	}
+	const { data, status } = userResponse
+	if (status !== 200)
+		throw new Error(`GitHub user lookup returned an unexpected response.`)
 	if (typeof data.id !== `number` || !Number.isSafeInteger(data.id)) {
 		return c.json({ error: `GitHub returned an unsupported user ID.` }, 500)
 	}
