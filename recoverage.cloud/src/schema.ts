@@ -56,6 +56,19 @@ export const stripeCustomersRelations = relations(
 	}),
 )
 
+// One durable purchase attempt per account. Keep its parameters immutable until
+// Stripe confirms it can no longer create a subscription.
+export const stripeCheckoutAttempts = sqliteTable(`stripeCheckoutAttempts`, {
+	userId: integer()
+		.references(() => users.id, { onDelete: `cascade` })
+		.primaryKey(),
+	attemptId: text().notNull(),
+	priceId: text().notNull(),
+	origin: text().notNull(),
+	expiresAt: integer().notNull(),
+	stripeSessionId: text(),
+})
+
 export type StripeSubscriptionStatus =
 	| `active`
 	| `canceled`
@@ -67,6 +80,7 @@ export type StripeSubscriptionStatus =
 	| `unpaid`
 
 export const stripeSubscriptions = sqliteTable(`stripeSubscriptions`, {
+	syncRevision: integer().notNull().default(0),
 	stripeSubscriptionId: text().primaryKey(),
 	stripeCustomerId: text()
 		.references(() => stripeCustomers.stripeCustomerId, { onDelete: `cascade` })

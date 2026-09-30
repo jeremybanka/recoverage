@@ -3,7 +3,7 @@ import { defineConfig } from "tsdown"
 
 const config: UserConfig = defineConfig({
 	clean: true,
-	dts: true,
+	dts: { entry: [`src/recoverage.ts`, `src/recoverage.lib.ts`] },
 	entry: {
 		recoverage: `src/recoverage.ts`,
 		"recoverage.x": `src/recoverage.x.ts`,

@@ -1,0 +1,15 @@
+{
+	"name": "recoverage-public-consumer",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"check:tsc": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"@types/istanbul-lib-coverage": "2.0.6",
+		"istanbul-lib-coverage": "3.2.2",
+		"recoverage": "workspace:*",
+		"recoverage-0-1-18": "https://registry.npmjs.org/recoverage/-/recoverage-0.1.18.tgz",
+		"typescript": "7.0.2"
+	}
+}

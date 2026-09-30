@@ -5,6 +5,7 @@ import { css } from "hono/css"
 
 import { assetsRoutes } from "./assets"
 import { getUserRole } from "./billing"
+import { billingAccount, BillingReturnNotice } from "./billing-account"
 import { billingRoutes } from "./billing-routes"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
@@ -101,9 +102,7 @@ app.get(`/`, async (c) => {
 		`github-access-token`,
 	)
 	if (!githubAccessTokenCookie) {
-		return c.html(
-			<SplashPage currentUrl={url} githubClientId={env.GITHUB_CLIENT_ID} />,
-		)
+		return c.html(<SplashPage />)
 	}
 
 	try {
@@ -134,6 +133,8 @@ app.get(`/`, async (c) => {
 			return c.json({ error: `User did not have a resolvable role.` }, 500)
 		}
 		const billingState = url.searchParams.get(`billing`)
+		const account = await billingAccount(db, user.id, userRole)
+		c.header(`Cache-Control`, `no-store`)
 		const usage = await accountUsage(db, user.id)
 
 		return await c.html(
@@ -152,30 +153,19 @@ app.get(`/`, async (c) => {
 				<p>
 					Logged in as {data.login} ({data.id}){` `}
 					{RoleBadge({
-						href: `/ui/upgrade`,
+						href: `/ui/billing`,
 						role: userRole,
 					})}
 				</p>
-				{billingState === `success` ? (
-					<p
-						class={css`
-							margin-top: -4px;
-							color: var(--success);
-						`}
-					>
-						Supporter checkout completed. Your account will refresh as Stripe
-						events arrive.
-					</p>
-				) : billingState === `cancel` ? (
-					<p
-						class={css`
-							margin-top: -4px;
-							color: var(--color-fg-light);
-						`}
-					>
-						Checkout cancelled.
-					</p>
-				) : null}
+				<BillingReturnNotice
+					state={billingState}
+					account={account}
+					config={env}
+				/>
+				<p>
+					<a href="/ui/billing">Plan and billing</a> ·{` `}
+					<a href="/ui/upgrade">Compare plans</a>
+				</p>
 				<AccountUsage usage={usage} role={userRole} userId={user.id} />
 				<BillingSupport config={env} />
 				<h2>Your Projects</h2>
@@ -193,24 +183,85 @@ app.get(`/`, async (c) => {
 	} catch {
 		console.error({ event: `account_load_failed` })
 		deleteCookie(c, `github-access-token`)
-		return c.html(
-			<SplashPage currentUrl={url} githubClientId={env.GITHUB_CLIENT_ID} />,
-		)
+		return c.html(<SplashPage />)
 	}
+})
+
+const oauthStateCookie = `github-oauth-state`
+const oauthStateLifetimeSeconds = 10 * 60
+
+app.get(`/oauth/github`, async (c) => {
+	const env = getEnv(c.env)
+	const url = new URL(c.req.url)
+	const state = crypto.randomUUID()
+	await setSignedCookie(
+		c,
+		oauthStateCookie,
+		`${Date.now() + oauthStateLifetimeSeconds * 1000}:${state}`,
+		env.COOKIE_SECRET,
+		{
+			httpOnly: true,
+			secure: url.protocol === `https:`,
+			sameSite: `lax`,
+			path: `/oauth/github`,
+			maxAge: oauthStateLifetimeSeconds,
+		},
+	)
+	const authorizeUrl = new URL(`https://github.com/login/oauth/authorize`)
+	authorizeUrl.searchParams.set(`client_id`, env.GITHUB_CLIENT_ID)
+	authorizeUrl.searchParams.set(
+		`redirect_uri`,
+		new URL(GITHUB_CALLBACK_ENDPOINT, url.origin).href,
+	)
+	authorizeUrl.searchParams.set(`scope`, `user`)
+	authorizeUrl.searchParams.set(`state`, state)
+	c.header(`Cache-Control`, `no-store`)
+	return c.redirect(authorizeUrl.href, 302)
 })
 
 app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
 	const env = getEnv(c.env)
+	c.header(`Cache-Control`, `no-store`)
+	c.header(`Referrer-Policy`, `no-referrer`)
+	const signedState = await getSignedCookie(
+		c,
+		env.COOKIE_SECRET,
+		oauthStateCookie,
+	)
+	// Consume the browser's state cookie on every callback, including errors.
+	deleteCookie(c, oauthStateCookie, { path: `/oauth/github` })
+	const [expiresAt, expectedState] =
+		typeof signedState === `string` ? signedState.split(`:`) : []
+	const state = c.req.query(`state`)
+	if (
+		!state ||
+		state !== expectedState ||
+		!Number.isSafeInteger(Number(expiresAt)) ||
+		Number(expiresAt) <= Date.now()
+	) {
+		return c.json(
+			{ error: `Invalid or expired sign-in request. Please sign in again.` },
+			400,
+		)
+	}
 	const code = c.req.query(`code`)
 	if (!code) {
 		return c.json({ error: `No code provided` }, 400)
 	}
-	const accessTokenUrl = new URL(`https://github.com/login/oauth/access_token`)
-	accessTokenUrl.searchParams.set(`client_id`, env.GITHUB_CLIENT_ID)
-	accessTokenUrl.searchParams.set(`client_secret`, env.GITHUB_CLIENT_SECRET)
-	accessTokenUrl.searchParams.set(`code`, code)
-
-	const accessTokenResponse = await cachedFetch(accessTokenUrl)
+	// OAuth codes and the client secret must not enter URL-based caches or logs.
+	const accessTokenResponse = await fetch(
+		`https://github.com/login/oauth/access_token`,
+		{
+			method: `POST`,
+			headers: { Accept: `application/x-www-form-urlencoded` },
+			body: new URLSearchParams({
+				client_id: env.GITHUB_CLIENT_ID,
+				client_secret: env.GITHUB_CLIENT_SECRET,
+				code,
+				redirect_uri: new URL(GITHUB_CALLBACK_ENDPOINT, c.req.url).href,
+			}),
+		},
+	)
 
 	if (!accessTokenResponse.ok) {
 		return c.json({ error: `Failed to get access token` }, 400)
@@ -228,7 +279,10 @@ app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
 		accessToken,
 		env.COOKIE_SECRET,
 		{
-			sameSite: `strict`,
+			// Stripe returns through a top-level GET. Billing writes also require
+			// an exact same-origin POST, so this does not allow cross-site writes.
+			sameSite: `lax`,
+			secure: new URL(c.req.url).protocol === `https:`,
 			httpOnly: true,
 			path: `/`,
 		},

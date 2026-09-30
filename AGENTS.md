@@ -6,3 +6,7 @@ General guidance for working in this repository:
 - Database migrations are managed by `drizzle-kit`. Do not hand-edit existing migrations, and only hand-edit a newly generated migration when you have explicit permission.
 - Releases for the `recoverage` npm package are managed with Changesets. When adding release notes, follow the style of the patch notes in packages/recoverage/CHANGELOG.md.
 - `recoverage` is pre-version-1, so breaking changes should be given a minor version bump, but noted as `💥 BREAKING CHANGE:` in the release notes.
+
+## Repository commands
+
+Use the canonical command names in `docs/commands.md`: `fmt` writes formatting, `check` aggregates `check:*` validators, and `test` runs once. Coverage commands use the `cov` prefix where implemented. Keep CI and documentation references aligned when changing commands.

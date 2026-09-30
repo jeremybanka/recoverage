@@ -45,6 +45,14 @@
 			"matchPackageNames": ["bun", "oven-sh/bun"],
 			"minimumReleaseAge": null,
 			"groupName": "Bun"
+		},
+		{
+			"description": "Keep the published compatibility data producer immutable. Add a new versioned dependency for another release instead of replacing this fixture.",
+			"matchFileNames": [
+				"packages/recoverage/__tests__/public/consumer/package.json"
+			],
+			"matchPackageNames": ["recoverage", "recoverage-0-1-18"],
+			"enabled": false
 		}
 	]
 }

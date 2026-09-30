@@ -6,6 +6,7 @@ export type Bindings = {
 	REPORT_RATE_SCOPE: string
 	REPORT_TOKEN_LIMITER: RateLimit
 	REPORT_ACCOUNT_LIMITER: RateLimit
+	CHECKOUT_LIMITER: RateLimit
 	GITHUB_CLIENT_ID: string
 	GITHUB_CLIENT_SECRET: string
 	COOKIE_SECRET: string
@@ -16,6 +17,7 @@ export type Bindings = {
 	BILLING_REFUND_POLICY?: string | undefined
 	STRIPE_SECRET_KEY?: string | undefined
 	STRIPE_WEBHOOK_SECRET?: string | undefined
+	STRIPE_PORTAL_CONFIGURATION_ID?: string | undefined
 	STRIPE_SUPPORTER_PRICE_ID?: string | undefined
 }
 
@@ -30,6 +32,7 @@ export type Env = Readonly<{
 	BILLING_REFUND_POLICY?: string | undefined
 	STRIPE_SECRET_KEY?: string | undefined
 	STRIPE_WEBHOOK_SECRET?: string | undefined
+	STRIPE_PORTAL_CONFIGURATION_ID?: string | undefined
 	STRIPE_SUPPORTER_PRICE_ID?: string | undefined
 }>
 
@@ -46,6 +49,7 @@ export function getEnv(bindings: Bindings): Env {
 			BILLING_REFUND_POLICY: type(`string | undefined`),
 			STRIPE_SECRET_KEY: type(`string | undefined`),
 			STRIPE_WEBHOOK_SECRET: type(`string | undefined`),
+			STRIPE_PORTAL_CONFIGURATION_ID: type(`string | undefined`),
 			STRIPE_SUPPORTER_PRICE_ID: type(`string | undefined`),
 		},
 		runtimeEnv: {
@@ -59,6 +63,7 @@ export function getEnv(bindings: Bindings): Env {
 			BILLING_REFUND_POLICY: bindings.BILLING_REFUND_POLICY,
 			STRIPE_SECRET_KEY: bindings.STRIPE_SECRET_KEY,
 			STRIPE_WEBHOOK_SECRET: bindings.STRIPE_WEBHOOK_SECRET,
+			STRIPE_PORTAL_CONFIGURATION_ID: bindings.STRIPE_PORTAL_CONFIGURATION_ID,
 			STRIPE_SUPPORTER_PRICE_ID: bindings.STRIPE_SUPPORTER_PRICE_ID,
 		},
 		emptyStringAsUndefined: true,

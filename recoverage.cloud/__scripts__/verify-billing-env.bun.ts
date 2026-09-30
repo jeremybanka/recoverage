@@ -7,6 +7,7 @@ import {
 	stripeApiVersion,
 	verifySupporterPrice,
 } from "../src/billing-config"
+import { verifyPortalConfiguration } from "../src/portal-config"
 import { createStripeClient } from "../src/stripe"
 
 function required(name: string): string {
@@ -48,6 +49,10 @@ async function verify() {
 		required(`STRIPE_SUPPORTER_PRICE_ID`),
 	)
 	verifySupporterPrice(price, mode)
+	const portal = await stripe.billingPortal.configurations.retrieve(
+		required(`STRIPE_PORTAL_CONFIGURATION_ID`),
+	)
+	verifyPortalConfiguration(portal, mode)
 	const endpoint = await stripe.webhookEndpoints.retrieve(
 		required(`STRIPE_WEBHOOK_ENDPOINT_ID`),
 	)
@@ -72,6 +77,7 @@ async function verify() {
 		mode,
 		worker: workerUrl.origin,
 		priceId: price.id,
+		portalConfigurationId: portal.id,
 		endpointId: endpoint.id,
 		apiVersion: endpoint.api_version,
 	})

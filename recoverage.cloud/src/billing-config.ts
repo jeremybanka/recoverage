@@ -9,12 +9,15 @@ export const billingEvents = [
 	`customer.subscription.updated`,
 	`customer.subscription.deleted`,
 	`invoice.paid`,
+	`invoice.payment_failed`,
+	`invoice.payment_action_required`,
 ] as const
 
 export type BillingConfig = {
 	STRIPE_MODE?: `live` | `test` | undefined
 	STRIPE_SECRET_KEY?: string | undefined
 	STRIPE_SUPPORTER_PRICE_ID?: string | undefined
+	STRIPE_PORTAL_CONFIGURATION_ID?: string | undefined
 	STRIPE_WEBHOOK_SECRET?: string | undefined
 	CHECKOUT_ENABLED?: string | undefined
 	BILLING_SUPPORT_EMAIL?: string | undefined
@@ -24,7 +27,9 @@ export type BillingConfig = {
 export function billingModeMatches(config: BillingConfig): boolean {
 	return (
 		!!config.STRIPE_MODE &&
-		!!config.STRIPE_SECRET_KEY?.startsWith(`sk_${config.STRIPE_MODE}_`)
+		[`sk`, `rk`].some((prefix) =>
+			config.STRIPE_SECRET_KEY?.startsWith(`${prefix}_${config.STRIPE_MODE}_`),
+		)
 	)
 }
 
@@ -33,6 +38,7 @@ export function checkoutEnabled(config: BillingConfig): boolean {
 		config.CHECKOUT_ENABLED === `true` &&
 		billingModeMatches(config) &&
 		!!config.STRIPE_SUPPORTER_PRICE_ID &&
+		!!config.STRIPE_PORTAL_CONFIGURATION_ID &&
 		!!config.STRIPE_WEBHOOK_SECRET &&
 		!!config.BILLING_SUPPORT_EMAIL &&
 		!!config.BILLING_REFUND_POLICY

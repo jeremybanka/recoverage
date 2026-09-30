@@ -14,6 +14,7 @@ const config = {
 	STRIPE_SECRET_KEY: `sk_test_placeholder`,
 	STRIPE_WEBHOOK_SECRET: `whsec_placeholder`,
 	STRIPE_SUPPORTER_PRICE_ID: `price_supporter`,
+	STRIPE_PORTAL_CONFIGURATION_ID: `bpc_test`,
 	BILLING_SUPPORT_EMAIL: `billing@example.test`,
 	BILLING_REFUND_POLICY: `Contact billing support to request a refund.`,
 	CHECKOUT_ENABLED: `true`,
@@ -102,4 +103,34 @@ test(`retention removes old payloads while preserving event IDs, outcomes, and r
 		}
 	}
 	expect(await redactWebhookPayloads(env.DB)).toBe(0)
+})
+
+test(`restricted API keys work only in the matching billing mode`, () => {
+	for (const mode of [`test`, `live`] as const) {
+		for (const prefix of [`sk`, `rk`]) {
+			const key = `${prefix}_${mode}_placeholder`
+			expect(
+				billingModeMatches({ STRIPE_MODE: mode, STRIPE_SECRET_KEY: key }),
+			).toBe(true)
+			expect(
+				checkoutEnabled({
+					...config,
+					STRIPE_MODE: mode,
+					STRIPE_SECRET_KEY: key,
+				}),
+			).toBe(true)
+			expect(
+				billingModeMatches({
+					STRIPE_MODE: mode === `test` ? `live` : `test`,
+					STRIPE_SECRET_KEY: key,
+				}),
+			).toBe(false)
+		}
+	}
+	expect(
+		billingModeMatches({
+			STRIPE_MODE: `test`,
+			STRIPE_SECRET_KEY: `pk_test_placeholder`,
+		}),
+	).toBe(false)
 })

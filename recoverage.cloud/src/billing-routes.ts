@@ -1,4 +1,3 @@
-import type { Endpoints } from "@octokit/types"
 import { eq } from "drizzle-orm"
 import type { DrizzleD1Database } from "drizzle-orm/d1"
 import type { MiddlewareHandler } from "hono"
@@ -12,6 +11,7 @@ import {
 	recordStripeWebhookEvent,
 	upsertStripeSubscription,
 } from "./billing"
+import type { BillingEnv } from "./billing-auth"
 import {
 	billingModeMatches,
 	checkoutEnabled,
@@ -19,24 +19,13 @@ import {
 	verifySupporterPrice,
 } from "./billing-config"
 import { cachedFetch } from "./cached-fetch"
+import { CheckoutUnavailable, supporterCheckout } from "./checkout"
 import { createDatabase } from "./db"
-import { type Bindings, getEnv } from "./env"
+import { getEnv } from "./env"
 import { createGitHubClient } from "./github-client"
+import { registerPortalRoutes } from "./portal-routes"
 import * as schema from "./schema"
-import {
-	createStripeClient,
-	createSupporterCheckoutSessionParams,
-	retrieveStripeSubscription,
-} from "./stripe"
-
-type BillingEnv = {
-	Bindings: Bindings
-	Variables: {
-		drizzle: DrizzleD1Database<typeof schema>
-		githubUserData: Endpoints[`GET /user`][`response`][`data`]
-		userId: number
-	}
-}
+import { createStripeClient, retrieveStripeSubscription } from "./stripe"
 
 export const billingRoutes = new Hono<BillingEnv>()
 
@@ -91,59 +80,70 @@ billingRoutes.use(`/checkout`, async (c, next) => {
 })
 
 billingRoutes.post(`/checkout`, billingAuth, async (c) => {
-	const env = getEnv(c.env)
-
-	if (!env.STRIPE_SECRET_KEY) {
-		return c.json({ error: `STRIPE_SECRET_KEY is not configured.` }, 500)
-	}
-	if (!env.STRIPE_SUPPORTER_PRICE_ID) {
-		return c.json({ error: `STRIPE_SUPPORTER_PRICE_ID is not configured.` }, 500)
-	}
-
-	const db = c.get(`drizzle`)
-	const userId = c.get(`userId`)
-	const githubUser = c.get(`githubUserData`)
-	const stripe = createStripeClient(env.STRIPE_SECRET_KEY)
-	if (!env.STRIPE_MODE)
-		return c.json({ error: `Billing mode is not configured.` }, 503)
-	verifySupporterPrice(
-		await stripe.prices.retrieve(env.STRIPE_SUPPORTER_PRICE_ID),
-		env.STRIPE_MODE,
-	)
-
-	let stripeCustomer = await db.query.stripeCustomers.findFirst({
-		where: eq(schema.stripeCustomers.userId, userId),
-		columns: { stripeCustomerId: true },
-	})
-
-	if (!stripeCustomer) {
-		const customer = await stripe.customers.create({
-			...(githubUser.email ? { email: githubUser.email } : {}),
-			metadata: { recoverageUserId: String(userId) },
-			name: githubUser.name ?? githubUser.login,
-		})
-		stripeCustomer = { stripeCustomerId: customer.id }
-		await db.insert(schema.stripeCustomers).values({
-			userId,
-			stripeCustomerId: customer.id,
-		})
-	}
-
 	const origin = new URL(c.req.url).origin
-	const checkoutSession = await stripe.checkout.sessions.create(
-		createSupporterCheckoutSessionParams({
-			customerId: stripeCustomer.stripeCustomerId,
-			origin,
-			priceId: env.STRIPE_SUPPORTER_PRICE_ID,
-			userId,
-		}),
-	)
-
-	if (!checkoutSession.url) {
-		return c.json({ error: `Stripe did not return a Checkout URL.` }, 500)
+	if (
+		c.req.header(`origin`) !== origin ||
+		(c.req.header(`sec-fetch-site`) &&
+			c.req.header(`sec-fetch-site`) !== `same-origin`)
+	) {
+		return c.json({ error: `Billing requests must come from this site.` }, 403)
+	}
+	const env = getEnv(c.env)
+	if (
+		!env.STRIPE_SECRET_KEY ||
+		!env.STRIPE_SUPPORTER_PRICE_ID ||
+		!env.STRIPE_MODE
+	) {
+		return c.json({ error: `Billing is not configured.` }, 503)
 	}
 
-	return c.redirect(checkoutSession.url, 303)
+	try {
+		const { success } = await c.env.CHECKOUT_LIMITER.limit({
+			key: `${c.env.REPORT_RATE_SCOPE}:checkout:${c.get(`userId`)}`,
+		})
+		if (!success) {
+			c.header(`Retry-After`, `60`)
+			return c.json(
+				{ error: `Too many checkout requests. Please try again in a minute.` },
+				429,
+			)
+		}
+		const stripe = createStripeClient(env.STRIPE_SECRET_KEY)
+		verifySupporterPrice(
+			await stripe.prices.retrieve(env.STRIPE_SUPPORTER_PRICE_ID),
+			env.STRIPE_MODE,
+		)
+		const checkout = await supporterCheckout({
+			db: c.get(`drizzle`),
+			stripe,
+			userId: c.get(`userId`),
+			priceId: env.STRIPE_SUPPORTER_PRICE_ID,
+			origin,
+			livemode: env.STRIPE_MODE === `live`,
+		})
+		return c.redirect(checkout.url, 303)
+	} catch (error) {
+		// Stripe errors may contain customer details. Keep the durable attempt
+		// for a safe retry, and never fall back to creating another purchase.
+		c.header(
+			`Retry-After`,
+			String(error instanceof CheckoutUnavailable ? error.retryAfter : 30),
+		)
+		if (error instanceof CheckoutUnavailable) {
+			return c.json(
+				{
+					error: `Your previous checkout is still reserved. Please try again in ${Math.ceil(error.retryAfter / 60)} minutes.`,
+				},
+				503,
+			)
+		}
+		return c.json(
+			{
+				error: `Checkout is temporarily unavailable. Please try again shortly.`,
+			},
+			503,
+		)
+	}
 })
 
 billingRoutes.post(`/webhook`, async (c) => {
@@ -254,7 +254,11 @@ async function handleStripeWebhookEvent({
 		event.type === `customer.subscription.deleted`
 	) {
 		subscriptionId = event.data.object.id
-	} else if (event.type === `invoice.paid`) {
+	} else if (
+		event.type === `invoice.paid` ||
+		event.type === `invoice.payment_failed` ||
+		event.type === `invoice.payment_action_required`
+	) {
 		const subscription =
 			event.data.object.parent?.subscription_details?.subscription
 		subscriptionId =
@@ -273,8 +277,32 @@ async function handleStripeWebhookEvent({
 	// Webhooks are notifications, not ordered state changes. Even invoice.paid
 	// may describe an older invoice, so always fetch the subscription's current
 	// status, period, and expanded latest invoice together before persisting them.
-	const subscription = await retrieveStripeSubscription(stripe, subscriptionId)
-	if (subscription.livemode !== event.livemode)
-		throw new Error(`Stripe subscription mode mismatch.`)
-	await upsertStripeSubscription({ db, subscription })
+	for (let attempt = 0; attempt < 4; attempt++) {
+		const previous = await db.query.stripeSubscriptions.findFirst({
+			where: eq(schema.stripeSubscriptions.stripeSubscriptionId, subscriptionId),
+			columns: { syncRevision: true, status: true },
+		})
+		const subscription = await retrieveStripeSubscription(stripe, subscriptionId)
+		if (subscription.livemode !== event.livemode)
+			throw new Error(`Stripe subscription mode mismatch.`)
+		if (
+			(previous?.status === `canceled` ||
+				previous?.status === `incomplete_expired`) &&
+			subscription.status !== previous.status
+		)
+			return
+		if (
+			await upsertStripeSubscription({
+				db,
+				subscription,
+				expectedRevision: previous?.syncRevision ?? null,
+			})
+		)
+			return
+		// Another worker committed after our revision read. Re-fetch from Stripe;
+		// retrying the same snapshot would simply reintroduce the stale write.
+	}
+	throw new Error(`Stripe subscription synchronization is busy; retry delivery.`)
 }
+
+registerPortalRoutes(billingRoutes, billingAuth)

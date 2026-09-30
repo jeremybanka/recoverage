@@ -133,10 +133,12 @@ function latestInvoicePaidAtFromSubscription(subscription: Stripe.Subscription) 
 export async function upsertStripeSubscription({
 	db,
 	subscription,
+	expectedRevision,
 }: {
 	db: DrizzleD1Database<typeof schema>
 	subscription: Stripe.Subscription
-}): Promise<void> {
+	expectedRevision: number | null
+}): Promise<boolean> {
 	const stripeCustomerId = stripeCustomerIdFromSubscription(subscription)
 	const stripeCustomer = await db.query.stripeCustomers.findFirst({
 		where: eq(schema.stripeCustomers.stripeCustomerId, stripeCustomerId),
@@ -151,7 +153,10 @@ export async function upsertStripeSubscription({
 	}
 
 	if (!stripeCustomer) {
-		await db.insert(schema.stripeCustomers).values({ stripeCustomerId, userId })
+		await db
+			.insert(schema.stripeCustomers)
+			.values({ stripeCustomerId, userId })
+			.onConflictDoNothing()
 	}
 
 	const priceId = stripeSubscriptionPriceId(subscription)
@@ -174,39 +179,47 @@ export async function upsertStripeSubscription({
 	// payment on a new invoice must never inherit payment from an earlier invoice.
 	const latestInvoiceId = latestInvoiceIdFromSubscription(subscription)
 	const latestInvoicePaidAt = latestInvoicePaidAtFromSubscription(subscription)
+	// Portal cancellation uses cancel_at for flexible billing subscriptions.
+	const cancelAtPeriodEnd =
+		subscription.cancel_at_period_end ||
+		typeof subscription.cancel_at === `number`
 
-	await db
-		.insert(schema.stripeSubscriptions)
-		.values({
-			cancelAtPeriodEnd: subscription.cancel_at_period_end,
-			currentPeriodEnd,
-			latestInvoiceId,
-			latestInvoicePaidAt,
-			priceId,
-			status: subscription.status,
-			stripeCustomerId,
-			stripeSubscriptionId: subscription.id,
-			updatedAt: sqlNow(),
-			userId,
-		})
-		.onConflictDoUpdate({
-			target: [schema.stripeSubscriptions.stripeSubscriptionId],
-			// A fetch begun before cancellation may finish after its webhook. Keep
-			// terminal states irreversible even when these database writes race.
-			setWhere: sql`${schema.stripeSubscriptions.status} not in ('canceled', 'incomplete_expired')
-				or ${schema.stripeSubscriptions.status} = ${subscription.status}`,
-			set: {
-				cancelAtPeriodEnd: subscription.cancel_at_period_end,
-				currentPeriodEnd,
-				latestInvoiceId,
-				latestInvoicePaidAt,
-				priceId,
-				status: subscription.status,
-				stripeCustomerId,
-				updatedAt: sqlNow(),
-				userId,
-			},
-		})
+	const facts = {
+		cancelAtPeriodEnd,
+		currentPeriodEnd,
+		latestInvoiceId,
+		latestInvoicePaidAt,
+		priceId,
+		status: subscription.status,
+		stripeCustomerId,
+		stripeSubscriptionId: subscription.id,
+		updatedAt: sqlNow(),
+		userId,
+	}
+	// Fence the whole read-from-Stripe/write-to-D1 operation. Even two snapshots
+	// with identical billing facts need distinct revisions to prevent ABA races.
+	if (expectedRevision === null) {
+		const inserted = await db
+			.insert(schema.stripeSubscriptions)
+			.values({ ...facts, syncRevision: 1 })
+			.onConflictDoNothing()
+			.returning({ id: schema.stripeSubscriptions.stripeSubscriptionId })
+		return inserted.length === 1
+	}
+	const updated = await db
+		.update(schema.stripeSubscriptions)
+		.set({ ...facts, syncRevision: expectedRevision + 1 })
+		.where(
+			and(
+				eq(schema.stripeSubscriptions.stripeSubscriptionId, subscription.id),
+				eq(schema.stripeSubscriptions.syncRevision, expectedRevision),
+				// Terminal states cannot be revived by an older Stripe response.
+				sql`(${schema.stripeSubscriptions.status} not in ('canceled', 'incomplete_expired')
+				or ${schema.stripeSubscriptions.status} = ${subscription.status})`,
+			),
+		)
+		.returning({ id: schema.stripeSubscriptions.stripeSubscriptionId })
+	return updated.length === 1
 }
 
 export async function recordStripeWebhookEvent({

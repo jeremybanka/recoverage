@@ -8,6 +8,7 @@ import { deleteCookie, getSignedCookie } from "hono/cookie"
 import { nanoid } from "nanoid"
 
 import { getUserRole } from "./billing"
+import { billingAccount, BillingAccountPage } from "./billing-account"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
 import { type Bindings, getEnv } from "./env"
@@ -91,10 +92,43 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 	await next()
 }
 
-uiRoutes.get(`/upgrade`, uiAuth, async (c) => {
+uiRoutes.get(`/billing`, uiAuth, async (c) => {
+	c.header(`Cache-Control`, `no-store`)
 	return c.html(
 		<Page>
-			<PricingPage currentRole={c.get(`userRole`)} config={getEnv(c.env)} />
+			<BillingAccountPage
+				account={
+					await billingAccount(
+						c.get(`drizzle`),
+						c.get(`githubUserData`).id,
+						c.get(`userRole`),
+					)
+				}
+				config={getEnv(c.env)}
+				returnState={c.req.query(`billing`)}
+			/>
+		</Page>,
+	)
+})
+
+uiRoutes.get(`/upgrade`, uiAuth, async (c) => {
+	const account = await billingAccount(
+		c.get(`drizzle`),
+		c.get(`githubUserData`).id,
+		c.get(`userRole`),
+	)
+	c.header(`Cache-Control`, `no-store`)
+	return c.html(
+		<Page>
+			<PricingPage
+				currentRole={c.get(`userRole`)}
+				config={getEnv(c.env)}
+				hasExistingSubscription={account.subscriptions.some(
+					(subscription) =>
+						subscription.status !== `canceled` &&
+						subscription.status !== `incomplete_expired`,
+				)}
+			/>
 		</Page>,
 	)
 })
@@ -172,21 +206,7 @@ uiRoutes.get(`/project`, uiAuth, async (c) => {
 uiRoutes.post(`/project`, uiAuth, async (c) => {
 	const userRole = c.get(`userRole`)
 	const numberOfProjectsAllowed = projectsAllowed.get(userRole)
-	const db = c.get(`drizzle`)
 	const { id: userId } = c.get(`githubUserData`)
-
-	const currentProjects = await db.query.projects.findMany({
-		where: eq(schema.projects.userId, userId),
-	})
-
-	if (currentProjects.length >= numberOfProjectsAllowed) {
-		return c.json(
-			{
-				error: `Your account is at its project limit. Existing projects remain available.`,
-			},
-			403,
-		)
-	}
 
 	const formData = await c.req.formData()
 	const name = type(`string`)(formData.get(`name`))
@@ -194,12 +214,24 @@ uiRoutes.post(`/project`, uiAuth, async (c) => {
 	if (name instanceof type.errors) {
 		return c.html(<Project mode="creator" />)
 	}
-	const project = (
-		await db
-			.insert(schema.projects)
-			.values({ userId, name, id: nanoid() })
-			.returning()
-	)[0]
+	// Admission and insertion share one statement so concurrent requests cannot
+	// spend the same remaining project slot.
+	const project = await c.env.DB.prepare(
+		`INSERT INTO projects (id, userId, name)
+		 SELECT ?1, ?2, ?3
+		 WHERE (SELECT count(*) FROM projects WHERE userId = ?2) < ?4
+		 RETURNING *`,
+	)
+		.bind(nanoid(), userId, name, numberOfProjectsAllowed)
+		.first<typeof schema.projects.$inferSelect>()
+	if (!project) {
+		return c.json(
+			{
+				error: `Your account is at its project limit. Existing projects remain available.`,
+			},
+			403,
+		)
+	}
 	c.header(`HX-Trigger`, `usage-changed`)
 	return c.html(
 		<Project
@@ -259,24 +291,13 @@ uiRoutes.post(`/token/:projectId`, uiAuth, async (c) => {
 			eq(schema.projects.id, projectId),
 			eq(schema.projects.userId, userId),
 		),
-		with: {
-			tokens: true,
-		},
+		columns: { id: true },
 	})
 
 	if (!project) {
 		return c.json({ error: `No project found` }, 404)
 	}
 	const numberOfTokensAllowed = tokensAllowed.get(c.get(`userRole`))
-	if (project?.tokens.length >= numberOfTokensAllowed) {
-		return c.json(
-			{
-				error: `This project is at its token limit. Existing tokens remain usable.`,
-			},
-			403,
-		)
-	}
-
 	if (name instanceof type.errors) {
 		return c.html(<ProjectToken mode="creator" projectId={projectId} />)
 	}
@@ -285,18 +306,24 @@ uiRoutes.post(`/token/:projectId`, uiAuth, async (c) => {
 	const salt = nanoid()
 	const hash = await computeHash(secret, salt)
 
-	const token = (
-		await db
-			.insert(schema.tokens)
-			.values({
-				id,
-				name,
-				hash,
-				salt,
-				projectId,
-			})
-			.returning()
-	)[0]
+	// Recheck ownership in the atomic write as well as the initial UI lookup.
+	const token = await c.env.DB.prepare(
+		`INSERT INTO tokens (id, name, hash, salt, projectId)
+		 SELECT ?1, ?2, ?3, ?4, ?5
+		 WHERE EXISTS (SELECT 1 FROM projects WHERE id = ?5 AND userId = ?6)
+		 AND (SELECT count(*) FROM tokens WHERE projectId = ?5) < ?7
+		 RETURNING *`,
+	)
+		.bind(id, name, hash, salt, projectId, userId, numberOfTokensAllowed)
+		.first<typeof schema.tokens.$inferSelect>()
+	if (!token) {
+		return c.json(
+			{
+				error: `This project is at its token limit. Existing tokens remain usable.`,
+			},
+			403,
+		)
+	}
 	c.header(`HX-Trigger`, `usage-changed`)
 	return c.html(
 		<ProjectToken {...token} mode="existing" secretShownOnce={secret} />,

@@ -1,7 +1,22 @@
 #!/usr/bin/env bun
 
-// Run only against a disposable project in the isolated billing preview.
-const origin = new URL(process.env[`BILLING_WORKER_URL`] ?? ``)
+import { readFileSync } from "node:fs"
+
+import { storagePreviewOrigin } from "./storage-preview"
+
+// Require the reviewed, generated nonsecret config before any network request.
+const readConfig = (name: string) =>
+	JSON.parse(
+		readFileSync(new URL(`../${name}`, import.meta.url), `utf8`).replace(
+			/^\s*\/\/.*$/gm,
+			``,
+		),
+	)
+const origin = storagePreviewOrigin(
+	process.env[`BILLING_WORKER_URL`] ?? ``,
+	readConfig(`wrangler-billing-preview.jsonc`),
+	readConfig(`wrangler.jsonc`),
+)
 const token = process.env[`PREVIEW_REPORTER_TOKEN`]
 if (
 	process.env[`STRIPE_MODE`] !== `test` ||
@@ -65,5 +80,3 @@ if (!retained.ok || JSON.stringify(await retained.json()) !== `{}`)
 console.info(
 	`Hosted size rejection and replacement preservation verified. Delete the disposable preview project when finished. Report ref: ${ref}`,
 )
-
-export {}

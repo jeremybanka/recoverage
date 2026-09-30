@@ -1,15 +1,20 @@
 # Hosted service operations
 
-The Worker changes in this branch are implemented locally. Deployment, real
-Stripe lifecycle verification, and enabling purchases are separate release steps.
-Customer portal and duplicate-subscription prevention remain billing-management
-work. Keep `CHECKOUT_ENABLED=false` until those changes and the checks below pass.
+The draft paid-tier branch consolidates account/portal management, checkout
+deduplication, payment recovery, and resource preservation. Deployment, real
+Stripe lifecycle verification, and enabling purchases remain separate steps.
+Keep `CHECKOUT_ENABLED=false` until the target test environment is verified.
+Consolidation does not authorize production deployment or live purchases.
+
+Start with local checks on the exact consolidated commit, then follow the stable
+isolated preview procedure below. A merge into main is not required to test the
+candidate in a sandbox. Generic PR previews are distinct from that billing preview.
 
 ## Environment record
 
 Maintain a private record for each environment with the Worker URL/name, D1
 database name/ID, GitHub OAuth app and callback URL, Stripe mode, price ID, webhook
-endpoint ID/API version, deployed commit, and verification date. Record secret
+endpoint ID/API version, portal configuration ID, deployed commit, and verification date. Record secret
 locations, not their values. Keep preview and production databases, OAuth apps,
 customers, prices, API keys, and signing secrets separate.
 
@@ -19,7 +24,8 @@ customers, prices, API keys, and signing secrets separate.
 | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | OAuth app with callback `https://WORKER/oauth/github/callback`. |
 | `COOKIE_SECRET` | Distinct random signing secret for this environment. |
 | `STRIPE_MODE` | Exactly `test` or `live`; checked against API key, signed event, and retrieved subscription. |
-| `STRIPE_SECRET_KEY` | Matching Stripe secret API key. Required for every subscription refresh. |
+| `STRIPE_SECRET_KEY` | Matching restricted (`rk_`, preferred) or secret (`sk_`) API key. Required for every subscription refresh. Grant only the API permissions used by this integration. |
+| `STRIPE_PORTAL_CONFIGURATION_ID` | Preconfigured customer portal ID in the matching mode; required for billing management and verification. |
 | `STRIPE_SUPPORTER_PRICE_ID` | Active USD 1 monthly recurring, licensed, per-unit price in this mode. |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret belonging to this endpoint. |
 | `STRIPE_WEBHOOK_PREVIOUS_SECRET` | Optional previous secret during rotation; remove after the overlap period. |
@@ -29,21 +35,25 @@ customers, prices, API keys, and signing secrets separate.
 | `REPORT_RATE_SCOPE` | Stable Worker/environment identifier, never a caller-supplied hostname. |
 | `REPORT_TOKEN_LIMITER`, `REPORT_ACCOUNT_LIMITER` | Upload rate-limit bindings. |
 
-Checkout also requires complete support and billing configuration. Disabling it
+Checkout also requires complete support and billing configuration, including
+`STRIPE_PORTAL_CONFIGURATION_ID`, so new purchases cannot open before a portal
+configuration is selected. Validate that configuration with `billing:verify`
+before enabling purchases. Disabling it
 does not clear Stripe price configuration, remove existing entitlements, or pause
 webhooks. The endpoint validates the configured price before creating a purchase.
 
 The webhook endpoint must use `2026-04-22.dahlia` and receive
 `checkout.session.completed`, `customer.subscription.created`,
 `customer.subscription.updated`, `customer.subscription.deleted`, and
-`invoice.paid`. Signed events with a different mode or API version are rejected
+`invoice.paid`, `invoice.payment_failed`, and `invoice.payment_action_required`
+(including payment failures and required authentication). Signed events with a different mode or API version are rejected
 before recording or updating billing facts.
 
 ## Stable isolated preview
 
 Generic PR previews use test mode and disabled checkout, but do not provision
 OAuth or Stripe resources. Do not use a temporary PR deployment for payment
-lifecycle verification. Use a dedicated, stable preview Worker and database.
+lifecycle verification. Use a dedicated, stable preview Worker and database with a separate Stripe sandbox; do not reuse the shared test-mode environment for new billing verification.
 
 Commands below run from `recoverage.cloud`. Provision a dedicated D1 database
 with `bun run wrangler d1 create recoverage-billing-preview-data`, then use its
@@ -60,6 +70,11 @@ The generator refuses the production Worker name or database and writes ignored
 `wrangler-billing-preview.jsonc` with checkout off. Its rate scope is separate
 from production. Keep the configured limiter namespace IDs unique within the
 Cloudflare account; environments sharing them remain separated by their scope.
+
+The repository's default `wrangler.jsonc` specifies live mode. Always pass the
+generated `--config wrangler-billing-preview.jsonc` for preview migration, secret,
+and deployment commands. Do not run `go` or an unqualified remote `db:up` for this
+workflow.
 
 Create a separate GitHub OAuth app with the stable preview callback. Create a
 Stripe test monthly price and webhook endpoint at the stable Worker URL. Set
@@ -88,7 +103,7 @@ bun --env-file=.env.billing-preview __scripts__/verify-billing-env.bun.ts
 ```
 
 This is a read-only Stripe configuration check. It verifies price, endpoint URL,
-mode, API version, status, and subscribed events. It cannot prove that locally
+mode, API version, status, subscribed events, and the portal configuration below. It cannot prove that locally
 supplied secrets equal deployed secrets or that a signing secret belongs to the
 endpoint; a real signed delivery is required. Verify the OAuth callback by
 signing in and confirm the deployed D1 binding against the environment record.
@@ -100,12 +115,73 @@ For the hosted storage check, create a disposable preview project/token and add
 bun --env-file=.env.billing-preview __scripts__/verify-report-storage.bun.ts
 ```
 
+The probe requires the generated preview configuration and its exact canonical
+HTTPS workers.dev origin; custom domains and production aliases are rejected.
+Use the actual URL reported by deployment, not an assumed account subdomain.
+
 The probe creates a tiny baseline and attempts a bounded 2.1 MB replacement. It
 requires the storage-specific `413` and verifies the original is still readable.
 Delete the disposable project afterward. The local D1 emulator does not enforce
 the hosted 2,000,000-byte limit, so passing local mocks is insufficient evidence
 of this hosted behavior. Unexpected error shapes remain `500` until confirmed;
 inspect them only in the isolated preview without logging report contents.
+
+The local `dev:stripe` helper also requires a test key in `.dev.vars`, uses that
+same key for Stripe CLI forwarding, and rejects remote/configuration overrides.
+It consumes listener output without printing signing secrets.
+
+### Sandbox acceptance sequence
+
+1. Record the exact candidate commit and sandbox account ID privately. Re-run
+   repository tests/build, cloud lint/types, formatting, and migration rehearsal.
+2. Prepare the isolated Worker/D1/OAuth and Stripe resources described above.
+   Keep checkout off while verifying configuration, OAuth, and signed delivery.
+3. Enable checkout only in the verified sandbox. Test successful purchase,
+   pending confirmation, abandoned/repeated/concurrent checkout, and portal return.
+4. Test renewal, failed/authentication-required payment, card update and recovery,
+   cancellation and undo, effective downgrade, and resubscription. Existing reports,
+   projects, and tokens must survive; creation follows the effective plan.
+5. Replay duplicates/reordered events and retry a failed lookup. Confirm a missed
+   payment refresh is recoverable without another purchase.
+6. Run the hosted D1 probe and a 100-report upload burst. Rehearse checkout pause
+   while existing access and portal remain available. Record results; do not infer
+   production readiness from local tests or generic PR preview deployment.
+
+## Customer portal
+
+Create a portal configuration in the matching Stripe test/live environment and
+record its `bpc_...` ID as `STRIPE_PORTAL_CONFIGURATION_ID`. Configure these
+capabilities before running `billing:verify`:
+
+- Invoice history and payment-method updates enabled.
+- Subscription cancellation enabled with `mode=at_period_end` and
+  `proration_behavior=none`.
+- Subscription plan and quantity updates disabled. Recoverage has a single paid
+  plan and does not implement prorated plan changes.
+
+The app validates these settings and the configuration's active/mode flags on
+every portal launch. It never creates or changes portal configurations at runtime.
+Stripe's period-end cancellation flow also lets customers undo a scheduled
+cancellation before it takes effect. See the [portal integration guide](https://docs.stripe.com/customer-management/integrate-customer-portal)
+and [configuration reference](https://docs.stripe.com/api/customer_portal/configurations/object).
+
+OAuth sessions use SameSite=Lax so Stripe’s top-level GET return can open the
+account page. Sessions issued before this change retain SameSite=Strict until
+the user signs in again; if a return asks for authentication, sign in again.
+
+The authenticated POST `/billing/portal` requires a same-origin browser request,
+uses only the current GitHub user's stored Stripe customer, and returns to
+`/ui/billing`. Submitted customer IDs and return URLs are ignored. Keep portal
+configuration and the Stripe API key available during checkout pauses so existing
+subscribers can still view invoices, update cards, and cancel. If the portal fails,
+use the support procedure below; application logs deliberately omit Stripe error
+payloads and temporary portal URLs.
+
+In isolated preview, verify card update, invoice history, scheduled cancellation,
+undo before period end, cancellation becoming effective, and return navigation.
+Confirm the account page changes only after webhook synchronization. Also test
+opening the portal with `CHECKOUT_ENABLED=false`; purchasing and billing
+management are separate controls.
 
 ## Upload behavior and troubleshooting
 
@@ -215,8 +291,8 @@ project/token limits.
 
 ### Cancellation or refund
 
-Use Stripe's supported subscription/refund controls until billing management is
-implemented. Scheduled cancellation retains access while the current paid period
+Customers can schedule cancellation or undo it from **Manage billing**. Support
+can use Stripe's dashboard when needed. Scheduled cancellation retains access while the current paid period
 remains active; effective cancellation removes paid access. Refunds do not by
 themselves define a cancellation or entitlement policy. Follow the maintainer's
 published `BILLING_REFUND_POLICY`, record the decision, and verify the resulting
@@ -228,7 +304,7 @@ the maintainer.
 Set `CHECKOUT_ENABLED=false` and deploy the same code/config to the affected
 environment. Verify `/billing/checkout` returns `503` and the upgrade page has no
 purchase form. Leave all Stripe credentials, price ID, webhooks, uploads, reads,
-and existing subscriber access configured. Fix the incident and repeat billing
+the customer portal, and existing subscriber access configured. Fix the incident and repeat billing
 verification before considering re-enablement.
 
 ## Logs, retention, and monitoring
@@ -259,7 +335,8 @@ rate changes.
 
 ## Migration and rollback
 
-Run `bun run test:migrations` for the disposable SQLite rehearsal and the cloud
+Apply all generated migrations, including the subscription synchronization revision
+migration, before running the consolidated Worker. Run `bun run test:migrations` for the disposable SQLite rehearsal and the cloud
 suite for generated migrations in the Worker runtime. Before deployment, export
 a representative existing D1 database to a private location, import into a
 disposable preview database, apply migrations, and compare users, project/token
@@ -290,7 +367,7 @@ not evidence that a real payment or production deployment occurred.
   throttle/size failures, signed webhook ordering, rotation, and mode isolation.
 - Isolated preview has verified OAuth, D1 binding, Stripe price/endpoint/version,
   signed delivery, hosted-size rejection, and preserved replacement data.
-- After billing management is implemented: exercise signup, purchase, renewal,
+- In the consolidated sandbox candidate: exercise signup, purchase, renewal,
   failed payment, card update, cancellation, downgrade, duplicate and reordered
   deliveries, and recovery after an unsuccessful lookup in Stripe test mode.
 - Support email and refund policy are approved and visible; operating procedures,

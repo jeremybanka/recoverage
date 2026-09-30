@@ -6,9 +6,11 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 import {
+	assertLocalWranglerArgs,
 	extractWebhookSecret,
 	injectWebhookSecret,
 	STRIPE_EVENTS,
+	stripeListenerEnv,
 	TEMP_ENV_NAME,
 	wranglerPortFromArgs,
 } from "./dev-stripe-shared.ts"
@@ -16,15 +18,18 @@ import {
 function spawnStripeListener({
 	forwardTo,
 	projectDir,
+	env,
 }: {
 	forwardTo: string
 	projectDir: string
+	env: Record<string, string | undefined>
 }) {
 	return spawn(
 		`stripe`,
 		[`listen`, `--events`, STRIPE_EVENTS.join(`,`), `--forward-to`, forwardTo],
 		{
 			cwd: projectDir,
+			env,
 			stdio: [`inherit`, `pipe`, `pipe`],
 		},
 	)
@@ -47,6 +52,7 @@ function spawnWranglerDev({
 			TEMP_ENV_NAME,
 			`--live-reload`,
 			...wranglerArgs,
+			`--local`,
 		],
 		{
 			cwd: projectDir,
@@ -65,23 +71,28 @@ async function waitForWebhookSecret(
 		let resolved = false
 
 		const onData = (chunk: Buffer) => {
+			if (resolved) return
 			const text = chunk.toString(`utf8`)
-			process.stdout.write(`[stripe] ${text}`)
+			// Listener output contains the signing secret, possibly split across chunks.
+			// Keep it private; emit only the readiness message after extraction.
 			bufferedOutput += text
 			const webhookSecret = extractWebhookSecret(bufferedOutput)
 			if (webhookSecret && !resolved) {
 				resolved = true
+				bufferedOutput = ``
 				resolve(webhookSecret)
 			}
 		}
 
 		const onError = (chunk: Buffer) => {
+			if (resolved) return
 			const text = chunk.toString(`utf8`)
-			process.stderr.write(`[stripe] ${text}`)
+			// Do not forward raw CLI errors, which can include credentials.
 			bufferedOutput += text
 			const webhookSecret = extractWebhookSecret(bufferedOutput)
 			if (webhookSecret && !resolved) {
 				resolved = true
+				bufferedOutput = ``
 				resolve(webhookSecret)
 			}
 		}
@@ -103,6 +114,7 @@ async function waitForWebhookSecret(
 }
 
 export async function main(argv = process.argv.slice(2)): Promise<number> {
+	assertLocalWranglerArgs(argv)
 	const wranglerArgs = argv
 	const wranglerPort = wranglerPortFromArgs(wranglerArgs)
 	const projectDir = path.resolve(
@@ -114,7 +126,12 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
 	const forwardTo = `localhost:${wranglerPort}/billing/webhook`
 
 	const baseDevVarsContents = await readFile(devVarsPath, `utf8`)
-	const stripeProcess = spawnStripeListener({ forwardTo, projectDir })
+	const listenerEnv = stripeListenerEnv(baseDevVarsContents, process.env)
+	const stripeProcess = spawnStripeListener({
+		forwardTo,
+		projectDir,
+		env: listenerEnv,
+	})
 	let wranglerProcess: ReturnType<typeof spawnWranglerDev> | undefined
 
 	const cleanup = async () => {
@@ -136,6 +153,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
 
 	try {
 		const webhookSecret = await waitForWebhookSecret(stripeProcess)
+		console.info(`Stripe test listener ready; signing secret is kept private.`)
 		await writeFile(
 			tempDevVarsPath,
 			injectWebhookSecret(baseDevVarsContents, webhookSecret),

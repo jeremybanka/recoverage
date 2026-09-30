@@ -1,6 +1,6 @@
 # Proposal: finish the paid-service launch
 
-September 22, 2026. Implementation and release-verification status. No deployment has been performed.
+September 30, 2026. Consolidated implementation and release-verification status. No deployment has been performed.
 The product decisions are in [PAID_SERVICE_PROPOSAL.md](PAID_SERVICE_PROPOSAL.md).
 
 ## Scope and order
@@ -9,24 +9,30 @@ Keep D1 storage and sell hosted-report capacity at the existing account limits.
 Do not introduce object storage, byte-based plan tiers, organization billing, or
 report history for this launch.
 
-The branch has been rebased onto main. Usage and error handling, upload resource
-controls, and operational/configuration tooling are implemented. Billing management
-(customer portal and duplicate-subscription prevention) is the next separate phase
-and remains a prerequisite for live purchases.
+The draft paid-tier branch contains account/portal management, checkout protection,
+payment recovery, and downgrade/resubscription together. Sandbox validation can
+use this consolidated candidate before integration with current main. Resolve any
+main-branch conflicts and rerun release checks before proposing the eventual merge;
+that is a separate gate from preparing the isolated sandbox.
+
+The review adds atomic project/token admission, revision-checked subscription
+synchronization, restricted API key support, and safer local Stripe listener
+handling. Keep the $1/month offer and checkout disabled outside an explicitly
+verified test environment.
 
 Implemented behavior and executable procedures are documented in
 [OPERATIONS.md](OPERATIONS.md). The sections below retain the design and acceptance
 criteria. Remaining external work is selecting the public support contact/refund
 policy, provisioning and verifying the isolated preview/live resources, observing
 the hosted D1 size rejection, rehearsing operational procedures, and completing
-the real Stripe lifecycle after billing management. None of those external checks
+the real Stripe sandbox lifecycle. None of those external checks
 is represented as complete by the local tests.
 
 Local regression coverage now checks stale subscription snapshots, delayed invoice
 payments, and unpaid renewals against the
 [billing lifecycle guarantees](PAID_SERVICE_PROPOSAL.md#billing-lifecycle-guarantees).
-Keep those tests as a gate while completing the remaining billing management and
-real Stripe test-mode validation.
+Keep those tests as a gate while completing real Stripe sandbox validation. The customer workflows and their expected
+behavior are recorded in [PAID_SERVICE_PROPOSAL.md](PAID_SERVICE_PROPOSAL.md#customer-billing-flows).
 
 ## 1. Show usage and explain limits
 
