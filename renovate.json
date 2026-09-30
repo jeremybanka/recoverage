@@ -38,7 +38,7 @@
 			"groupName": "jeremybanka packages"
 		},
 		{
-			"matchPackageNames": ["wrangler", "@cloudflare/vitest-pool-workers"],
+			"matchPackageNames": ["wrangler", "@cloudflare/vitest-plugin"],
 			"groupName": "Cloudflare Workers tooling"
 		},
 		{
