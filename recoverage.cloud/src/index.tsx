@@ -88,8 +88,8 @@ app.get(`/support`, (c) => {
 		<Page>
 			<h1>Help and billing support</h1>
 			<nav aria-label="Account navigation" class={navigation}>
-				<a href="/">Back to your projects</a> ·{` `}
-				<a href="/ui/billing">Plan and billing</a> ·{` `}
+				<a href="/">Back to your projects</a>
+				<a href="/ui/billing">Plan and billing</a>
 				<a href="/ui/upgrade">Compare plans</a>
 			</nav>
 			<StorageHelp />
@@ -178,8 +178,8 @@ app.get(`/`, async (c) => {
 					config={env}
 				/>
 				<nav aria-label="Account navigation" class={navigation}>
-					<a href="/ui/billing">Plan and billing</a> ·{` `}
-					<a href="/ui/upgrade">Compare plans</a> ·{` `}
+					<a href="/ui/billing">Plan and billing</a>
+					<a href="/ui/upgrade">Compare plans</a>
 					<a href="/support">Help and billing support</a>
 				</nav>
 				<AccountUsage usage={usage} role={userRole} userId={user.id} />

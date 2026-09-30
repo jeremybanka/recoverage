@@ -47,9 +47,13 @@ export const inset = css`
 `
 
 export const navigation = css`
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 16px;
 	margin-top: 0;
 	line-height: 1.5;
 	& a {
+		white-space: nowrap;
 		color: var(--hyperlink);
 	}
 	& a:visited {

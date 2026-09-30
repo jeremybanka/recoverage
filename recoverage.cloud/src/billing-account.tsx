@@ -155,7 +155,7 @@ export function BillingAccountPage({
 		<>
 			<h1>Plan and billing</h1>
 			<p class={navigation}>
-				<a href="/">Back to your projects</a> ·{` `}
+				<a href="/">Back to your projects</a>
 				<a href="/ui/upgrade">Compare plans</a>
 			</p>
 			<BillingReturnNotice
