@@ -104,14 +104,19 @@ export function Page(
 	)
 }
 
-export function SplashPage(): Loadable<HtmlEscapedString> {
+export function SplashPage({
+	signInAvailable = true,
+}: {
+	signInAvailable?: boolean
+} = {}): Loadable<HtmlEscapedString> {
 	return (
 		<Page>
 			<h1>Recoverage</h1>
 			<p>A micro-platform for storing your coverage reports.</p>
 			<div class={css`flex-grow: 1;`} />
-			<a
-				class={css`
+			{signInAvailable ? (
+				<a
+					class={css`
 					color: var(--hyperlink);
 					&:visited {
 						color: var(--hyperlink-visited);
@@ -120,10 +125,13 @@ export function SplashPage(): Loadable<HtmlEscapedString> {
 						color: var(--hyperlink-active);
 					}
 				`}
-				href="/oauth/github"
-			>
-				Login with GitHub
-			</a>
+					href="/oauth/github"
+				>
+					Login with GitHub
+				</a>
+			) : (
+				<p>Sign-in is temporarily unavailable.</p>
+			)}
 		</Page>
 	)
 }

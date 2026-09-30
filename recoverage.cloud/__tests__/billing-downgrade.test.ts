@@ -5,7 +5,6 @@ import { setSignedCookie } from "hono/cookie"
 import { istanbulReportFixture, jsonSummaryFixture } from "recoverage-fixtures"
 
 import app from "../src"
-import { getEnv } from "../src/env"
 import * as schema from "../src/schema"
 import {
 	accept,
@@ -32,7 +31,7 @@ async function signedCookie() {
 			c,
 			`github-access-token`,
 			`gho_downgrade_test`,
-			getEnv(env).COOKIE_SECRET,
+			env.COOKIE_SECRET,
 		)
 		return c.text(`signed`)
 	})

@@ -6,7 +6,6 @@ import { nanoid } from "nanoid"
 
 import app from "../src"
 import { createDatabase } from "../src/db"
-import { getEnv } from "../src/env"
 import * as schema from "../src/schema"
 
 const db = createDatabase(env.DB)
@@ -32,7 +31,7 @@ async function account(role: `free` | `supporter`) {
 			c,
 			`github-access-token`,
 			`gho_quota_test`,
-			getEnv(env).COOKIE_SECRET,
+			env.COOKIE_SECRET,
 		)
 		return c.text(`signed`)
 	})

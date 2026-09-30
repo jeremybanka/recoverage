@@ -10,7 +10,7 @@ import { billingRoutes } from "./billing-routes"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
 import type { Bindings } from "./env"
-import { getEnv, GITHUB_CALLBACK_ENDPOINT } from "./env"
+import { getEnv, GITHUB_CALLBACK_ENDPOINT, githubSignInConfigured } from "./env"
 import { createGitHubClient } from "./github-client"
 import { redactWebhookPayloads } from "./maintenance"
 import { Page, SplashPage } from "./page"
@@ -104,13 +104,14 @@ app.get(`/support`, (c) => {
 app.get(`/`, async (c) => {
 	const env = getEnv(c.env)
 	const url = new URL(c.req.url)
+	if (!env.COOKIE_SECRET) return c.html(<SplashPage signInAvailable={false} />)
 	const githubAccessTokenCookie = await getSignedCookie(
 		c,
 		env.COOKIE_SECRET,
 		`github-access-token`,
 	)
 	if (!githubAccessTokenCookie) {
-		return c.html(<SplashPage />)
+		return c.html(<SplashPage signInAvailable={githubSignInConfigured(env)} />)
 	}
 
 	try {
@@ -193,7 +194,7 @@ app.get(`/`, async (c) => {
 		if (error instanceof Error && `status` in error && error.status === 401) {
 			deleteCookie(c, `github-access-token`, { path: `/` })
 			c.header(`Cache-Control`, `no-store`)
-			return c.html(<SplashPage />)
+			return c.html(<SplashPage signInAvailable={githubSignInConfigured(env)} />)
 		}
 		throw error
 	}
@@ -204,6 +205,8 @@ const oauthStateLifetimeSeconds = 10 * 60
 
 app.get(`/oauth/github`, async (c) => {
 	const env = getEnv(c.env)
+	if (!githubSignInConfigured(env))
+		return c.json({ error: `Sign-in is temporarily unavailable.` }, 503)
 	const url = new URL(c.req.url)
 	const state = crypto.randomUUID()
 	await setSignedCookie(
@@ -232,9 +235,11 @@ app.get(`/oauth/github`, async (c) => {
 })
 
 app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
-	const env = getEnv(c.env)
 	c.header(`Cache-Control`, `no-store`)
 	c.header(`Referrer-Policy`, `no-referrer`)
+	const env = getEnv(c.env)
+	if (!githubSignInConfigured(env))
+		return c.json({ error: `Sign-in is temporarily unavailable.` }, 503)
 	const signedState = await getSignedCookie(
 		c,
 		env.COOKIE_SECRET,

@@ -6,7 +6,7 @@ main merge are covered by this evidence. The stable test environment is
 
 ## Offline regressions added after the hosted tests
 
-Run `bun run test` in `recoverage.cloud`. The nine tests in `recorded-acceptance.test.ts`
+Run `bun run test` in `recoverage.cloud`. The thirteen tests in `recorded-acceptance.test.ts`
 uses the actual Worker routes, D1 binding/migrations, Drizzle, Stripe SDK,
 Octokit, cookie signing, webhook signature verification and report parser.
 It adds no mocks, fake provider implementation, or live network dependency.
@@ -22,6 +22,7 @@ older unit tests that already used mocks remain separate from this new suite.
 | Overlapping Checkout | Eight overlapping calls through the production Checkout service, actual D1 reservation writes, real SDK requests and one recorded session; retry reuses it | Starts with a persisted reservation; tests our concurrency/idempotency contract, not Stripe's live idempotency service or browser timing |
 | Failed subscription lookup and retry | Recorded real Stripe 401 leaves signed event unprocessed with safe error; same delivery with accepted response processes once; duplicate leaves revision unchanged | Real response replay, not an induced outage on the hosted account |
 | Webhook overlap and ordering | Eight signed events contend on actual D1 revisions; bounded failures are retried, all process, duplicates preserve revision; an older paid notification re-fetches a genuinely recorded canceled subscription and leaves Free access/data intact | Signed local input envelopes with genuine replayed current Stripe facts |
+| Unconfigured PR preview | Public home/support remain 200 when any/all OAuth bindings are absent; OAuth entry/callback and protected routes fail closed, without cookies or fallback secrets | Reproduces the actual generic preview configuration; dedicated sandbox retains its configured login |
 | Expired GitHub session | Recorded real GitHub 401 gives HTTP 401, clears cookie and requests re-login, preserving account data | No refresh-token storage or weaker expiry |
 | Project/token downgrade and restoration | Actual paid persisted facts, local clock normalization, no role override; four projects/six tokens retained on Free; actual create routes return 403; restored paid state permits fifth/seventh | Local persisted-state transition complements the real sandbox cancellation/resubscription history; does not claim new hosted token creation |
 | Paid resource ceilings | Eight concurrent requests compete for the final project/token slot; exactly one succeeds at 100 projects/10 tokens | Actual D1 atomic admission, no mocked database |
@@ -100,7 +101,12 @@ The first Python urllib smoke client received 403; the already-used unauthentica
 curl client returned 200. The corrected harness completed rollback/restoration.
 This client discrepancy is separate from the earlier authenticated billing 500.
 The exclusive deployment window was released after verification. Generic PR
-preview also passed deployment, with Stripe test mode and Checkout disabled.
+preview passed deployment with Stripe test mode and Checkout disabled, but its
+public smoke test exposed missing OAuth bindings causing configuration 500s.
+The follow-up fix makes those bindings optional to parse and mandatory only
+for the routes that use them: public pages render, unavailable sign-in returns
+503, and no fallback credentials are introduced. Four additional real-runtime
+regressions cover each missing binding and all missing together.
 
 ## Operational completion still required
 

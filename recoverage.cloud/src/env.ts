@@ -7,9 +7,9 @@ export type Bindings = {
 	REPORT_TOKEN_LIMITER: RateLimit
 	REPORT_ACCOUNT_LIMITER: RateLimit
 	CHECKOUT_LIMITER: RateLimit
-	GITHUB_CLIENT_ID: string
-	GITHUB_CLIENT_SECRET: string
-	COOKIE_SECRET: string
+	GITHUB_CLIENT_ID?: string | undefined
+	GITHUB_CLIENT_SECRET?: string | undefined
+	COOKIE_SECRET?: string | undefined
 	STRIPE_MODE?: `live` | `test` | undefined
 	STRIPE_WEBHOOK_PREVIOUS_SECRET?: string | undefined
 	CHECKOUT_ENABLED?: string | undefined
@@ -22,9 +22,9 @@ export type Bindings = {
 }
 
 export type Env = Readonly<{
-	COOKIE_SECRET: string
-	GITHUB_CLIENT_ID: string
-	GITHUB_CLIENT_SECRET: string
+	COOKIE_SECRET?: string | undefined
+	GITHUB_CLIENT_ID?: string | undefined
+	GITHUB_CLIENT_SECRET?: string | undefined
 	STRIPE_MODE?: `live` | `test` | undefined
 	STRIPE_WEBHOOK_PREVIOUS_SECRET?: string | undefined
 	CHECKOUT_ENABLED?: string | undefined
@@ -39,9 +39,9 @@ export type Env = Readonly<{
 export function getEnv(bindings: Bindings): Env {
 	return createEnv({
 		server: {
-			COOKIE_SECRET: type(`string`),
-			GITHUB_CLIENT_ID: type(`string`),
-			GITHUB_CLIENT_SECRET: type(`string`),
+			COOKIE_SECRET: type(`string | undefined`),
+			GITHUB_CLIENT_ID: type(`string | undefined`),
+			GITHUB_CLIENT_SECRET: type(`string | undefined`),
 			STRIPE_MODE: type(`'test' | 'live' | undefined`),
 			STRIPE_WEBHOOK_PREVIOUS_SECRET: type(`string | undefined`),
 			CHECKOUT_ENABLED: type(`'true' | 'false' | undefined`),
@@ -71,3 +71,15 @@ export function getEnv(bindings: Bindings): Env {
 }
 
 export const GITHUB_CALLBACK_ENDPOINT = `/oauth/github/callback`
+
+export function githubSignInConfigured(config: Env): config is Env & {
+	COOKIE_SECRET: string
+	GITHUB_CLIENT_ID: string
+	GITHUB_CLIENT_SECRET: string
+} {
+	return Boolean(
+		config.COOKIE_SECRET &&
+			config.GITHUB_CLIENT_ID &&
+			config.GITHUB_CLIENT_SECRET,
+	)
+}

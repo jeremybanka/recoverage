@@ -454,3 +454,74 @@ test(`overlapping signed events serialize real D1 revisions and bounded retries 
 		})
 	expect((await db.query.stripeSubscriptions.findFirst())?.syncRevision).toBe(8)
 })
+
+test.each([
+	`COOKIE_SECRET`,
+	`GITHUB_CLIENT_ID`,
+	`GITHUB_CLIENT_SECRET`,
+	`all`,
+] as const)(
+	`missing %s auth configuration preserves public pages and fails sign-in closed`,
+	async (missing) => {
+		const bindings = {
+			...config,
+			...(missing === `all`
+				? {
+						COOKIE_SECRET: undefined,
+						GITHUB_CLIENT_ID: undefined,
+						GITHUB_CLIENT_SECRET: undefined,
+					}
+				: { [missing]: undefined }),
+		}
+		const before = await db.query.users.findMany()
+		const home = await app.request(origin, {}, bindings)
+		expect(home.status).toBe(200)
+		expect(await home.text()).toContain(`Sign-in is temporarily unavailable.`)
+		expect((await app.request(`${origin}/support`, {}, bindings)).status).toBe(
+			200,
+		)
+		expect(
+			(
+				await app.request(
+					`${origin}/billing/checkout`,
+					{ method: `POST` },
+					bindings,
+				)
+			).status,
+		).toBe(503)
+		for (const path of [
+			`/oauth/github`,
+			`/oauth/github/callback?code=untrusted&state=untrusted`,
+		]) {
+			const response = await app.request(`${origin}${path}`, {}, bindings)
+			expect(response.status).toBe(503)
+			expect(response.headers.get(`Location`)).toBeNull()
+			expect(response.headers.get(`Set-Cookie`)).toBeNull()
+			if (path.includes(`callback`)) {
+				expect(response.headers.get(`Referrer-Policy`)).toBe(`no-referrer`)
+				expect(response.headers.get(`Cache-Control`)).toBe(`no-store`)
+			}
+		}
+		if (missing === `COOKIE_SECRET` || missing === `all`) {
+			expect(
+				(
+					await app.request(
+						`${origin}/ui/billing`,
+						{ headers: { Cookie: `github-access-token=unsigned` } },
+						bindings,
+					)
+				).status,
+			).toBe(503)
+			expect(
+				(
+					await app.request(
+						`${origin}/billing/portal`,
+						{ method: `POST`, headers: { Origin: origin } },
+						bindings,
+					)
+				).status,
+			).toBe(503)
+		}
+		expect(await db.query.users.findMany()).toEqual(before)
+	},
+)

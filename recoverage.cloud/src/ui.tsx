@@ -40,6 +40,8 @@ export const uiRoutes = new Hono<UiEnv>()
 
 const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 	const env = getEnv(c.env)
+	if (!env.COOKIE_SECRET)
+		return c.json({ error: `Sign-in is temporarily unavailable.` }, 503)
 	const githubAccessTokenCookie = await getSignedCookie(
 		c,
 		env.COOKIE_SECRET,

@@ -31,6 +31,8 @@ export const billingRoutes = new Hono<BillingEnv>()
 
 const billingAuth: MiddlewareHandler<BillingEnv> = async (c, next) => {
 	const env = getEnv(c.env)
+	if (!env.COOKIE_SECRET)
+		return c.json({ error: `Sign-in is temporarily unavailable.` }, 503)
 	const githubAccessTokenCookie = await getSignedCookie(
 		c,
 		env.COOKIE_SECRET,
