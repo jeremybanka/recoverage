@@ -16,7 +16,7 @@
 		"dev": "wrangler dev --live-reload",
 		"gen": "concurrently \"bun:gen:*\"",
 		"gen:scripts": "bun __scripts__/gen-scripts.bun.ts",
-		"gen:types": "bun --bun run wrangler types",
+		"gen:types": "wrangler types",
 		"go": "concurrently \"bun:setup:*\" && wrangler deploy --minify",
 		"preview": "concurrently \"bun:preview:setup:*\" && wrangler deploy --minify --config wrangler-preview.jsonc",
 		"preview:config": "bun __scripts__/configure-preview.bun.ts",
@@ -63,6 +63,6 @@
 		"takua": "0.2.3",
 		"vite": "8.3.1",
 		"vitest": "4.1.11",
-		"wrangler": "4.143.0"
+		"wrangler": "4.143.1"
 	}
 }
