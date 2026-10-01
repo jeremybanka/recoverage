@@ -1,0 +1,1 @@
+ALTER TABLE `stripeSubscriptions` ADD `syncRevision` integer DEFAULT 0 NOT NULL;

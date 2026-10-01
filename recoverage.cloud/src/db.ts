@@ -8,10 +8,5 @@ export function createDatabase(
 ): DrizzleD1Database<typeof schema> {
 	return drizzle(db, {
 		schema,
-		logger: {
-			logQuery(query, params) {
-				console.info(`📝 query`, query, params)
-			},
-		},
 	})
 }

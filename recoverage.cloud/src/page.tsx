@@ -2,7 +2,6 @@ import { css, Style } from "hono/css"
 import type { PropsWithChildren } from "hono/jsx"
 import type { HtmlEscapedString } from "hono/utils/html"
 
-import { GITHUB_CALLBACK_ENDPOINT } from "./env"
 import type { Loadable } from "./loadable"
 import * as Script from "./scripts.gen"
 import { when } from "./when"
@@ -105,23 +104,19 @@ export function Page(
 	)
 }
 
-export type SplashPageProps = {
-	githubClientId: string
-	currentUrl: URL
-}
 export function SplashPage({
-	githubClientId,
-	currentUrl,
-}: SplashPageProps): Loadable<HtmlEscapedString> {
-	const { origin } = currentUrl
-	const callbackUrl = new URL(GITHUB_CALLBACK_ENDPOINT, origin)
+	signInAvailable = true,
+}: {
+	signInAvailable?: boolean
+} = {}): Loadable<HtmlEscapedString> {
 	return (
 		<Page>
 			<h1>Recoverage</h1>
 			<p>A micro-platform for storing your coverage reports.</p>
 			<div class={css`flex-grow: 1;`} />
-			<a
-				class={css`
+			{signInAvailable ? (
+				<a
+					class={css`
 					color: var(--hyperlink);
 					&:visited {
 						color: var(--hyperlink-visited);
@@ -130,10 +125,13 @@ export function SplashPage({
 						color: var(--hyperlink-active);
 					}
 				`}
-				href={`https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${callbackUrl.toString()}&scope=user`}
-			>
-				Login with GitHub
-			</a>
+					href="/oauth/github"
+				>
+					Login with GitHub
+				</a>
+			) : (
+				<p>Sign-in is temporarily unavailable.</p>
+			)}
 		</Page>
 	)
 }

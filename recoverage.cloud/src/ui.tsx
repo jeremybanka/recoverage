@@ -5,16 +5,22 @@ import type { DrizzleD1Database } from "drizzle-orm/d1"
 import type { MiddlewareHandler } from "hono"
 import { Hono } from "hono"
 import { deleteCookie, getSignedCookie } from "hono/cookie"
+import { css } from "hono/css"
 import { nanoid } from "nanoid"
-import { Octokit } from "octokit"
 
+import { getUserRole } from "./billing"
+import { billingAccount, BillingAccountPage } from "./billing-account"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
-import type { Bindings } from "./env"
+import { type Bindings, getEnv } from "./env"
+import { createGitHubClient } from "./github-client"
 import { computeHash } from "./hash"
-import { Project, ProjectToken } from "./project"
+import { Page } from "./page"
+import { PricingPage } from "./pricing"
+import { Project, ProjectControls, ProjectToken, TokenControls } from "./project"
 import { projectsAllowed, type Role, tokensAllowed } from "./roles-permissions"
 import * as schema from "./schema"
+import { AccountUsage, accountUsage } from "./usage"
 
 type GithubUserData = Endpoints[`GET /user`][`response`][`data`] & {
 	id: number
@@ -27,14 +33,18 @@ export type UiEnv = {
 		githubUserData: GithubUserData
 		userRole: Role
 		projectScope: string
+		requestId: string
 	}
 }
 export const uiRoutes = new Hono<UiEnv>()
 
 const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
+	const env = getEnv(c.env)
+	if (!env.COOKIE_SECRET)
+		return c.json({ error: `Sign-in is temporarily unavailable.` }, 503)
 	const githubAccessTokenCookie = await getSignedCookie(
 		c,
-		c.env.COOKIE_SECRET,
+		env.COOKIE_SECRET,
 		`github-access-token`,
 	)
 
@@ -42,18 +52,34 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 		return c.json({ error: `Unauthorized` }, 401)
 	}
 
-	const octokit = new Octokit({
-		auth: githubAccessTokenCookie,
-	})
+	const octokit = createGitHubClient(githubAccessTokenCookie)
 
-	const { data, status } = await octokit.request(`GET /user`, {
-		request: { fetch: cachedFetch },
-	})
-
-	if (status !== 200) {
-		deleteCookie(c, `github-access-token`)
-		return c.json({ error: `Unauthorized` }, 401)
+	const userResponse = await octokit
+		.request(`GET /user`, {
+			request: { fetch: cachedFetch },
+		})
+		.catch((error: unknown) => {
+			// Only an actual authentication rejection should end the session.
+			// Outages and rate limits must propagate without discarding the cookie.
+			if (error instanceof Error && `status` in error && error.status === 401)
+				return null
+			throw error
+		})
+	if (!userResponse) {
+		deleteCookie(c, `github-access-token`, { path: `/` })
+		c.header(`Cache-Control`, `no-store`)
+		if (c.req.header(`HX-Request`) === `true`) c.header(`HX-Redirect`, `/`)
+		return c.json(
+			{
+				error: `Your GitHub session has expired or been revoked. Please sign in again.`,
+				loginUrl: `/oauth/github`,
+			},
+			401,
+		)
 	}
+	const { data, status } = userResponse
+	if (status !== 200)
+		throw new Error(`GitHub user lookup returned an unexpected response.`)
 	if (typeof data.id !== `number` || !Number.isSafeInteger(data.id)) {
 		return c.json({ error: `GitHub returned an unsupported user ID.` }, 500)
 	}
@@ -62,7 +88,7 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 
 	const maybeUser = await db.query.users.findFirst({
 		where: eq(schema.users.id, data.id),
-		columns: { role: true },
+		columns: { id: true },
 	})
 
 	if (!maybeUser) {
@@ -72,7 +98,14 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 			500,
 		)
 	}
-	const userRole = maybeUser.role
+	const userRole = await getUserRole({
+		db,
+		stripeSupporterPriceId: env.STRIPE_SUPPORTER_PRICE_ID,
+		userId: maybeUser.id,
+	})
+	if (!userRole) {
+		return c.json({ error: `User did not have a resolvable role.` }, 500)
+	}
 
 	c.set(`drizzle`, db)
 	c.set(`githubUserData`, data)
@@ -80,6 +113,83 @@ const uiAuth: MiddlewareHandler<UiEnv> = async (c, next) => {
 
 	await next()
 }
+
+uiRoutes.get(`/billing`, uiAuth, async (c) => {
+	c.header(`Cache-Control`, `no-store`)
+	return c.html(
+		<Page>
+			<BillingAccountPage
+				account={
+					await billingAccount(
+						c.get(`drizzle`),
+						c.get(`githubUserData`).id,
+						c.get(`userRole`),
+					)
+				}
+				config={getEnv(c.env)}
+				returnState={c.req.query(`billing`)}
+			/>
+		</Page>,
+	)
+})
+
+uiRoutes.get(`/upgrade`, uiAuth, async (c) => {
+	const account = await billingAccount(
+		c.get(`drizzle`),
+		c.get(`githubUserData`).id,
+		c.get(`userRole`),
+	)
+	c.header(`Cache-Control`, `no-store`)
+	return c.html(
+		<Page>
+			<PricingPage
+				currentRole={c.get(`userRole`)}
+				config={getEnv(c.env)}
+				hasExistingSubscription={account.subscriptions.some(
+					(subscription) =>
+						subscription.status !== `canceled` &&
+						subscription.status !== `incomplete_expired`,
+				)}
+			/>
+		</Page>,
+	)
+})
+
+uiRoutes.get(`/usage`, uiAuth, async (c) => {
+	const userId = c.get(`githubUserData`).id
+	return c.html(
+		<AccountUsage
+			usage={await accountUsage(c.get(`drizzle`), userId)}
+			userId={userId}
+			role={c.get(`userRole`)}
+		/>,
+	)
+})
+
+uiRoutes.get(`/project-usage`, uiAuth, async (c) => {
+	const usage = await accountUsage(c.get(`drizzle`), c.get(`githubUserData`).id)
+	return c.html(
+		<ProjectControls count={usage.projects} role={c.get(`userRole`)} />,
+	)
+})
+
+uiRoutes.get(`/token-usage/:projectId`, uiAuth, async (c) => {
+	const project = await c.get(`drizzle`).query.projects.findFirst({
+		where: and(
+			eq(schema.projects.id, c.req.param(`projectId`)),
+			eq(schema.projects.userId, c.get(`githubUserData`).id),
+		),
+		with: { tokens: { columns: { id: true } } },
+	})
+	if (!project) return c.text(`No project found`, 404)
+	return c.html(
+		<TokenControls
+			projectId={project.id}
+			count={project.tokens.length}
+			role={c.get(`userRole`)}
+		/>,
+	)
+})
 
 uiRoutes.get(`/project`, uiAuth, async (c) => {
 	const db = c.get(`drizzle`)
@@ -96,48 +206,28 @@ uiRoutes.get(`/project`, uiAuth, async (c) => {
 			},
 		},
 	})
-	// console.log(`User`, user)
-	// console.log(`Projects`, projects)
 
 	const userRole = c.get(`userRole`)
-	const numberOfProjectsAllowed = projectsAllowed.get(userRole)
-	const mayCreateProject = projects.length < numberOfProjectsAllowed
-
 	return c.html(
 		<>
-			{projects.map((project) => (
-				<Project
-					{...project}
-					mode="existing"
-					userRole={userRole}
-					key={project.id}
-				/>
-			))}
-			<Project mode="button" disabled={!mayCreateProject} />
-			{/* <Project mode="creator" />
-			<Project
-				mode="existing"
-				id="123"
-				name="my project"
-				tokens={[
-					{
-						id: `123`,
-						name: `my token`,
-						secretShownOnce: `secret`,
-						mode: `existing`,
-					},
-				]}
-				reports={[{ ref: `hahahahhahahahahahahah` }]}
-				userRole="free"
-			/>
-			<Project
-				mode="deleted"
-				id="123"
-				name="my old project"
-				tokens={[]}
-				reports={[{ ref: `123` }]}
-				userRole="free"
-			/> */}
+			<div
+				id="project-list"
+				class={css`
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+			`}
+			>
+				{projects.map((project) => (
+					<Project
+						{...project}
+						mode="existing"
+						userRole={userRole}
+						key={project.id}
+					/>
+				))}
+			</div>
+			<ProjectControls count={projects.length} role={userRole} />
 		</>,
 	)
 })
@@ -145,30 +235,33 @@ uiRoutes.get(`/project`, uiAuth, async (c) => {
 uiRoutes.post(`/project`, uiAuth, async (c) => {
 	const userRole = c.get(`userRole`)
 	const numberOfProjectsAllowed = projectsAllowed.get(userRole)
-	const db = c.get(`drizzle`)
 	const { id: userId } = c.get(`githubUserData`)
-
-	const currentProjects = await db.query.projects.findMany({
-		where: eq(schema.projects.userId, userId),
-	})
-
-	if (currentProjects.length >= numberOfProjectsAllowed) {
-		return c.json({ error: `You may not create more projects` }, 401)
-	}
 
 	const formData = await c.req.formData()
 	const name = type(`string`)(formData.get(`name`))
 
 	if (name instanceof type.errors) {
-		console.log(`returning creation form`)
 		return c.html(<Project mode="creator" />)
 	}
-	const project = (
-		await db
-			.insert(schema.projects)
-			.values({ userId, name, id: nanoid() })
-			.returning()
-	)[0]
+	// Admission and insertion share one statement so concurrent requests cannot
+	// spend the same remaining project slot.
+	const project = await c.env.DB.prepare(
+		`INSERT INTO projects (id, userId, name)
+		 SELECT ?1, ?2, ?3
+		 WHERE (SELECT count(*) FROM projects WHERE userId = ?2) < ?4
+		 RETURNING *`,
+	)
+		.bind(nanoid(), userId, name, numberOfProjectsAllowed)
+		.first<typeof schema.projects.$inferSelect>()
+	if (!project) {
+		return c.json(
+			{
+				error: `Your account is at its project limit. Existing projects remain available.`,
+			},
+			403,
+		)
+	}
+	c.header(`HX-Trigger`, `usage-changed`)
 	return c.html(
 		<Project
 			{...project}
@@ -198,12 +291,12 @@ uiRoutes.delete(`/project/:projectId`, uiAuth, async (c) => {
 		return c.json({ error: `No project found` }, 404)
 	}
 
-	const result = await db
+	await db
 		.delete(schema.projects)
 		.where(
 			and(eq(schema.projects.id, projectId), eq(schema.projects.userId, userId)),
 		)
-	console.log(result)
+	c.header(`HX-Trigger`, `usage-changed`)
 	return c.html(
 		<Project
 			{...project}
@@ -227,21 +320,14 @@ uiRoutes.post(`/token/:projectId`, uiAuth, async (c) => {
 			eq(schema.projects.id, projectId),
 			eq(schema.projects.userId, userId),
 		),
-		with: {
-			tokens: true,
-		},
+		columns: { id: true },
 	})
 
 	if (!project) {
 		return c.json({ error: `No project found` }, 404)
 	}
 	const numberOfTokensAllowed = tokensAllowed.get(c.get(`userRole`))
-	if (project?.tokens.length >= numberOfTokensAllowed) {
-		return c.json({ error: `You may not create more tokens` }, 401)
-	}
-
 	if (name instanceof type.errors) {
-		console.log(`returning creation form`)
 		return c.html(<ProjectToken mode="creator" projectId={projectId} />)
 	}
 	const id = nanoid()
@@ -249,18 +335,25 @@ uiRoutes.post(`/token/:projectId`, uiAuth, async (c) => {
 	const salt = nanoid()
 	const hash = await computeHash(secret, salt)
 
-	const token = (
-		await db
-			.insert(schema.tokens)
-			.values({
-				id,
-				name,
-				hash,
-				salt,
-				projectId,
-			})
-			.returning()
-	)[0]
+	// Recheck ownership in the atomic write as well as the initial UI lookup.
+	const token = await c.env.DB.prepare(
+		`INSERT INTO tokens (id, name, hash, salt, projectId)
+		 SELECT ?1, ?2, ?3, ?4, ?5
+		 WHERE EXISTS (SELECT 1 FROM projects WHERE id = ?5 AND userId = ?6)
+		 AND (SELECT count(*) FROM tokens WHERE projectId = ?5) < ?7
+		 RETURNING *`,
+	)
+		.bind(id, name, hash, salt, projectId, userId, numberOfTokensAllowed)
+		.first<typeof schema.tokens.$inferSelect>()
+	if (!token) {
+		return c.json(
+			{
+				error: `This project is at its token limit. Existing tokens remain usable.`,
+			},
+			403,
+		)
+	}
+	c.header(`HX-Trigger`, `usage-changed`)
 	return c.html(
 		<ProjectToken {...token} mode="existing" secretShownOnce={secret} />,
 	)
@@ -289,5 +382,6 @@ uiRoutes.delete(`/token/:tokenId`, uiAuth, async (c) => {
 
 	await db.delete(schema.tokens).where(eq(schema.tokens.id, tokenId)).run()
 
+	c.header(`HX-Trigger`, `usage-changed`)
 	return c.html(<ProjectToken {...token} mode="deleted" />)
 })

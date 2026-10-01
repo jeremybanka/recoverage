@@ -17,7 +17,10 @@ export function create(props: CreateProps): Loadable<HtmlEscapedString> {
 	const { disabled } = props
 	return (
 		<button
+			disabled={disabled}
 			hx-post={props[`hx-post`]}
+			hx-target={props[`hx-target`]}
+			hx-confirm={props[`hx-confirm`]}
 			hx-swap={props[`hx-swap`]}
 			type="button"
 			class={css`
@@ -29,8 +32,8 @@ export function create(props: CreateProps): Loadable<HtmlEscapedString> {
         justify-self: left;
         align-self: flex-start;
         border-radius: 0px 0 5px 0;
-        &:active {
-          background-color: var(--bg-color-s2);
+        &:active:not(:disabled) {
+          background-color: var(--color-bg-s2);
           box-shadow: inset 0 1px 0 1px #0002;
         }
       `}
@@ -53,6 +56,7 @@ export function x(props: XProps): Loadable<HtmlEscapedString> {
 	const { disabled } = props
 	return (
 		<button
+			disabled={disabled}
 			hx-delete={props[`hx-delete`]}
 			hx-target={props[`hx-target`]}
 			hx-confirm={props[`hx-confirm`]}
@@ -68,8 +72,8 @@ export function x(props: XProps): Loadable<HtmlEscapedString> {
         justify-self: left;
         align-self: flex-start;
         border-radius: 0 0 0 5px;
-        &:active {
-          background-color: var(--bg-color-s2);
+        &:active:not(:disabled) {
+          background-color: var(--color-bg-s2);
           box-shadow: inset 0 1px 0 1px #0002;
         }
       `}
@@ -90,6 +94,7 @@ export function copy({
 }: CopyProps): Loadable<HtmlEscapedString> {
 	return (
 		<button
+			disabled={disabled}
 			hx-on:click={`navigator.clipboard.writeText('${text}')
     .then(() => alert('Copied!'))
     .catch(err => alert('Copy failed: ' + err))`}
@@ -103,8 +108,8 @@ export function copy({
         justify-self: left;
         align-self: flex-start;
         border-radius: 5px 0 5px 0;
-        &:active {
-          background-color: var(--bg-color-s2);
+        &:active:not(:disabled) {
+          background-color: var(--color-bg-s2);
           box-shadow: inset 0 1px 0 1px #0002;
         }
       `}
@@ -122,6 +127,7 @@ export function submit(props: SubmitProps): Loadable<HtmlEscapedString> {
 	const { disabled } = props
 	return (
 		<button
+			disabled={disabled}
 			type="submit"
 			class={css`
         background-color: var(--color-bg-t3);
@@ -130,8 +136,8 @@ export function submit(props: SubmitProps): Loadable<HtmlEscapedString> {
         border: 1px solid ${disabled ? `var(--color-fg-superlight)` : `var(--color-fg)`};
         padding: 10px;
         border-radius: 0 0 5px 0;
-        &:active {
-          background-color: var(--bg-color-s2);
+        &:active:not(:disabled) {
+          background-color: var(--color-bg-s2);
           box-shadow: inset 0 1px 0 1px #0002;
         }
       `}
