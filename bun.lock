@@ -8,7 +8,7 @@
         "@biomejs/biome": "2.5.15",
         "@changesets/cli": "3.0.3",
         "@changesets/read": "1.0.1",
-        "@dprint/biome": "0.13.12",
+        "@dprint/biome": "0.13.13",
         "@dprint/markdown": "0.24.0",
         "@eslint/eslintrc": "3.3.7",
         "@eslint/js": "10.0.1",
@@ -252,7 +252,7 @@
 
     "@dprint/android-x64": ["@dprint/android-x64@0.58.0", "", { "os": "android", "cpu": "x64" }, "sha512-BtEU3Yyctk+t0i5U1SM+l11+hz9mcRZh9c8tQDcyAI5cqoOUjXCvjUmI5QCmZ0cL2QwTARj+btU6+rLh6OZX9w=="],
 
-    "@dprint/biome": ["@dprint/biome@0.13.12", "", {}, "sha512-F/xidyiYRwhQNHZwJ3Slt6Avb7vUwXhs29HMMRvdily+ohVWSGHitdODoMLfrIanAwK1mpAa7q6sDQK6kzv8ng=="],
+    "@dprint/biome": ["@dprint/biome@0.13.13", "", {}, "sha512-/uGK+7Y6pHMuVFaFea09/d/9JWRPZaBpw7vGoTrxbspgsl+bH0jaLg6UvfRemIrcHRVsBGbqoAkM2mF+Gd5MxA=="],
 
     "@dprint/darwin-arm64": ["@dprint/darwin-arm64@0.58.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-OUsfomDmcPD7bPsdz5cGYD3f7GcoXXDVGTirNz27pdqpjk+Swy5zc9rtIs8abGcrmcgihSCuJqRKbGCM8XuF4g=="],
 
