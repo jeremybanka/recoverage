@@ -9,7 +9,7 @@
         "@changesets/cli": "3.0.3",
         "@changesets/read": "1.0.1",
         "@dprint/biome": "0.13.13",
-        "@dprint/markdown": "0.24.0",
+        "@dprint/markdown": "0.25.0",
         "@eslint/eslintrc": "3.3.7",
         "@eslint/js": "10.0.1",
         "@types/bun": "npm:bun-types@1.4.2",
@@ -276,7 +276,7 @@
 
     "@dprint/linux-x64-musl": ["@dprint/linux-x64-musl@0.58.0", "", { "os": "linux", "cpu": "x64" }, "sha512-3GEwqb5RTnwCZdbZWP/kRMoSCg5oLB2SyHAaehgQKo6eHvzjHONg/DnLhH0z9Pgwo9Dc+jRhFL4LtxPu6ePYng=="],
 
-    "@dprint/markdown": ["@dprint/markdown@0.24.0", "", {}, "sha512-ohC0iF/k26dyaB8buKR71Ulf+HsBwSopbUTbY1jPwVGYAe/M9TuuGhALOkdmiSVtdrEf2gFkwsvvpDeayYyXzA=="],
+    "@dprint/markdown": ["@dprint/markdown@0.25.0", "", {}, "sha512-Jf+uAX9ld2Iq/5ScHF9rNjDcyt7sIE1WKsSfq8cKjYeF3rX4iv/qpAD6f6MxBX9Mflaquq/Lg4lu8/O6UdN9kg=="],
 
     "@dprint/win32-arm64": ["@dprint/win32-arm64@0.58.0", "", { "os": "win32", "cpu": "arm64" }, "sha512-7+REvf6MpcHH3EYy4EvtS9Dgy5LwfLRjR9Tkb9Au3gIB+wD02BvWidWuK48FOSnuDmOQS+7gI1jATqo1HAOUCA=="],
 
