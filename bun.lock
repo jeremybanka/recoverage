@@ -63,7 +63,7 @@
         "@types/istanbul-lib-instrument": "1.7.8",
         "@types/istanbul-lib-report": "3.0.3",
         "@types/istanbul-reports": "3.0.4",
-        "@types/node": "26.6.3",
+        "@types/node": "26.6.4",
         "@vitest/coverage-istanbul": "4.1.11",
         "concurrently": "10.0.5",
         "eslint": "10.11.0",
@@ -107,7 +107,7 @@
         "@t3-oss/env-core": "0.13.11",
         "@types/bun": "npm:bun-types@1.4.2",
         "@types/istanbul-lib-coverage": "2.0.6",
-        "@types/node": "26.6.3",
+        "@types/node": "26.6.4",
         "cloudflare": "7.2.0",
         "concurrently": "10.0.5",
         "drizzle-kit": "0.31.11",
@@ -620,7 +620,7 @@
 
     "@types/json-schema": ["@types/json-schema@7.0.15", "", {}, "sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA=="],
 
-    "@types/node": ["@types/node@26.6.3", "", { "dependencies": { "undici-types": "~8.9.0" } }, "sha512-dsqMQQoeTLqu9wynDD00q573mNzso3IdQOAfHRJqLCcmCFPoGo9A1bDpUcv/9tnKpErQWv9uKeGfl37EIS02Yg=="],
+    "@types/node": ["@types/node@26.6.4", "", { "dependencies": { "undici-types": "~8.9.0" } }, "sha512-ldVPDCzj7fsaGZrLB0NuHuTvJcsNasysBAqMolr/cgxrLd1xbqxIr3XJiPnHHJUCxj5sNF1vnRj9aWnrVh5Jcg=="],
 
     "@types/semver": ["@types/semver@7.8.0", "", {}, "sha512-1mAINjtQCXXeLkJ9ehXkwOcBpqtLxiVtKhpUf83DdRNdQKV0iXZpaHYqRr7nj+wvxuJzoAmAwXI+sCNMv1CzLQ=="],
 
