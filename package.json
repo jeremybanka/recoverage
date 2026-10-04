@@ -43,7 +43,7 @@
 		"@changesets/cli": "3.0.3",
 		"@changesets/read": "1.0.1",
 		"@dprint/biome": "0.13.13",
-		"@dprint/markdown": "0.25.0",
+		"@dprint/markdown": "0.26.0",
 		"@eslint/eslintrc": "3.3.7",
 		"@eslint/js": "10.0.1",
 		"@types/bun": "npm:bun-types@1.4.2",
