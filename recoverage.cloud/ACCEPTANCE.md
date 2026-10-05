@@ -110,9 +110,11 @@ regressions cover each missing binding and all missing together.
 
 ## Operational completion still required
 
-- Provision/verify `support@recoverage.cloud` and an operational alert destination.
-  The owner selected the address; a forwarding/receiving inbox has not been supplied.
-  The refund-policy choice and receiving/reply test are in OPERATIONS.md.
+- The owner confirmed receipt at the private destination of test messages sent
+  through Cloudflare forwarding to `support@recoverage.cloud` and
+  `developer-alerts@recoverage.cloud`. The sandbox support binding now uses the
+  public support address; its test-only refund policy remains unchanged.
+  Verify outbound support replies separately; see OPERATIONS.md.
 - Configure account notifications and prove delivery to the selected destination.
 - The generated SQL rehearsal and actual sandbox Worker rollback now pass.
   Before live launch, rehearse export/import and migration of a representative

@@ -26,6 +26,7 @@ config.vars = {
 	REPORT_RATE_SCOPE: config.name,
 	STRIPE_MODE: `test`,
 	CHECKOUT_ENABLED: `false`,
+	BILLING_SUPPORT_EMAIL: `support@recoverage.cloud`,
 }
 config.d1_databases[0].database_name = env.DATABASE_NAME
 config.d1_databases[0].database_id = env.DATABASE_ID

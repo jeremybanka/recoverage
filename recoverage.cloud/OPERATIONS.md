@@ -399,8 +399,16 @@ recent $1 subscription payment. Cancel future renewals in Manage billing; a
 refund does not automatically cancel your subscription.” This is the owner's
 delegated product-policy choice, not a claim about statutory rights.
 
-The address is not yet provisioned or verified. Before publishing it, configure
-its receiving/forwarding destination through the domain's supported email setup,
-verify receipt and replies, and send operational notifications to an inbox the
-owner monitors. Destination and provider access are still needed. Keep the
-approved test-only support/refund placeholders in the sandbox until then.
+The owner confirmed receipt of test messages sent to `support@recoverage.cloud`
+and `developer-alerts@recoverage.cloud` through Cloudflare forwarding. The
+receiving inbox is private and must not be committed. The stable billing preview
+uses `BILLING_SUPPORT_EMAIL=support@recoverage.cloud`; newly generated billing
+preview configurations also include that public address. Keep the approved
+test-only refund policy in the sandbox: “Test environment only. No real payments
+are collected”. This does not change production configuration or publish the
+production refund policy there.
+
+Operational notification rules and their delivery to `developer-alerts@recoverage.cloud`
+still require separate configuration and verification. Alias delivery alone does
+not prove that alerts are enabled. Outbound replies from the public support
+address also remain to be verified; forwarding does not establish sending access.
