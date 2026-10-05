@@ -321,7 +321,7 @@ would reset its reviewed billing variables and turn Checkout off. Deploy its
 existing explicit preview config instead.
 
 [Cloudflare Issues](https://developers.cloudflare.com/workers/observability/issues/)
-requires Wrangler 4.134.0 or later (this repository pins 4.143.0) and is free during
+requires Wrangler 4.134.0 or later (this repository pins 4.147.0) and is free during
 open beta. Review pricing again when beta ends. It detects new exceptions, failed
 invocations, 5xx responses, and error-level console output; historical failures
 are not imported. [Occurrence diagnostics](https://developers.cloudflare.com/workers/observability/issues/investigate/)

@@ -50,7 +50,7 @@
 	},
 	"dependencies": {
 		"@t3-oss/env-core": "0.13.11",
-		"arktype": "2.2.5",
+		"arktype": "2.2.7",
 		"comline": "0.9.0",
 		"diff": "9.0.0",
 		"istanbul-lib-coverage": "3.2.2",
@@ -65,16 +65,16 @@
 		"@types/istanbul-lib-instrument": "1.7.8",
 		"@types/istanbul-lib-report": "3.0.3",
 		"@types/istanbul-reports": "3.0.4",
-		"@types/node": "26.6.3",
+		"@types/node": "26.6.4",
 		"@vitest/coverage-istanbul": "4.1.11",
 		"concurrently": "10.0.5",
-		"eslint": "10.11.0",
+		"eslint": "10.12.0",
 		"istanbul-lib-instrument": "6.0.3",
 		"nyc": "18.0.0",
 		"recoverage-fixtures": "workspace:*",
 		"tsdown": "0.23.0",
 		"typescript": "7.0.2",
-		"vite": "8.3.1",
+		"vite": "8.3.2",
 		"vitest": "4.1.11",
 		"yalc": "1.0.0-pre.53"
 	}
