@@ -22,6 +22,10 @@ if (
 }
 config.name = env.WORKER_NAME
 config.preview_urls = false
+config.observability = {
+	...config.observability,
+	issues: { enabled: true },
+}
 config.vars = {
 	REPORT_RATE_SCOPE: config.name,
 	STRIPE_MODE: `test`,

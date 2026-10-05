@@ -313,6 +313,28 @@ verification before considering re-enablement.
 
 ## Logs, retention, and monitoring
 
+The billing preview generator persists `observability.issues.enabled=true` only
+in `wrangler-billing-preview.jsonc`; the default live configuration is unchanged.
+The stable preview also keeps this setting alongside its existing enabled logs.
+Do not regenerate the stable config for an observability-only deployment: that
+would reset its reviewed billing variables and turn Checkout off. Deploy its
+existing explicit preview config instead.
+
+[Cloudflare Issues](https://developers.cloudflare.com/workers/observability/issues/)
+requires Wrangler 4.134.0 or later (this repository pins 4.143.0) and is free during
+open beta. Review pricing again when beta ends. It detects new exceptions, failed
+invocations, 5xx responses, and error-level console output; historical failures
+are not imported. [Occurrence diagnostics](https://developers.cloudflare.com/workers/observability/issues/investigate/)
+can include stack traces, request/invocation details, and related logs/traces.
+Occurrence details expire after seven days; issue listings remain. Enabling this
+setting does not require adding tracing, application identifiers, external export
+destinations, or account access grants. Keep existing safe logging and never add
+secrets, tokens, report bodies, or sensitive request content to telemetry.
+
+Issues enablement alone does not create notification rules or prove email
+receipt. Configure and verify the separately approved alert destination in the
+Cloudflare dashboard; keep private receiving addresses out of this repository.
+
 Request logs contain a server-generated request ID, route category, method,
 status, and elapsed time. The response `X-Request-Id` and safe 500 JSON identify
 the same request. Failure logs add only a fixed category (database, upstream
