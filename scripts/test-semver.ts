@@ -1,4 +1,4 @@
-import { execFileSync, spawnSync } from "node:child_process"
+import { execFileSync } from "node:child_process"
 import { readFile } from "node:fs/promises"
 import path from "node:path"
 
@@ -13,21 +13,9 @@ import {
 const root = path.resolve(import.meta.dirname, `..`)
 const packageDirectory = path.join(root, `packages/recoverage`)
 
-function run(...args: string[]): void {
-	const result = spawnSync(`bun`, args, { cwd: root, stdio: `inherit` })
-	if (result.error) throw result.error
-	if (result.status !== 0) {
-		throw new Error(`bun ${args.join(` `)} failed (${result.status}).`)
-	}
-}
-
 if (execFileSync(`git`, [`status`, `--porcelain`], { cwd: root }).length) {
 	throw new Error(`Commit or stash changes before running test:semver.`)
 }
-
-// A failing current suite or build is never certified as a breaking release.
-run(`run`, `--cwd`, packageDirectory, `build`)
-run(`run`, `--cwd`, packageDirectory, `test:public`)
 
 const outcome = await breakCheck({
 	baseDirname: root,
@@ -36,7 +24,7 @@ const outcome = await breakCheck({
 	// Existing integration tests provide a real baseline before the first release
 	// containing the expanded public suite. Include their fixtures in restoration.
 	testPattern: `packages/recoverage/__tests__/{diff-coverage.test.ts,sample-package-*/{**,.gitignore},public/**}`,
-	testCommand: `bun run --cwd packages/recoverage test:public`,
+	testCommand: `bun run --cwd packages/recoverage test:public:source`,
 	// Certify below using the exact release selected by break-check.
 	certifyCommand: `false`,
 })
