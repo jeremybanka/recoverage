@@ -1,6 +1,6 @@
 # Release compatibility
 
-`bun run test:semver` checks consumer behavior against released public tests. Current tests run independently in the parallel Vitest job. Compatibility replays the released assertions against source without building first. The gate requires an executable historical contract; fixture files alone do not qualify. A documented intentional break needs the version bump described in [repository commands](commands.md).
+`bun run test:semver` checks consumer behavior against released public tests.
 
 ## Protected behavior
 
@@ -24,4 +24,4 @@ Human-readable report layout, log text, error wording, completion ordering/proto
 
 The `recoverage-0-1-18` dependency points directly at the published npm `0.1.18` tarball, with package integrity recorded in `bun.lock`. An npm version alias can resolve to a same-version workspace in Bun, so the fixture uses the explicit tarball URL and rejects a producer whose real path is the current package. Renovate leaves that producer fixed. Tests copy it into the isolated consumer repository, run its public `capture`, then use the current package's public `capture` and `diff` against the saved data. The fixture ignores generated files and observes results through public APIs; it never reads database tables or seeds a handcrafted schema. Add another versioned producer dependency for another released format instead of replacing this one. Keep producers and fixture dependencies needed by historical tests available during replay.
 
-Public tests, their helper code, and the consumer fixture are restored together by break-check. At the current `recoverage@0.1.18` baseline, only the original installed-package coverage improvement/regression tests are historical contracts. The expanded suite runs in the current-test job now and becomes historical protection after its first release; it does not retroactively add tests to that older tag.
+Public tests, their helper code, and the consumer fixture are restored together by break-check.
