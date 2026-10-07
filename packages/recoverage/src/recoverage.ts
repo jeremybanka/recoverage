@@ -140,9 +140,9 @@ export async function diff(
 
 	if (!baseCoverage) {
 		logger.chronicle?.mark(`no coverage found for the target branch`)
-		if (!env.RECOVERAGE_CLOUD_TOKEN) {
+		if (!env.RECOVERAGE_CLOUD_TOKEN && !env.RECOVERAGE_CLOUD_PROJECT_ID) {
 			logger.chronicle?.mark(
-				`RECOVERAGE_CLOUD_TOKEN not set; cannot download coverage report`,
+				`Set RECOVERAGE_CLOUD_PROJECT_ID for public reports or RECOVERAGE_CLOUD_TOKEN for private reports`,
 			)
 			return 1
 		}
@@ -156,6 +156,7 @@ export async function diff(
 			packageName,
 			env.RECOVERAGE_CLOUD_TOKEN,
 			env.RECOVERAGE_CLOUD_URL,
+			env.RECOVERAGE_CLOUD_PROJECT_ID,
 		)
 
 		if (cloudCoverage instanceof Error) {

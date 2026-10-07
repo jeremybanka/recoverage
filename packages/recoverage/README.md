@@ -92,6 +92,27 @@ To make a report representing your main branch available to your CI runners, you
   - `S3_ENDPOINT`
   - `S3_SECRET_ACCESS_KEY`
 
+### Public cloud reports
+
+In your project on recoverage.cloud, enable **Public reports** and copy the
+displayed `RECOVERAGE_CLOUD_PROJECT_ID` setting into your environment or CI:
+
+```sh
+RECOVERAGE_CLOUD_PROJECT_ID=your-project-id recoverage
+```
+
+When the baseline is missing locally, Recoverage downloads the public report
+without a token. The report name still comes from the current directory name.
+This setting grants read access to all reports in the project, including file
+paths and detailed coverage data. Existing and new projects are private by
+default; uncheck **Public reports** to stop future public downloads. Reports
+already downloaded may remain in local caches.
+
+Publishing coverage still requires `RECOVERAGE_CLOUD_TOKEN`. If both variables
+are set, the token takes precedence and selects its own project. Public project
+IDs are identifiers, not secrets. `RECOVERAGE_CLOUD_URL` can select a different
+host for either download mode.
+
 ## Local Example
 
 Below is an example to set up a tiny project with Bun, TypeScript, Vitest, and @vitest/coverage-v8.

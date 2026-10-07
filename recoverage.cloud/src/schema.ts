@@ -25,6 +25,7 @@ export const projects = sqliteTable(`projects`, {
 		.references(() => users.id, { onDelete: `cascade` })
 		.notNull(),
 	name: text().notNull(),
+	publicReports: integer({ mode: `boolean` }).default(false).notNull(),
 	createdAt: timestamp().default(SQL_NOW).notNull(),
 })
 export const projectsRelations = relations(projects, ({ many, one }) => ({
