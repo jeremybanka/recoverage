@@ -17,7 +17,7 @@
         "@types/semver": "7.8.0",
         "@typescript-eslint/eslint-plugin": "8.71.1",
         "@typescript-eslint/parser": "8.71.1",
-        "break-check": "0.8.1",
+        "break-check": "0.8.2",
         "c8": "12.0.0",
         "cross-env": "10.1.0",
         "dprint": "0.60.1",
@@ -832,7 +832,7 @@
 
     "braces": ["braces@3.0.3", "", { "dependencies": { "fill-range": "^7.1.1" } }, "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA=="],
 
-    "break-check": ["break-check@0.8.1", "", { "dependencies": { "arktype": "2.2.7", "comline": "0.9.0", "minimatch": "10.2.6", "simple-git": "4.0.2", "takua": "0.2.3" }, "bin": { "break-check": "./bin/break-check.bin.js" } }, "sha512-YEHOJLMsyvoDp/AI2fLdmCoFBJOEx7ibCaXNOpD8QLXLUQ7az6C6rhP24LXcGOY/ywiwlBrEvpjI8FF4vcp2Sg=="],
+    "break-check": ["break-check@0.8.2", "", { "dependencies": { "arktype": "2.2.7", "comline": "0.9.0", "minimatch": "10.2.6", "simple-git": "4.0.2", "takua": "0.2.3" }, "bin": { "break-check": "./bin/break-check.bin.js" } }, "sha512-Ff4qfyry4IX4ZwRdk9M+IbF+ZFDbb5D3RCWHC5FlMM5fRiyZnLnzoGCAmHStLrsSKJGmHt9zu0MGdqzg0OFLPQ=="],
 
     "browserslist": ["browserslist@4.28.1", "", { "dependencies": { "baseline-browser-mapping": "^2.9.0", "caniuse-lite": "^1.0.30001759", "electron-to-chromium": "^1.5.263", "node-releases": "^2.0.27", "update-browserslist-db": "^1.2.0" }, "bin": { "browserslist": "cli.js" } }, "sha512-ZC5Bd0LgJXgwGqUknZY/vkUQ04r8NXnJZ3yYi4vDmSiZmC/pdSN0NbNRPxZpbtO4uAfDUAFffO8IZoM3Gj8IkA=="],
 
