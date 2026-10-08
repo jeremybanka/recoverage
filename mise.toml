@@ -4,5 +4,5 @@ _.path = ["{{config_root}}/node_modules/.bin"]
 [tools]
 bun = "1.4.2"
 ni = "30.6.0"
-node = "26.10.0"
+node = "26.11.1"
 ripgrep = "15.2.0"
