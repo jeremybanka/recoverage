@@ -35,7 +35,7 @@
 		"watch:types": "tsc --watch --noEmit"
 	},
 	"dependencies": {
-		"arktype": "2.2.7",
+		"arktype": "2.2.8",
 		"drizzle-orm": "0.45.3",
 		"hono": "4.13.13",
 		"htmx.org": "4.0.0",
