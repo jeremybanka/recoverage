@@ -183,33 +183,44 @@ export function collectPackage(directory: string, scratch: string): void {
 }
 
 export function collectCloud(directory: string): void {
-	// Older revisions do not declare a provider. Their Workers must also be
-	// able to resolve the provider used by the current harness.
+	// Workers resolve Vitest from the revision's config, so the CLI and provider
+	// must also come from that revision, even across Vitest major upgrades.
 	const targetRoot = path.resolve(directory, `..`)
+	const vitest = path.join(directory, `node_modules/vitest`)
 	const provider = path.join(
 		targetRoot,
 		`node_modules/@vitest/coverage-istanbul`,
 	)
 	if (targetRoot !== repositoryRoot && !existsSync(provider)) {
-		mkdirSync(path.dirname(provider), { recursive: true })
-		symlinkSync(
-			path.join(
-				repositoryRoot,
-				`packages/recoverage/node_modules/@vitest/coverage-istanbul`,
-			),
-			provider,
-			`dir`,
+		const installedProvider = path.join(
+			targetRoot,
+			`packages/recoverage/node_modules/@vitest/coverage-istanbul`,
 		)
+		if (existsSync(installedProvider)) {
+			mkdirSync(path.dirname(provider), { recursive: true })
+			symlinkSync(installedProvider, provider, `dir`)
+		} else {
+			// Revisions predating the coverage harness need an exact matching
+			// provider added only to their disposable baseline checkout.
+			const { version } = JSON.parse(
+				readFileSync(path.join(vitest, `package.json`), `utf8`),
+			)
+			run(
+				[
+					`bun`,
+					`add`,
+					`--dev`,
+					`--exact`,
+					`@vitest/coverage-istanbul@${version}`,
+				],
+				targetRoot,
+			)
+		}
 	}
-	// Use the same coverage tooling for both revisions, including the initial
-	// baseline from before this repository had coverage scripts.
 	run(
 		[
 			`node`,
-			path.join(
-				repositoryRoot,
-				`packages/recoverage/node_modules/vitest/vitest.mjs`,
-			),
+			path.join(vitest, `vitest.mjs`),
 			`run`,
 			`--coverage.enabled`,
 			`--coverage.provider=istanbul`,
