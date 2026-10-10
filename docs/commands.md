@@ -27,15 +27,19 @@ Following the [mise Node.js cookbook](https://mise.jdx.dev/mise-cookbook/nodejs.
 - `check:deps`: `pin-checker --ignore-workspaces`.
 - `check:eslint`: `turbo run check:eslint`.
 - `check:fmt`: `dprint check`.
-- `check:tsc`: package TypeScript checks through Turbo, followed by release-tooling type checks.
+- `check:tsc`: Bun's built-in TypeScript checks through Turbo, followed by release-tooling type checks with Bun.
+
+`check:tsc` retains its canonical command name and uses `bun --check` with Bun 1.4.3. The flag invokes the built-in type checker even when a package has its own aggregate `check` script. Turbo still builds dependencies and generates prerequisites before checking each package. TypeScript remains installed for editors, declaration builds, `watch:types`, and the public consumer compatibility tests, which also validate declarations with `tsc`.
 
 ## Command notes
+
+The cloud package's `check:tsc`, `gen`, `go`, and `preview` commands run their child scripts with Bun's built-in parallel runner. `--no-exit-on-error` lets every selected child finish, matching the previous runner's behavior; the group still fails if any child fails. `go` and `preview` deploy only after all their setup scripts succeed.
 
 The Recoverage CI job generates coverage on pushes to `main` and `paid-coverage-tiers`. On pull requests it also generates a fresh baseline from the PR's exact target commit and uses the freshly built recoverage CLI to reject a decrease in either package's statement coverage. The comparison uses disposable local SQLite databases; forks need no reporter token, and the first run needs no pre-existing baseline. Missing or empty reports fail the job.
 
 `bun run cov` writes `coverage/coverage-final.json` and `coverage/coverage-summary.json` in each package. The CLI suite instruments a disposable source copy before tests and bundling, so Node tests and Bun subprocesses share the same statement counters. Untested source files remain in the denominator. The temporary instrumented build omits declarations; the ordinary build still validates and emits those. The cloud suite uses Istanbul because the Workers runtime does not support V8 coverage. Generated source and declaration files are excluded.
 
-`bun run cov:check origin/main` installs the selected revision's locked dependencies in a temporary directory, runs that revision's tests with the current coverage harness, normalizes source paths, and compares the reports. Baseline collection deliberately works for revisions predating these commands. The ref must already exist locally; fetch it first if necessary. Package-level commands narrow the comparison to that package. Root `cov` builds prerequisites; build the CLI first when invoking package commands directly.
+`bun run cov:check origin/main` installs the selected revision's locked dependencies in a temporary directory, runs that revision's tests with the current coverage harness and its own Vitest tooling, normalizes source paths, and compares the reports. Baseline collection deliberately works for revisions predating these commands; when a revision has no Istanbul provider, the harness installs the exact version matching its Vitest in the disposable checkout. The ref must already exist locally; fetch it first if necessary. Package-level commands narrow the comparison to that package. Root `cov` builds prerequisites; build the CLI first when invoking package commands directly.
 
 Coverage and comparisons run uncached. Coverage tasks preserve the caller’s toolchain and certificate environment for subprocess installs, while the harness clears hosted report credentials. Neither command publishes hosted baselines. Using the PR target commit rather than a moving branch or latest artifact keeps the baseline reproducible; tests and dependency installation run twice for a PR. Coverage collection and comparison failures propagate as job failures.
 

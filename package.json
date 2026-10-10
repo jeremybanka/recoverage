@@ -18,7 +18,7 @@
 		"check:deps": "pin-checker --ignore-workspaces",
 		"check:eslint": "turbo run check:eslint",
 		"check:fmt": "dprint check",
-		"check:tsc": "turbo run check:tsc && tsc --project scripts/tsconfig.json",
+		"check:tsc": "turbo run check:tsc && bun --check --tsconfig-override scripts/tsconfig.json",
 		"cov": "cross-env CI=true turbo run cov --concurrency=2 --env-mode=loose",
 		"cov:check": "bun run cov && bun packages/recoverage/__scripts__/coverage-check.bun.ts",
 		"fmt": "dprint fmt",
@@ -51,10 +51,10 @@
 		"@types/semver": "7.8.0",
 		"@typescript-eslint/eslint-plugin": "8.71.1",
 		"@typescript-eslint/parser": "8.71.1",
-		"break-check": "0.8.1",
+		"break-check": "0.8.2",
 		"c8": "12.0.0",
 		"cross-env": "10.1.0",
-		"dprint": "0.60.1",
+		"dprint": "0.61.1",
 		"eslint": "10.12.0",
 		"eslint-plugin-import-x": "4.17.1",
 		"eslint-plugin-simple-import-sort": "14.0.0",
@@ -64,10 +64,10 @@
 		"turbo": "2.11.7",
 		"typescript": "7.0.2",
 		"typescript-eslint-typescript": "npm:typescript@6.0.3",
-		"typescript-language-server": "6.0.1",
+		"typescript-language-server": "6.0.2",
 		"vscode-langservers-extracted": "4.10.0"
 	},
-	"packageManager": "bun@1.4.2",
+	"packageManager": "bun@1.4.3",
 	"trustedDependencies": [
 		"@biomejs/biome",
 		"dprint",
@@ -78,7 +78,7 @@
 		"workerd"
 	],
 	"overrides": {
-		"rolldown": "1.2.12",
+		"rolldown": "1.2.13",
 		"rolldown-plugin-dts": "0.28.6"
 	}
 }

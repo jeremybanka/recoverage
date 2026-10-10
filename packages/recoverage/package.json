@@ -37,7 +37,7 @@
 		"check": "bun run check:eslint && bun run check:tsc && bun run check:biome",
 		"check:biome": "biome lint -- .",
 		"check:eslint": "NODE_OPTIONS=--require=../../scripts/eslint-typescript.cjs eslint -- .",
-		"check:tsc": "tsc --noEmit",
+		"check:tsc": "bun --check",
 		"cov": "bun __scripts__/coverage.bun.ts",
 		"cov:check": "bun run cov && bun __scripts__/coverage-check.bun.ts",
 		"dev": "bun --bun tsdown --watch",
@@ -50,7 +50,7 @@
 	},
 	"dependencies": {
 		"@t3-oss/env-core": "0.13.11",
-		"arktype": "2.2.7",
+		"arktype": "2.2.8",
 		"comline": "0.9.0",
 		"diff": "9.0.0",
 		"istanbul-lib-coverage": "3.2.2",
@@ -66,16 +66,15 @@
 		"@types/istanbul-lib-report": "3.0.3",
 		"@types/istanbul-reports": "3.0.4",
 		"@types/node": "26.6.4",
-		"@vitest/coverage-istanbul": "4.1.11",
-		"concurrently": "10.0.5",
+		"@vitest/coverage-istanbul": "5.0.3",
 		"eslint": "10.12.0",
 		"istanbul-lib-instrument": "6.0.3",
 		"nyc": "18.0.0",
 		"recoverage-fixtures": "workspace:*",
 		"tsdown": "0.23.0",
 		"typescript": "7.0.2",
-		"vite": "8.3.3",
-		"vitest": "4.1.11",
+		"vite": "8.3.4",
+		"vitest": "5.0.3",
 		"yalc": "1.0.0-pre.53"
 	}
 }
