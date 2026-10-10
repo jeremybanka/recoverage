@@ -30,7 +30,7 @@
         "turbo": "2.11.7",
         "typescript": "7.0.2",
         "typescript-eslint-typescript": "npm:typescript@6.0.3",
-        "typescript-language-server": "6.0.1",
+        "typescript-language-server": "6.0.2",
         "vscode-langservers-extracted": "4.10.0",
       },
     },
@@ -1396,7 +1396,7 @@
 
     "typescript-eslint-typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
-    "typescript-language-server": ["typescript-language-server@6.0.1", "", { "bin": { "typescript-language-server": "lib/cli.mjs" } }, "sha512-c5hEHM/7rdFRbQWoHXuddyJ53oF0M2dKeXQOYdwUek556oarltKeumKJGLp/ZMcGV7gW30mGn1MR3V5GDiLiKg=="],
+    "typescript-language-server": ["typescript-language-server@6.0.2", "", { "bin": { "typescript-language-server": "lib/cli.mjs" } }, "sha512-Ph7Ql+xkUJvMamnkh1h+aKP6HxLR7lrWIYkPn9/LZBkJdJZgtIj7OoVhkDYtQ7zFPTPmqZHOVXaUKGyz9M2q1Q=="],
 
     "unconfig-core": ["unconfig-core@7.5.0", "", { "dependencies": { "@quansync/fs": "^1.0.0", "quansync": "^1.0.0" } }, "sha512-Su3FauozOGP44ZmKdHy2oE6LPjk51M/TRRjHv2HNCWiDvfvCoxC2lno6jevMA91MYAdCdwP05QnWdWpSbncX/w=="],
 
