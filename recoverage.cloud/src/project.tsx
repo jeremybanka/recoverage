@@ -15,6 +15,7 @@ export type ProjectProps =
 	| {
 			id: string
 			name: string
+			publicReports: boolean
 			tokens: CompleteProjectTokenProps[]
 			reports: {
 				ref: string
@@ -113,6 +114,11 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 						`}
 					>
 						<h4.diagonals>Reports</h4.diagonals>
+						<ProjectVisibility
+							id={id}
+							publicReports={props.publicReports}
+							disabled={mode === `deleted`}
+						/>
 						<div
 							class={css`
 								display: flex;
@@ -236,6 +242,83 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 			)
 		}
 	}
+}
+
+export function ProjectVisibility({
+	id,
+	publicReports,
+	disabled = false,
+}: {
+	id: string
+	publicReports: boolean
+	disabled?: boolean
+}): Loadable<HtmlEscapedString> {
+	const restoreVisibility = `this.querySelector('input').checked = this.querySelector('input').defaultChecked; this.querySelector('[role=status]').textContent = 'Could not save visibility. Please try again.'`
+	return (
+		<form
+			id={`visibility-${id}`}
+			hx-put={`/ui/project/${id}/visibility`}
+			hx-trigger="change"
+			hx-swap="outerHTML"
+			hx-disable="find input"
+			{...{
+				[`hx-on:htmx:response:error`]: restoreVisibility,
+				[`hx-on:htmx:error`]: restoreVisibility,
+			}}
+			class={css`
+				background: var(--color-bg-t3);
+				border: 1px solid var(--color-fg-light);
+				border-radius: 10px 0 10px 0;
+				box-shadow: inset 0 1px 0 1px #0002;
+				padding: 10px;
+				margin: 0;
+				display: flex;
+				flex-flow: column;
+				gap: 8px;
+			`}
+		>
+			<label
+				class={css`display: flex; align-items: center; gap: 8px; cursor: pointer;`}
+			>
+				<input
+					type="checkbox"
+					name="publicReports"
+					checked={publicReports}
+					disabled={disabled}
+					aria-describedby={`visibility-description-${id}`}
+					class={css`
+						width: 18px;
+						height: 18px;
+						margin: 0;
+						accent-color: var(--success);
+					`}
+				/>
+				Public reports
+			</label>
+			<div
+				id={`visibility-description-${id}`}
+				role="status"
+				class={css`font-size: 12px; color: var(--color-fg-light);`}
+			>
+				{publicReports
+					? `Anyone with this project ID can download its coverage reports, including file paths and coverage details.`
+					: `Reports are private. Enable public reports to compare coverage without a token.`}
+			</div>
+			{publicReports && (
+				<div class={css`display: flex; align-items: center; gap: 10px;`}>
+					<code
+						class={css`font-size: 12px; overflow-wrap: anywhere; flex: 1; min-width: 0;`}
+					>
+						RECOVERAGE_CLOUD_PROJECT_ID={id}
+					</code>
+					<button.copy
+						text={`RECOVERAGE_CLOUD_PROJECT_ID=${id}`}
+						disabled={disabled}
+					/>
+				</div>
+			)}
+		</form>
+	)
 }
 
 export type CompleteProjectTokenProps = {

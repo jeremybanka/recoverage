@@ -88,6 +88,7 @@ test(`the maintainer can upload, retain, and update reports beyond the quota`, a
 			await Project({
 				id: projectId,
 				name: `Quota test`,
+				publicReports: false,
 				tokens: [],
 				reports,
 				mode: `existing`,

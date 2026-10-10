@@ -12,7 +12,7 @@ import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
 import type { Bindings } from "./env"
 import { computeHash } from "./hash"
-import { Project, ProjectToken } from "./project"
+import { Project, ProjectToken, ProjectVisibility } from "./project"
 import { projectsAllowed, type Role, tokensAllowed } from "./roles-permissions"
 import * as schema from "./schema"
 
@@ -178,6 +178,28 @@ uiRoutes.post(`/project`, uiAuth, async (c) => {
 			reports={[]}
 		/>,
 	)
+})
+
+uiRoutes.put(`/project/:projectId/visibility`, uiAuth, async (c) => {
+	const db = c.get(`drizzle`)
+	const projectId = c.req.param(`projectId`)
+	const userId = c.get(`githubUserData`).id
+	const formData = await c.req.formData()
+	const publicReports = formData.get(`publicReports`)
+	if (publicReports !== null && publicReports !== `on`) {
+		return c.json({ error: `Invalid report visibility` }, 400)
+	}
+	const [project] = await db
+		.update(schema.projects)
+		.set({ publicReports: publicReports === `on` })
+		.where(
+			and(eq(schema.projects.id, projectId), eq(schema.projects.userId, userId)),
+		)
+		.returning()
+	if (!project) {
+		return c.json({ error: `No project found` }, 404)
+	}
+	return c.html(<ProjectVisibility {...project} />)
 })
 
 uiRoutes.delete(`/project/:projectId`, uiAuth, async (c) => {

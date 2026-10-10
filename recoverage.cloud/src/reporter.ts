@@ -72,6 +72,28 @@ const reporterAuth: MiddlewareHandler<ReporterEnv> = async (c, next) => {
 	await next()
 }
 
+reporterRoutes.get(`/public/:projectId/:reportRef`, async (c) => {
+	const db = createDatabase(c.env.DB)
+	const [report] = await db
+		.select({ data: schema.reports.data })
+		.from(schema.reports)
+		.innerJoin(schema.projects, eq(schema.projects.id, schema.reports.projectId))
+		.where(
+			and(
+				eq(schema.projects.id, c.req.param(`projectId`)),
+				eq(schema.projects.publicReports, true),
+				eq(schema.reports.ref, c.req.param(`reportRef`)),
+			),
+		)
+	// Recheck visibility on every request, including after public access is revoked.
+	c.header(`Cache-Control`, `no-store`)
+	if (!report) {
+		return c.json({ error: `No report found` }, 404)
+	}
+	c.header(`Content-Type`, `application/json`)
+	return c.body(report.data)
+})
+
 reporterRoutes.get(`/:reportRef`, reporterAuth, async (c) => {
 	const reportRef = c.req.param(`reportRef`)
 	const projectScope = c.get(`projectScope`)
