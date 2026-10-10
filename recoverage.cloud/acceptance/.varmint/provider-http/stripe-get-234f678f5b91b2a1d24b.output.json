@@ -1,0 +1,85 @@
+{
+	"status": 200,
+	"body": {
+		"id": "sub_1ULTmkQqsR5rIXDd1EslXRYe",
+		"object": "subscription",
+		"livemode": false,
+		"status": "active",
+		"cancel_at": null,
+		"cancel_at_period_end": false,
+		"canceled_at": null,
+		"ended_at": null,
+		"created": 1790798845,
+		"metadata": {
+			"recoveragePlan": "supporter",
+			"recoverageUserId": "8570459"
+		},
+		"customer": {
+			"id": "cus_VLyAiLr6yWYxvZ",
+			"object": "customer",
+			"livemode": false,
+			"metadata": {
+				"recoverageUserId": "8570459"
+			}
+		},
+		"items": {
+			"object": "list",
+			"has_more": false,
+			"url": "/v1/subscription_items?subscription=sub_1ULTmkQqsR5rIXDd1EslXRYe",
+			"data": [
+				{
+					"id": "si_VMCB5p1hi2FocX",
+					"object": "subscription_item",
+					"current_period_start": 1790798845,
+					"current_period_end": 1793390845,
+					"quantity": 1,
+					"price": {
+						"id": "price_1ULBftQqsR5rIXDdn9qTbrfC",
+						"object": "price",
+						"active": true,
+						"livemode": false,
+						"currency": "usd",
+						"unit_amount": 100,
+						"type": "recurring",
+						"billing_scheme": "per_unit",
+						"recurring": {
+							"interval": "month",
+							"interval_count": 1,
+							"meter": null,
+							"trial_period_days": null,
+							"usage_type": "licensed"
+						},
+						"product": "prod_VLtSqPuSQJ6T1p"
+					}
+				}
+			]
+		},
+		"latest_invoice": {
+			"id": "in_1ULTmjQqsR5rIXDdAFjLWOwx",
+			"object": "invoice",
+			"livemode": false,
+			"status": "paid",
+			"status_transitions": {
+				"finalized_at": 1790798845,
+				"marked_uncollectible_at": null,
+				"paid_at": 1790798845,
+				"voided_at": null
+			},
+			"amount_paid": 100,
+			"amount_remaining": 0,
+			"currency": "usd",
+			"customer": "cus_VLyAiLr6yWYxvZ",
+			"parent": {
+				"quote_details": null,
+				"subscription_details": {
+					"metadata": {
+						"recoveragePlan": "supporter",
+						"recoverageUserId": "8570459"
+					},
+					"subscription": "sub_1ULTmkQqsR5rIXDd1EslXRYe"
+				},
+				"type": "subscription_details"
+			}
+		}
+	}
+}

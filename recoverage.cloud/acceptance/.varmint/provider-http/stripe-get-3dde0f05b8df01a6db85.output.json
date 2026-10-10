@@ -1,0 +1,9 @@
+{
+	"status": 200,
+	"body": {
+		"object": "list",
+		"data": [],
+		"has_more": false,
+		"url": "/v1/subscriptions"
+	}
+}
