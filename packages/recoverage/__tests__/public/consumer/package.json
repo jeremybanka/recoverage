@@ -3,7 +3,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"check:tsc": "tsc --noEmit"
+		"check:tsc": "bun --check"
 	},
 	"devDependencies": {
 		"@types/istanbul-lib-coverage": "2.0.6",

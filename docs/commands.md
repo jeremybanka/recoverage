@@ -27,7 +27,9 @@ Following the [mise Node.js cookbook](https://mise.jdx.dev/mise-cookbook/nodejs.
 - `check:deps`: `pin-checker --ignore-workspaces`.
 - `check:eslint`: `turbo run check:eslint`.
 - `check:fmt`: `dprint check`.
-- `check:tsc`: package TypeScript checks through Turbo, followed by release-tooling type checks.
+- `check:tsc`: Bun's built-in TypeScript checks through Turbo, followed by release-tooling type checks with Bun.
+
+`check:tsc` retains its canonical command name and uses `bun --check` with Bun 1.4.3. The flag invokes the built-in type checker even when a package has its own aggregate `check` script. Turbo still builds dependencies and generates prerequisites before checking each package. TypeScript remains installed for editors, declaration builds, `watch:types`, and the public consumer compatibility tests, which also validate declarations with `tsc`.
 
 ## Command notes
 

@@ -37,7 +37,7 @@
 		"check": "bun run check:eslint && bun run check:tsc && bun run check:biome",
 		"check:biome": "biome lint -- .",
 		"check:eslint": "NODE_OPTIONS=--require=../../scripts/eslint-typescript.cjs eslint -- .",
-		"check:tsc": "tsc --noEmit",
+		"check:tsc": "bun --check",
 		"cov": "bun __scripts__/coverage.bun.ts",
 		"cov:check": "bun run cov && bun __scripts__/coverage-check.bun.ts",
 		"dev": "bun --bun tsdown --watch",
