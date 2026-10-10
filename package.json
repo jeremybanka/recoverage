@@ -18,7 +18,7 @@
 		"check:deps": "pin-checker --ignore-workspaces",
 		"check:eslint": "turbo run check:eslint",
 		"check:fmt": "dprint check",
-		"check:tsc": "turbo run check:tsc && tsc --project scripts/tsconfig.json",
+		"check:tsc": "turbo run check:tsc && bun --check --tsconfig-override scripts/tsconfig.json",
 		"cov": "cross-env CI=true turbo run cov --concurrency=2 --env-mode=loose",
 		"cov:check": "bun run cov && bun packages/recoverage/__scripts__/coverage-check.bun.ts",
 		"fmt": "dprint fmt",
