@@ -12,7 +12,7 @@
         "@dprint/markdown": "0.26.0",
         "@eslint/eslintrc": "3.3.7",
         "@eslint/js": "10.0.1",
-        "@types/bun": "npm:bun-types@1.4.2",
+        "@types/bun": "npm:bun-types@1.4.3",
         "@types/eslint": "9.6.1",
         "@types/semver": "7.8.0",
         "@typescript-eslint/eslint-plugin": "8.71.1",
@@ -58,7 +58,7 @@
         "takua": "0.2.3",
       },
       "devDependencies": {
-        "@types/bun": "npm:bun-types@1.4.2",
+        "@types/bun": "npm:bun-types@1.4.3",
         "@types/istanbul-lib-coverage": "2.0.6",
         "@types/istanbul-lib-instrument": "1.7.8",
         "@types/istanbul-lib-report": "3.0.3",
@@ -104,7 +104,7 @@
         "@hono/vite-dev-server": "0.26.1",
         "@octokit/types": "18.0.0",
         "@t3-oss/env-core": "0.13.11",
-        "@types/bun": "npm:bun-types@1.4.2",
+        "@types/bun": "npm:bun-types@1.4.3",
         "@types/istanbul-lib-coverage": "2.0.6",
         "@types/node": "26.6.5",
         "cloudflare": "7.3.0",
@@ -596,7 +596,7 @@
 
     "@types/babel-types": ["@types/babel-types@7.0.16", "", {}, "sha512-5QXs9GBFTNTmilLlWBhnsprqpjfrotyrnzUdwDrywEL/DA4LuCWQT300BTOXA3Y9ngT9F2uvmCoIxI6z8DlJEA=="],
 
-    "@types/bun": ["bun-types@1.4.2", "", { "dependencies": { "@types/node": "*" } }, "sha512-bxV1FgK7yBIzjRe5zBozIM4Bem11ZJcCXSrjWRG3YWLt8yFDePu4cLjpebO8OvPeIE9trbyPF4fuj3Cia4Fj3w=="],
+    "@types/bun": ["bun-types@1.4.3", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-tinRJNGOmUN+tEAsn2y2e942n9JHRHR42iUYzDH75NmhJqVBokGSQkkfSFdNWwsANIdrK6ACH9t01M452YyTwg=="],
 
     "@types/chai": ["@types/chai@5.2.3", "", { "dependencies": { "@types/deep-eql": "*", "assertion-error": "^2.0.1" } }, "sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA=="],
 
