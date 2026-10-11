@@ -3,6 +3,9 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
+		"billing:preview:config": "bun __scripts__/configure-billing-preview.bun.ts",
+		"billing:verify": "bun __scripts__/verify-billing-env.bun.ts",
+		"billing:verify:storage": "bun __scripts__/verify-report-storage.bun.ts",
 		"check": "bun run check:eslint && bun run check:tsc && bun run check:biome",
 		"check:biome": "biome lint -- .",
 		"check:eslint": "NODE_OPTIONS=--require=../scripts/eslint-typescript.cjs eslint -- .",
@@ -11,13 +14,17 @@
 		"check:tsc:scripts": "bun --check --tsconfig-override __scripts__/tsconfig.json",
 		"cov": "bun ../packages/recoverage/__scripts__/coverage.bun.ts",
 		"cov:check": "bun run cov && bun ../packages/recoverage/__scripts__/coverage-check.bun.ts",
+		"db:destroy": "bun __scripts__/destroy-local-db.bun.ts",
 		"db:gen": "drizzle-kit generate",
 		"db:up": "wrangler d1 migrations apply recoverage-data",
 		"dev": "wrangler dev --live-reload",
+		"dev:stripe": "bun __scripts__/dev-stripe.bun.ts",
+		"fix:stripe-sourcemaps": "bun __scripts__/strip-stripe-broken-sourcemaps.bun.ts",
 		"gen": "bun run --parallel --no-exit-on-error \"gen:*\"",
 		"gen:scripts": "bun __scripts__/gen-scripts.bun.ts",
 		"gen:types": "wrangler types",
 		"go": "bun run --parallel --no-exit-on-error \"setup:*\" && wrangler deploy --minify",
+		"postinstall": "bun fix:stripe-sourcemaps",
 		"preview": "bun run --parallel --no-exit-on-error \"preview:setup:*\" && wrangler deploy --minify --config wrangler-preview.jsonc",
 		"preview:config": "bun __scripts__/configure-preview.bun.ts",
 		"preview:d1": "bun __scripts__/preview-d1.bun.ts",
@@ -31,10 +38,14 @@
 		"setup:scripts": "bun __scripts__/gen-scripts.bun.ts",
 		"setup:types": "wrangler types",
 		"test": "vitest run",
+		"test:migrations": "bun __scripts__/rehearse-migrations.bun.ts",
 		"test:watch": "vitest --watch",
 		"watch:types": "tsc --watch --noEmit"
 	},
 	"dependencies": {
+		"@js-temporal/polyfill": "0.5.1",
+		"@t3-oss/env-core": "0.13.11",
+		"arkregex": "0.0.5",
 		"arktype": "2.2.8",
 		"drizzle-orm": "0.45.4",
 		"hono": "4.13.13",
@@ -42,7 +53,8 @@
 		"istanbul-lib-coverage": "3.2.2",
 		"jurist": "0.0.14",
 		"nanoid": "6.0.2",
-		"octokit": "5.0.5"
+		"octokit": "5.0.5",
+		"stripe": "22.1.0"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-plugin": "1.4.0",
@@ -60,6 +72,7 @@
 		"recoverage": "workspace:*",
 		"recoverage-fixtures": "workspace:*",
 		"takua": "0.2.3",
+		"varmint": "0.6.0",
 		"vite": "8.3.4",
 		"vitest": "5.0.3",
 		"wrangler": "4.149.0"

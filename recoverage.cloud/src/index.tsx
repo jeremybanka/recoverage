@@ -2,48 +2,126 @@ import { eq } from "drizzle-orm"
 import { Hono } from "hono"
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie"
 import { css } from "hono/css"
-import { Octokit } from "octokit"
 
 import { assetsRoutes } from "./assets"
+import { getUserRole } from "./billing"
+import { billingAccount, BillingReturnNotice } from "./billing-account"
+import { billingRoutes } from "./billing-routes"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
-import { GITHUB_CALLBACK_ENDPOINT } from "./env"
+import type { Bindings } from "./env"
+import { getEnv, GITHUB_CALLBACK_ENDPOINT, githubSignInConfigured } from "./env"
+import { createGitHubClient } from "./github-client"
+import { redactWebhookPayloads } from "./maintenance"
 import { Page, SplashPage } from "./page"
+import { navigation } from "./presentation"
+import { RoleBadge } from "./pricing"
 import { reporterRoutes } from "./reporter"
+import { failureCategory } from "./request-diagnostics"
 import * as schema from "./schema"
 import { shieldsRoutes } from "./shields"
+import { BillingSupport } from "./support"
 import type { UiEnv } from "./ui"
 import { uiRoutes } from "./ui"
+import { AccountUsage, accountUsage, StorageHelp } from "./usage"
 
 const app = new Hono<UiEnv>()
 
+function requestCategory(path: string): string {
+	if (path === `/`) return `account`
+	const category = path.split(`/`)[1] ?? ``
+	return [
+		`assets`,
+		`billing`,
+		`reporter`,
+		`ui`,
+		`shields`,
+		`oauth`,
+		`support`,
+	].includes(category)
+		? category
+		: `other`
+}
+
 app.use(`*`, async (c, next) => {
-	console.log(c.req.method, c.req.path)
+	const started = Date.now()
+	const requestId = crypto.randomUUID()
+	c.set(`requestId`, requestId)
+	c.header(`X-Request-Id`, requestId)
 	await next()
+	console.info({
+		event: `request`,
+		requestId: c.get(`requestId`),
+		route: requestCategory(c.req.path),
+		method: c.req.method,
+		status: c.res.status,
+		durationMs: Date.now() - started,
+	})
+})
+
+app.onError((error, c) => {
+	console.error({
+		event: `request_failed`,
+		requestId: c.get(`requestId`),
+		category: failureCategory(error),
+		route: requestCategory(c.req.path),
+	})
+	return c.json(
+		{
+			code: `INTERNAL_ERROR`,
+			requestId: c.get(`requestId`),
+			error: `The service could not complete this request. Please retry later.`,
+		},
+		500,
+	)
 })
 
 app.route(`assets`, assetsRoutes)
+app.route(`billing`, billingRoutes)
 app.route(`reporter`, reporterRoutes)
 app.route(`ui`, uiRoutes)
 app.route(`shields`, shieldsRoutes)
 
+app.get(`/support`, (c) => {
+	const config = getEnv(c.env)
+	return c.html(
+		<Page>
+			<h1>Help and billing support</h1>
+			<nav aria-label="Account navigation" class={navigation}>
+				<a href="/">Back to your projects</a>
+				<a href="/ui/billing">Plan and billing</a>
+				<a href="/ui/upgrade">Compare plans</a>
+			</nav>
+			<StorageHelp />
+			<BillingSupport config={config} />
+			{!config.BILLING_SUPPORT_EMAIL ? (
+				<p>
+					Billing support details will be published before subscriptions open.
+				</p>
+			) : null}
+			<p>
+				Existing reports remain readable and replaceable when your account
+				reaches its report limit.
+			</p>
+		</Page>,
+	)
+})
+
 app.get(`/`, async (c) => {
+	const env = getEnv(c.env)
 	const url = new URL(c.req.url)
+	if (!env.COOKIE_SECRET) return c.html(<SplashPage signInAvailable={false} />)
 	const githubAccessTokenCookie = await getSignedCookie(
 		c,
-		c.env.COOKIE_SECRET,
+		env.COOKIE_SECRET,
 		`github-access-token`,
 	)
 	if (!githubAccessTokenCookie) {
-		return c.html(
-			<SplashPage currentUrl={url} githubClientId={c.env.GITHUB_CLIENT_ID} />,
-		)
+		return c.html(<SplashPage signInAvailable={githubSignInConfigured(env)} />)
 	}
 
-	console.log(`Found github access token cookie`)
-
 	try {
-		const octokit = new Octokit({ auth: githubAccessTokenCookie })
+		const octokit = createGitHubClient(githubAccessTokenCookie)
 
 		const { data } = await octokit.request(`GET /user`, {
 			request: { fetch: cachedFetch },
@@ -61,7 +139,18 @@ app.get(`/`, async (c) => {
 			await db.insert(schema.users).values({ id: data.id }).returning()
 		)[0]
 
-		console.log(`User`, user)
+		const userRole = await getUserRole({
+			db,
+			stripeSupporterPriceId: env.STRIPE_SUPPORTER_PRICE_ID,
+			userId: user.id,
+		})
+		if (!userRole) {
+			return c.json({ error: `User did not have a resolvable role.` }, 500)
+		}
+		const billingState = url.searchParams.get(`billing`)
+		const account = await billingAccount(db, user.id, userRole)
+		c.header(`Cache-Control`, `no-store`)
+		const usage = await accountUsage(db, user.id)
 
 		return await c.html(
 			<Page>
@@ -77,8 +166,23 @@ app.get(`/`, async (c) => {
 				/>
 				<h1>Recoverage</h1>
 				<p>
-					Logged in as {data.login} ({data.id})
+					Logged in as {data.login} ({data.id}){` `}
+					{RoleBadge({
+						href: `/ui/billing`,
+						role: userRole,
+					})}
 				</p>
+				<BillingReturnNotice
+					state={billingState}
+					account={account}
+					config={env}
+				/>
+				<nav aria-label="Account navigation" class={navigation}>
+					<a href="/ui/billing">Plan and billing</a>
+					<a href="/ui/upgrade">Compare plans</a>
+					<a href="/support">Help and billing support</a>
+				</nav>
+				<AccountUsage usage={usage} role={userRole} userId={user.id} />
 				<h2>Your Projects</h2>
 				<div
 					hx-get="/ui/project"
@@ -91,33 +195,101 @@ app.get(`/`, async (c) => {
 				/>
 			</Page>,
 		)
-	} catch (thrown) {
-		console.error(thrown)
-		deleteCookie(c, `github-access-token`)
-		return c.html(
-			<SplashPage currentUrl={url} githubClientId={c.env.GITHUB_CLIENT_ID} />,
-		)
+	} catch (error) {
+		// A transient database/provider failure must not destroy a valid login.
+		if (error instanceof Error && `status` in error && error.status === 401) {
+			deleteCookie(c, `github-access-token`, { path: `/` })
+			c.header(`Cache-Control`, `no-store`)
+			return c.html(<SplashPage signInAvailable={githubSignInConfigured(env)} />)
+		}
+		throw error
 	}
 })
 
+const oauthStateCookie = `github-oauth-state`
+const oauthStateLifetimeSeconds = 10 * 60
+
+app.get(`/oauth/github`, async (c) => {
+	const env = getEnv(c.env)
+	if (!githubSignInConfigured(env))
+		return c.json({ error: `Sign-in is temporarily unavailable.` }, 503)
+	const url = new URL(c.req.url)
+	const state = crypto.randomUUID()
+	await setSignedCookie(
+		c,
+		oauthStateCookie,
+		`${Date.now() + oauthStateLifetimeSeconds * 1000}:${state}`,
+		env.COOKIE_SECRET,
+		{
+			httpOnly: true,
+			secure: url.protocol === `https:`,
+			sameSite: `lax`,
+			path: `/oauth/github`,
+			maxAge: oauthStateLifetimeSeconds,
+		},
+	)
+	const authorizeUrl = new URL(`https://github.com/login/oauth/authorize`)
+	authorizeUrl.searchParams.set(`client_id`, env.GITHUB_CLIENT_ID)
+	authorizeUrl.searchParams.set(
+		`redirect_uri`,
+		new URL(GITHUB_CALLBACK_ENDPOINT, url.origin).href,
+	)
+	authorizeUrl.searchParams.set(`scope`, `user`)
+	authorizeUrl.searchParams.set(`state`, state)
+	c.header(`Cache-Control`, `no-store`)
+	return c.redirect(authorizeUrl.href, 302)
+})
+
 app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
+	c.header(`Cache-Control`, `no-store`)
+	c.header(`Referrer-Policy`, `no-referrer`)
+	const env = getEnv(c.env)
+	if (!githubSignInConfigured(env))
+		return c.json({ error: `Sign-in is temporarily unavailable.` }, 503)
+	const signedState = await getSignedCookie(
+		c,
+		env.COOKIE_SECRET,
+		oauthStateCookie,
+	)
+	// Consume the browser's state cookie on every callback, including errors.
+	deleteCookie(c, oauthStateCookie, { path: `/oauth/github` })
+	const [expiresAt, expectedState] =
+		typeof signedState === `string` ? signedState.split(`:`) : []
+	const state = c.req.query(`state`)
+	if (
+		!state ||
+		state !== expectedState ||
+		!Number.isSafeInteger(Number(expiresAt)) ||
+		Number(expiresAt) <= Date.now()
+	) {
+		return c.json(
+			{ error: `Invalid or expired sign-in request. Please sign in again.` },
+			400,
+		)
+	}
 	const code = c.req.query(`code`)
 	if (!code) {
 		return c.json({ error: `No code provided` }, 400)
 	}
-	const accessTokenUrl = new URL(`https://github.com/login/oauth/access_token`)
-	accessTokenUrl.searchParams.set(`client_id`, c.env.GITHUB_CLIENT_ID)
-	accessTokenUrl.searchParams.set(`client_secret`, c.env.GITHUB_CLIENT_SECRET)
-	accessTokenUrl.searchParams.set(`code`, code)
-
-	const accessTokenResponse = await cachedFetch(accessTokenUrl)
+	// OAuth codes and the client secret must not enter URL-based caches or logs.
+	const accessTokenResponse = await fetch(
+		`https://github.com/login/oauth/access_token`,
+		{
+			method: `POST`,
+			headers: { Accept: `application/x-www-form-urlencoded` },
+			body: new URLSearchParams({
+				client_id: env.GITHUB_CLIENT_ID,
+				client_secret: env.GITHUB_CLIENT_SECRET,
+				code,
+				redirect_uri: new URL(GITHUB_CALLBACK_ENDPOINT, c.req.url).href,
+			}),
+		},
+	)
 
 	if (!accessTokenResponse.ok) {
 		return c.json({ error: `Failed to get access token` }, 400)
 	}
 	const accessTokenResponseText = await accessTokenResponse.text()
-
-	console.log({ accessTokenResponseText })
 
 	const params = new URLSearchParams(accessTokenResponseText)
 	const accessToken = params.get(`access_token`)
@@ -128,9 +300,12 @@ app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
 		c,
 		`github-access-token`,
 		accessToken,
-		c.env.COOKIE_SECRET,
+		env.COOKIE_SECRET,
 		{
-			sameSite: `strict`,
+			// Stripe returns through a top-level GET. Billing writes also require
+			// an exact same-origin POST, so this does not allow cross-site writes.
+			sameSite: `lax`,
+			secure: new URL(c.req.url).protocol === `https:`,
 			httpOnly: true,
 			path: `/`,
 		},
@@ -142,4 +317,9 @@ app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
 		</Page>,
 	)
 })
-export default app
+export default Object.assign(app, {
+	async scheduled(_event: ScheduledController, bindings: Bindings) {
+		const redacted = await redactWebhookPayloads(bindings.DB)
+		console.info({ event: `webhook_retention`, redacted })
+	},
+})

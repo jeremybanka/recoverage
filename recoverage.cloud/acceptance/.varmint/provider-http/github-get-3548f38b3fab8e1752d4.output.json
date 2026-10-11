@@ -1,0 +1,8 @@
+{
+	"status": 401,
+	"body": {
+		"message": "Bad credentials",
+		"documentation_url": "https://docs.github.com/rest",
+		"status": "401"
+	}
+}

@@ -112,9 +112,10 @@ test(`other accounts keep their quota even if they claim the maintainer's identi
 		login: `jeremybanka`,
 		userId: 8570459,
 	})
-	expect(rejected.status).toBe(401)
+	expect(rejected.status).toBe(403)
 	expect(await rejected.json()).toEqual({
-		error: `You may not create more reports`,
+		code: `REPORT_QUOTA_EXCEEDED`,
+		error: `You may not create more hosted reports. Your account tier allows 3. Existing reports can still be updated.`,
 	})
 	expect((await download(token, `report-3`)).status).toBe(404)
 	expect(

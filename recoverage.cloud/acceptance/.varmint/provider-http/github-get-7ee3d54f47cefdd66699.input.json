@@ -1,0 +1,10 @@
+[
+	{
+		"provider": "github",
+		"method": "GET",
+		"path": "/user",
+		"query": [],
+		"body": [],
+		"credentialCase": "accepted"
+	}
+]

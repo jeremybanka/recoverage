@@ -23,17 +23,17 @@ test(`authentication flow`, async () => {
 		console.log(`[intercepted]`, request.method, url.origin + url.pathname)
 
 		switch (`${request.method} ${url.origin}${url.pathname}`) {
-			case `GET https://github.com/login/oauth/authorize`: {
-				const redirectUrl = new URL(GITHUB_CALLBACK_ENDPOINT, `http://localhost`)
-				redirectUrl.searchParams.set(`code`, `mocked-github-token`)
-				return app.request(
-					redirectUrl.pathname + redirectUrl.search,
-					{ method: `GET` },
-					env,
+			case `POST https://github.com/login/oauth/access_token`: {
+				expect(url.search).toBe(``)
+				const body = await request.formData()
+				expect(body.get(`code`)).toBe(`mocked-github-token`)
+				expect(body.get(`client_id`)).toBe(env.GITHUB_CLIENT_ID)
+				expect(body.get(`client_secret`)).toBe(env.GITHUB_CLIENT_SECRET)
+				expect(body.get(`redirect_uri`)).toBe(
+					`https://recoverage.cloud${GITHUB_CALLBACK_ENDPOINT}`,
 				)
-			}
-			case `GET https://github.com/login/oauth/access_token`:
 				return new Response(`access_token=gho_fake&scope=user&token_type=bearer`)
+			}
 			case `GET https://api.github.com/user`:
 				return Response.json({
 					id: 12345,
@@ -50,10 +50,58 @@ test(`authentication flow`, async () => {
 	const response = await app.request(`/`, { method: `GET` }, env)
 	expect(response.status).toBe(200)
 
-	const authRes = await fetch(`https://github.com/login/oauth/authorize`)
-	const githubAccessTokenCookie = authRes.headers.get(`set-cookie`)
+	expect(await response.text()).toContain(`href="/oauth/github"`)
+	const start = await app.request(
+		`https://recoverage.cloud/oauth/github`,
+		{},
+		env,
+	)
+	expect(start.status).toBe(302)
+	expect(start.headers.get(`Cache-Control`)).toBe(`no-store`)
+	const authorizeUrl = new URL(start.headers.get(`location`) ?? ``)
+	expect(authorizeUrl.origin + authorizeUrl.pathname).toBe(
+		`https://github.com/login/oauth/authorize`,
+	)
+	const stateCookie = start.headers.get(`set-cookie`)
+	assert(stateCookie)
+	expect(stateCookie).toContain(`HttpOnly`)
+	expect(stateCookie).toContain(`Secure`)
+	expect(stateCookie).toContain(`SameSite=Lax`)
+	expect(stateCookie).toContain(`Max-Age=600`)
+	const callbackUrl = new URL(
+		GITHUB_CALLBACK_ENDPOINT,
+		`https://recoverage.cloud`,
+	)
+	callbackUrl.searchParams.set(`code`, `mocked-github-token`)
+	callbackUrl.searchParams.set(
+		`state`,
+		authorizeUrl.searchParams.get(`state`) ?? ``,
+	)
+	const authRes = await app.request(
+		callbackUrl.href,
+		{ headers: { Cookie: stateCookie } },
+		env,
+	)
+	expect(authRes.status).toBe(200)
+	expect(authRes.headers.get(`Cache-Control`)).toBe(`no-store`)
+	expect(
+		authRes.headers
+			.getSetCookie()
+			.some(
+				(cookie) =>
+					cookie.startsWith(`github-oauth-state=`) &&
+					cookie.includes(`Max-Age=0`),
+			),
+	).toBe(true)
+	const githubAccessTokenCookie = authRes.headers
+		.getSetCookie()
+		.find((cookie) => cookie.startsWith(`github-access-token=`))
 
 	assert(githubAccessTokenCookie)
+	expect(githubAccessTokenCookie).toContain(`SameSite=Lax`)
+	expect(githubAccessTokenCookie).toContain(`Secure`)
+	expect(githubAccessTokenCookie).toContain(`HttpOnly`)
+	expect(githubAccessTokenCookie).toContain(`Path=/`)
 
 	const response2 = await fetch(`https://recoverage.cloud/`, {
 		method: `GET`,
@@ -68,6 +116,19 @@ test(`authentication flow`, async () => {
 	expect(response2Text.indexOf(htmxConfig)).toBeLessThan(
 		response2Text.indexOf(`<script>var htmx=`),
 	)
+	expect(response2Text).toContain(`Logged in as testuser (12345)`)
+	expect(response2Text).toContain(`href="/ui/upgrade"`)
+
+	const upgradeResponse = await fetch(`https://recoverage.cloud/ui/upgrade`, {
+		method: `GET`,
+		headers: {
+			Cookie: githubAccessTokenCookie,
+		},
+	})
+	expect(upgradeResponse.status).toBe(200)
+	const upgradeText = await upgradeResponse.text()
+	expect(upgradeText).toContain(`New subscriptions are currently unavailable.`)
+	expect(upgradeText).not.toContain(`action="/billing/checkout"`)
 
 	const project = await fetch(`https://recoverage.cloud/ui/project`, {
 		method: `POST`,
@@ -78,6 +139,7 @@ test(`authentication flow`, async () => {
 		body: `name=test`,
 	})
 	const projectText = await project.text()
+	expect(project.headers.get(`HX-Trigger`)).toBe(`usage-changed`)
 
 	const hxPost = projectText.match(/hx-post="([^"]+)"/)
 	const postTokenToProjectPath = hxPost?.[1]
@@ -101,6 +163,21 @@ test(`authentication flow`, async () => {
 	})
 
 	const tokenText = await token.text()
+	expect(token.headers.get(`HX-Trigger`)).toBe(`usage-changed`)
+	const controls = await fetch(
+		`https://recoverage.cloud/ui/token-usage/${projectId}`,
+		{ headers: { Cookie: githubAccessTokenCookie } },
+	)
+	expect(await controls.text()).toContain(`1 / 5 tokens`)
+	const counters = await Promise.all(
+		[`usage`, `project-usage`].map((path) =>
+			fetch(`https://recoverage.cloud/ui/${path}`, {
+				headers: { Cookie: githubAccessTokenCookie },
+			}),
+		),
+	)
+	for (const counter of counters) expect(counter.status).toBe(200)
+	expect(await counters[0].text()).toContain(`Projects: 1 / 3`)
 	const parser = new XMLParser()
 	const tokenXml = parser.parse(tokenText)
 	const code = tokenXml.div.div[0].span.code
@@ -163,3 +240,54 @@ test(`authentication flow`, async () => {
 	assert(typeof reportGetLib === `string`)
 	expect(JSON.parse(reportGetLib)).toEqual(istanbulReportFixture)
 })
+
+test.each([
+	`missing-cookie`,
+	`missing-state`,
+	`mismatch`,
+	`expired`,
+	`tampered`,
+] as const)(
+	`OAuth rejects %s state before contacting GitHub`,
+	async (scenario) => {
+		if (scenario === `expired`)
+			vi.spyOn(Date, `now`).mockReturnValue(Date.now() - 11 * 60 * 1000)
+		const start = await app.request(
+			`https://recoverage.cloud/oauth/github`,
+			{},
+			env,
+		)
+		vi.restoreAllMocks()
+		const authorizeUrl = new URL(start.headers.get(`location`) ?? ``)
+		let cookie = start.headers.get(`set-cookie`) ?? ``
+		if (scenario === `tampered`)
+			cookie = cookie.replace(
+				`github-oauth-state=`,
+				`github-oauth-state=tampered`,
+			)
+		const callbackUrl = new URL(
+			GITHUB_CALLBACK_ENDPOINT,
+			`https://recoverage.cloud`,
+		)
+		callbackUrl.searchParams.set(`code`, `attacker-code`)
+		if (scenario !== `missing-state`)
+			callbackUrl.searchParams.set(
+				`state`,
+				scenario === `mismatch`
+					? `attacker-state`
+					: (authorizeUrl.searchParams.get(`state`) ?? ``),
+			)
+		const lookup = vi.spyOn(globalThis, `fetch`)
+		const response = await app.request(
+			callbackUrl.href,
+			{ headers: scenario === `missing-cookie` ? {} : { Cookie: cookie } },
+			env,
+		)
+		expect(response.status).toBe(400)
+		expect(lookup).not.toHaveBeenCalled()
+		expect(response.headers.get(`set-cookie`)).toContain(`Max-Age=0`)
+		expect(response.headers.get(`set-cookie`)).not.toContain(
+			`github-access-token=`,
+		)
+	},
+)

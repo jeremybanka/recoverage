@@ -1,0 +1,15 @@
+[
+	{
+		"provider": "stripe",
+		"method": "GET",
+		"path": "/v1/checkout/sessions/cs_test_a1kUgURtupRSVRtmiLoBK683nn06ia6vy0OXiVuxuBFbuElPYSf0piI7W4/line_items",
+		"query": [
+			[
+				"limit",
+				"2"
+			]
+		],
+		"body": [],
+		"credentialCase": "accepted"
+	}
+]

@@ -1,0 +1,26 @@
+{
+	"status": 200,
+	"body": {
+		"id": "cs_test_a1kUgURtupRSVRtmiLoBK683nn06ia6vy0OXiVuxuBFbuElPYSf0piI7W4",
+		"object": "checkout.session",
+		"mode": "subscription",
+		"status": "open",
+		"livemode": false,
+		"customer": "cus_VMCYwFbtTbAnu5",
+		"subscription": null,
+		"metadata": {
+			"recoverageAttemptId": "00000000-0000-4000-8000-000000000001",
+			"recoveragePlan": "supporter",
+			"recoverageUserId": "8570459"
+		},
+		"expires_at": 1790803847,
+		"created": 1790800277,
+		"payment_status": "unpaid",
+		"client_reference_id": "8570459",
+		"success_url": "https://recoverage-billing-preview.7tffcqc6vs.workers.dev/?billing=success",
+		"cancel_url": "https://recoverage-billing-preview.7tffcqc6vs.workers.dev/?billing=cancel",
+		"amount_total": 100,
+		"currency": "usd",
+		"url": "https://checkout.stripe.com/recorded-redacted-session"
+	}
+}

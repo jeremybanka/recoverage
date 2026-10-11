@@ -1,0 +1,63 @@
+[
+	{
+		"provider": "stripe",
+		"method": "POST",
+		"path": "/v1/checkout/sessions",
+		"query": [],
+		"body": [
+			[
+				"cancel_url",
+				"https://recoverage-billing-preview.7tffcqc6vs.workers.dev/?billing=cancel"
+			],
+			[
+				"client_reference_id",
+				"8570459"
+			],
+			[
+				"customer",
+				"cus_VMCYwFbtTbAnu5"
+			],
+			[
+				"expires_at",
+				"1790803847"
+			],
+			[
+				"line_items[0][price]",
+				"price_1ULBftQqsR5rIXDdn9qTbrfC"
+			],
+			[
+				"line_items[0][quantity]",
+				"1"
+			],
+			[
+				"metadata[recoverageAttemptId]",
+				"00000000-0000-4000-8000-000000000001"
+			],
+			[
+				"metadata[recoveragePlan]",
+				"supporter"
+			],
+			[
+				"metadata[recoverageUserId]",
+				"8570459"
+			],
+			[
+				"mode",
+				"subscription"
+			],
+			[
+				"subscription_data[metadata][recoveragePlan]",
+				"supporter"
+			],
+			[
+				"subscription_data[metadata][recoverageUserId]",
+				"8570459"
+			],
+			[
+				"success_url",
+				"https://recoverage-billing-preview.7tffcqc6vs.workers.dev/?billing=success"
+			]
+		],
+		"credentialCase": "accepted"
+	}
+]

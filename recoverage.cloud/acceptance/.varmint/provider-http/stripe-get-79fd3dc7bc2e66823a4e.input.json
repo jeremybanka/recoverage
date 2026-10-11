@@ -1,0 +1,19 @@
+[
+	{
+		"provider": "stripe",
+		"method": "GET",
+		"path": "/v1/checkout/sessions",
+		"query": [
+			[
+				"customer",
+				"cus_VMCYwFbtTbAnu5"
+			],
+			[
+				"limit",
+				"100"
+			]
+		],
+		"body": [],
+		"credentialCase": "accepted"
+	}
+]

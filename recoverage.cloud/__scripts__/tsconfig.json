@@ -1,6 +1,13 @@
 {
 	"extends": "../../tsconfig.json",
-	"include": ["*.ts", "../__tests__/report-fixture.ts"],
+	"include": [
+		"*.ts",
+		"../acceptance/*.ts",
+		"../__tests__/report-fixture.ts",
+		"../src/billing-config.ts",
+		"../src/portal-config.ts",
+		"../src/stripe.ts"
+	],
 	"compilerOptions": {
 		"composite": true,
 		"target": "ESNext",
