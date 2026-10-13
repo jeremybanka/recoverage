@@ -79,6 +79,6 @@
 	],
 	"overrides": {
 		"rolldown": "1.2.13",
-		"rolldown-plugin-dts": "0.28.7"
+		"rolldown-plugin-dts": "0.28.8"
 	}
 }
