@@ -62,8 +62,8 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: bun packages/recoverage/__scripts__/coverage-check.bun.ts "$BASE_SHA"
 
-  BreakCheck:
-    name: Break Check
+  Breakage:
+    name: Breakage
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
