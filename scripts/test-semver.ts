@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises"
 import path from "node:path"
 
 import { readChangesets } from "@changesets/read"
-import { breakCheck } from "break-check"
+import { breakage } from "breakage"
 
 import {
 	certifyBreakingChange,
@@ -29,7 +29,7 @@ if (execFileSync(`git`, [`status`, `--porcelain`], { cwd: root }).length) {
 run(`run`, `--cwd`, packageDirectory, `build`)
 run(`run`, `--cwd`, packageDirectory, `test:public`)
 
-const outcome = await breakCheck({
+const outcome = await breakage({
 	baseDirname: root,
 	// Match only this package's stable releases, including annotated tags.
 	tagPattern: `\\trefs/tags/recoverage@(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:\\^\\{\\})?$`,
@@ -37,7 +37,7 @@ const outcome = await breakCheck({
 	// containing the expanded public suite. Include their fixtures in restoration.
 	testPattern: `packages/recoverage/__tests__/{diff-coverage.test.ts,sample-package-*/{**,.gitignore},public/**}`,
 	testCommand: `bun run --cwd packages/recoverage test:public`,
-	// Certify below using the exact release selected by break-check.
+	// Certify below using the exact release selected by breakage.
 	certifyCommand: `false`,
 })
 

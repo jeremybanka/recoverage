@@ -33,7 +33,7 @@
 		},
 		{
 			"matchDatasources": ["npm"],
-			"matchPackageNames": ["comline", "jurist", "takua"],
+			"matchPackageNames": ["breakage", "comline", "jurist", "takua"],
 			"minimumReleaseAge": null,
 			"groupName": "jeremybanka packages"
 		},
