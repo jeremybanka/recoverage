@@ -72,4 +72,4 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/setup-test-git
-      - run: bun run test:semver
+      - run: bun run test:breakage
