@@ -46,7 +46,8 @@
 		"test:watch": "vitest --watch",
 		"watch:types": "tsc --watch --noEmit",
 		"test:public": "vitest run __tests__/diff-coverage.test.ts && bun run test:public-api",
-		"test:public-api": "bun test __tests__/public"
+		"test:public-api": "bun test __tests__/public",
+		"test:public:source": "bun __scripts__/test-public-source.ts"
 	},
 	"dependencies": {
 		"@t3-oss/env-core": "0.13.11",
