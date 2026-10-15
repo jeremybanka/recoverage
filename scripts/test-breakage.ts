@@ -22,7 +22,7 @@ function run(...args: string[]): void {
 }
 
 if (execFileSync(`git`, [`status`, `--porcelain`], { cwd: root }).length) {
-	throw new Error(`Commit or stash changes before running test:semver.`)
+	throw new Error(`Commit or stash changes before running test:breakage.`)
 }
 
 // A failing current suite or build is never certified as a breaking release.

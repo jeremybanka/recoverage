@@ -1,6 +1,6 @@
 # Release compatibility
 
-`bun run test:semver` checks consumer behavior against released public tests. Current tests must pass before release tests are restored. The gate requires an executable historical contract; fixture files alone do not qualify. A documented intentional break needs the version bump described in [repository commands](commands.md).
+`bun run test:breakage` checks consumer behavior against released public tests. Current tests must pass before release tests are restored. The gate requires an executable historical contract; fixture files alone do not qualify. A documented intentional break needs the version bump described in [repository commands](commands.md).
 
 ## Protected behavior
 
