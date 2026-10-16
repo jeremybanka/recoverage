@@ -99,7 +99,7 @@
         "octokit": "5.0.5",
       },
       "devDependencies": {
-        "@cloudflare/vitest-plugin": "1.4.2",
+        "@cloudflare/vitest-plugin": "1.4.3",
         "@hono/vite-build": "1.11.1",
         "@hono/vite-dev-server": "0.26.1",
         "@octokit/types": "18.0.0",
@@ -232,7 +232,7 @@
 
     "@cloudflare/unenv-preset": ["@cloudflare/unenv-preset@2.16.2", "", { "peerDependencies": { "unenv": "2.0.0-rc.24", "workerd": ">1.20260305.0 <2.0.0-0" }, "optionalPeers": ["workerd"] }, "sha512-JBP1+Z7ZSNG/d4mRP+y8VC5dka3tZVMLEZRvS+rzQ4DGV1EoxRFQckcJTTkXbHSQiTj0DtNI01Zwb/V2fX0mvQ=="],
 
-    "@cloudflare/vitest-plugin": ["@cloudflare/vitest-plugin@1.4.2", "", { "dependencies": { "cjs-module-lexer": "1.2.3", "esbuild": "0.28.2", "miniflare": "5.20261012.0-beta", "wrangler": "4.151.0", "zod": "4.6.5" }, "peerDependencies": { "vitest": "^4.1.0 || ^5.0.0" } }, "sha512-5I8Hk8cJcl5kP1uRTfLOLW6fUv1eRqgvTWvtEOxZARDlnlCMRY/sYDnspLutlCMxq0hxJjLVBETdoJTLHGHSng=="],
+    "@cloudflare/vitest-plugin": ["@cloudflare/vitest-plugin@1.4.3", "", { "dependencies": { "cjs-module-lexer": "1.2.3", "esbuild": "0.28.2", "miniflare": "5.20261012.0-beta", "wrangler": "4.151.0", "zod": "4.6.5" }, "peerDependencies": { "vitest": "^4.1.0 || ^5.0.0" } }, "sha512-GA0735VV3HgWRCO4sIXUL4uPDXbsaM4hA3Kj+8MqaLTgodeGt+VpcZYQUPg0hXBzkPeT/lxORPnWwIHRAmTavQ=="],
 
     "@cloudflare/workerd-darwin-64": ["@cloudflare/workerd-darwin-64@1.20261012.1", "", { "os": "darwin", "cpu": "x64" }, "sha512-dkTL9aY3V4D40b+jBpGPCistWUPFQ/M61wlWi6i1o8MvHFFgEw7EQkcaYEv6Yd3bkPDD/3TFT4hRsMb2xVZSwQ=="],
 
