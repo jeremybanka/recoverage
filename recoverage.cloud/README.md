@@ -8,8 +8,21 @@ The app is a Cloudflare Worker built with Hono, backed by Cloudflare D1, and
 deployed with Wrangler. It provides:
 
 - a GitHub OAuth UI for managing projects and reporter tokens;
-- authenticated reporter endpoints used by the `recoverage` package;
+- authenticated reporter endpoints and opt-in public report downloads used by the `recoverage` package;
 - badge/shield endpoints for published coverage summaries.
+
+## Public reports
+
+Projects start with private reports. Owners can enable **Public reports** in the
+project's Reports section to allow unauthenticated reads of all reports in that
+project. The UI displays `RECOVERAGE_CLOUD_PROJECT_ID` for use with the CLI.
+
+Public reads use `GET /reporter/public/:projectId/:reportRef`; private or missing
+reports return 404. Responses use `Cache-Control: no-store` so new requests
+recheck visibility. Turning public access off stops future public downloads,
+but cannot remove reports someone has already downloaded or cached locally.
+Uploads still require a project-scoped reporter token. Existing authenticated
+reads and published summary badges keep their existing behavior.
 
 ## Development
 

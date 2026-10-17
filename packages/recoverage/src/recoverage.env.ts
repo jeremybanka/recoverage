@@ -7,6 +7,7 @@ export const env: Readonly<{
 	S3_ENDPOINT?: string | undefined
 	S3_SECRET_ACCESS_KEY?: string | undefined
 	RECOVERAGE_CLOUD_TOKEN?: string | undefined
+	RECOVERAGE_CLOUD_PROJECT_ID?: string | undefined
 	RECOVERAGE_CLOUD_URL?: string | undefined
 	CI: boolean
 }> = createEnv({
@@ -16,6 +17,7 @@ export const env: Readonly<{
 		S3_ENDPOINT: type(`string | undefined`),
 		S3_SECRET_ACCESS_KEY: type(`string | undefined`),
 		RECOVERAGE_CLOUD_TOKEN: type(`string | undefined`),
+		RECOVERAGE_CLOUD_PROJECT_ID: type(`string | undefined`),
 		RECOVERAGE_CLOUD_URL: type(`string | undefined`),
 		CI: type(`string | undefined`).pipe(
 			(v) => Boolean(v) && v !== `false` && v !== `0`,
