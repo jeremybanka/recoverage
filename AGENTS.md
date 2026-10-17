@@ -9,4 +9,6 @@ General guidance for working in this repository:
 
 ## Repository commands
 
+- Name release compatibility checks `test:breakage` and their baseline preparation commands `test:breakage:prelude`; keep scripts, task-runner configuration, CI, examples, and documentation aligned.
+
 Use the canonical command names in `docs/commands.md`: `fmt` writes formatting, `check` aggregates `check:*` validators, and `test` runs once. Coverage commands use the `cov` prefix where implemented. Keep CI and documentation references aligned when changing commands.
