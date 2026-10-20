@@ -1,4 +1,5 @@
 import { file } from "bun"
+import type { CoverageMapData } from "istanbul-lib-coverage"
 import { createCoverageMap } from "istanbul-lib-coverage"
 import logger from "takua"
 
@@ -14,6 +15,7 @@ import {
 	getCoverageTextReport,
 } from "./istanbul-reports.ts"
 import { stringify } from "./json.ts"
+import { lineCoverage } from "./lcov.ts"
 import { logDiff } from "./logger.ts"
 import {
 	downloadCoverageReportFromCloud,
@@ -62,7 +64,17 @@ export async function capture(options: RecoverageOptions = {}): Promise<0 | 1> {
 	const currentGitRef = await getCurrentGitRef()
 
 	const coverageFile = file(`./coverage/coverage-final.json`)
-	const coverageJson = await coverageFile.json()
+	let coverageJson: CoverageMapData
+	try {
+		coverageJson = await coverageFile.json()
+	} catch (error) {
+		if (!(error instanceof Error && `code` in error && error.code === `ENOENT`))
+			throw error
+		coverageJson = lineCoverage(
+			await file(`./coverage/lcov.info`).text(),
+			process.cwd(),
+		)
+	}
 	const coverageMap = createCoverageMap(coverageJson)
 	const coverageJsonSummary = getCoverageJsonSummary(coverageMap)
 	const coverageMapStringified = stringify(coverageMap)
