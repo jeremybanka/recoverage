@@ -10,7 +10,8 @@ It's often helpful to know precisely where in our codebase coverage changed. Whe
 
 The recoverage library and command line tool is free and open-source. You can run it on your own machine and **read a coverage diff from your own terminal**.
 
-Recoverage works smoothly `vitest` + `@vitest/coverage-v8`, as well as many other runners. Anything that creates an istanbul-style coverage report at `coverage/coverage-final.json` will work.
+Recoverage works with `vitest` + `@vitest/coverage-v8`, Bun's built-in test runner,
+and other runners that produce Istanbul JSON or LCOV coverage reports.
 
 > **Please Note:** Bun is required to run this tool. You can install Bun from [bun.com/docs/installation](https://bun.com/docs/installation).
 
@@ -54,6 +55,37 @@ Recoverage uses `main`.
 The file is optional and is read from the current working directory; Recoverage
 does not search parent directories. Invalid JSON or an invalid `defaultBranch`
 value fails before any coverage operation runs. `defaultBranch` must be a string.
+
+### LCOV coverage
+
+Capture reads `coverage/coverage-final.json` when it exists. If that file is
+absent, it reads `coverage/lcov.info`. If both exist, Istanbul JSON takes
+precedence; invalid JSON fails instead of falling back to LCOV.
+
+For Bun's built-in test runner, generate LCOV and run Recoverage:
+
+```sh
+bun test --coverage --coverage-reporter=lcov
+recoverage
+```
+
+LCOV capture uses executable line counts (`DA` records), representing each line
+as one statement for Recoverage's existing coverage comparison. Function and
+branch records are ignored. Every file with executable lines in the report is
+included, regardless of its directory or extension; configure exclusions in your
+test runner. Repeated records for the same source file have their hit counts
+added together. Empty reports and malformed line counts fail before capture
+saves coverage.
+
+Relative source paths are resolved from the directory where you run Recoverage.
+Absolute paths are made relative to that directory so reports from different
+checkouts use the same file names.
+
+Use the same report format for the baseline and feature branches. LCOV line
+coverage and Istanbul statement coverage can have different percentages for the
+same code. When switching formats, regenerate and capture the default branch's
+baseline using the new format, then regenerate coverage on your feature branch.
+Remove any old `coverage/coverage-final.json` when switching to LCOV.
 
 ### Shell Completion
 

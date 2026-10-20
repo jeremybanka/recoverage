@@ -1,4 +1,4 @@
-import { rmSync } from "node:fs"
+import { rmSync, writeFileSync } from "node:fs"
 import path from "node:path"
 
 import {
@@ -44,6 +44,96 @@ function succeeds(args: string[]): void {
 	const result = consumer.cli(...args)
 	expect(result.status, result.stderr).toBe(0)
 }
+
+function lcovCoverage(hits: readonly [number, number]): void {
+	writeFileSync(
+		path.join(consumer.directory, `coverage/lcov.info`),
+		`SF:example.ts\nDA:1,${hits[0]}\nDA:2,${hits[1]}\nend_of_record\n`,
+	)
+}
+
+describe(`LCOV capture and comparison`, () => {
+	it(`captures LCOV produced by Bun's built-in test runner`, () => {
+		writeFileSync(
+			path.join(consumer.directory, `example.test.ts`),
+			`import { expect, test } from 'bun:test';
+import { one } from './example.ts';
+test('one', () => { expect(one).toBe(1); });
+`,
+		)
+		const result = consumer.run(`bun`, [
+			`test`,
+			`--coverage`,
+			`--coverage-reporter=lcov`,
+		])
+		expect(result.status, result.stderr).toBe(0)
+		succeeds([`-b`, `trunk`])
+	})
+
+	for (const [label, before, after, expected] of [
+		[`unchanged`, [1, 0], [1, 0], 0],
+		[`increased`, [1, 0], [1, 1], 0],
+		[`decreased`, [1, 1], [1, 0], 1],
+	] as const) {
+		it(`compares ${label} line coverage through the installed API and CLI`, () => {
+			lcovCoverage(before)
+			capture()
+			branch()
+			lcovCoverage(after)
+			const result = consumer.cli(`-b`, `trunk`)
+			expect(result.status, result.stderr).toBe(expected)
+			consumer.evaluate(
+				`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), ${expected});`,
+			)
+		})
+	}
+
+	it(`prefers Istanbul JSON when both reports exist`, () => {
+		consumer.coverage([1, 1])
+		lcovCoverage([1, 0])
+		capture()
+		branch()
+		lcovCoverage([0, 0])
+		succeeds([`-b`, `trunk`])
+	})
+
+	it(`fails on invalid Istanbul JSON even when LCOV is valid`, () => {
+		consumer.coverage([1, 1])
+		capture()
+		branch()
+		lcovCoverage([1, 1])
+		writeFileSync(
+			path.join(consumer.directory, `coverage/coverage-final.json`),
+			`{invalid`,
+		)
+		expect(consumer.cli(`capture`, `-b`, `trunk`).status).toBe(1)
+		consumer.evaluate(
+			`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), 1);`,
+		)
+	})
+
+	for (const report of [
+		``,
+		`SF:example.ts\nDA:1,\nend_of_record`,
+		`SF:example.ts\nDA:1,1`,
+	]) {
+		it(`fails before saving empty or malformed LCOV: ${JSON.stringify(report)}`, () => {
+			lcovCoverage([1, 1])
+			capture()
+			branch()
+			writeFileSync(path.join(consumer.directory, `coverage/lcov.info`), report)
+			expect(consumer.cli(`capture`, `-b`, `trunk`).status).toBe(1)
+			consumer.evaluate(
+				`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), 1);`,
+			)
+		})
+	}
+
+	it(`fails when neither supported report exists`, () => {
+		const result = consumer.cli(`capture`, `-b`, `trunk`)
+		expect(result.status).toBe(1)
+	})
+})
 
 describe(`published package contracts`, () => {
 	for (const [label, before, after, expected] of [
