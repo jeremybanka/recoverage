@@ -5,16 +5,23 @@ import type { JsonSummary } from "./recoverage.ts"
 
 export async function downloadCoverageReportFromCloud(
 	reportName: string,
-	cloudToken: string,
+	cloudToken: string | undefined,
 	cloudHost = `https://recoverage.cloud`,
+	publicProjectId?: string,
 ): Promise<Error | string> {
-	const url = new URL(`/reporter/${reportName}`, cloudHost)
+	if (!cloudToken && !publicProjectId) {
+		return new Error(
+			`A cloud token or public project ID is required to download coverage`,
+		)
+	}
+	const reportPath = cloudToken
+		? `/reporter/${encodeURIComponent(reportName)}`
+		: `/reporter/public/${encodeURIComponent(publicProjectId ?? ``)}/${encodeURIComponent(reportName)}`
+	const url = new URL(reportPath, cloudHost)
 	try {
 		const response = await fetch(url, {
 			method: `GET`,
-			headers: {
-				Authorization: `Bearer ${cloudToken}`,
-			},
+			headers: cloudToken ? { Authorization: `Bearer ${cloudToken}` } : {},
 		})
 		if (!response.ok) {
 			const text = await response.text()
