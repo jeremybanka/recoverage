@@ -8,7 +8,12 @@ import * as h4 from "./h4"
 import * as header from "./header"
 import type { Json } from "./json"
 import type { Loadable } from "./loadable"
-import { reportsAllowed, type Role, tokensAllowed } from "./roles-permissions"
+import {
+	reportsAllowed,
+	type Role,
+	tokensAllowed,
+	unlimitedReportGithubUserIds,
+} from "./roles-permissions"
 import { when } from "./when"
 
 export type ProjectProps =
@@ -22,6 +27,7 @@ export type ProjectProps =
 			}[]
 			mode: `deleted` | `existing`
 			userRole: Role
+			githubUserId: number
 	  }
 	| {
 			mode: `button` | `creator`
@@ -47,12 +53,21 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 		}
 		case `existing`:
 		case `deleted`: {
-			const { id, name, tokens, reports, mode, userRole } = props
+			const { id, name, tokens, reports, mode, userRole, githubUserId } = props
 			const numberOfTokensAllowed = tokensAllowed.get(userRole)
 			const mayCreateToken = tokens.length < numberOfTokensAllowed
+			const reportsPerRow = 6
+			const numberOfReportsAllowed = unlimitedReportGithubUserIds.has(
+				githubUserId,
+			)
+				? Number.POSITIVE_INFINITY
+				: reportsAllowed.get(userRole)
 			const numberOfReportsToDisplay = Math.max(
 				reports.length,
-				reportsAllowed.get(userRole),
+				Math.min(
+					numberOfReportsAllowed,
+					(Math.floor(reports.length / reportsPerRow) + 1) * reportsPerRow,
+				),
 			)
 			return (
 				<div
@@ -116,16 +131,32 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 						<div
 							class={css`
 								display: flex;
-								flex-flow: row wrap;
+								flex-flow: column;
 								gap: 10px;
 							`}
 						>
-							{Array.from({ length: numberOfReportsToDisplay }).map((_, idx) => {
-								const report = reports[idx]
-								if (!report) {
-									return (
-										<span
-											class={css`
+							{Array.from({
+								length: Math.ceil(numberOfReportsToDisplay / reportsPerRow),
+							}).map((_row, rowIndex) => (
+								<div
+									class={css`
+									display: flex;
+									flex-flow: row wrap;
+									gap: 10px;
+								`}
+								>
+									{Array.from({
+										length: Math.min(
+											reportsPerRow,
+											numberOfReportsToDisplay - rowIndex * reportsPerRow,
+										),
+									}).map((_, columnIndex) => {
+										const idx = rowIndex * reportsPerRow + columnIndex
+										const report = reports[idx]
+										if (!report) {
+											return (
+												<span
+													class={css`
 												background: transparent;
 												border: 1px solid var(--color-fg-faint);
 												padding: 5px;
@@ -134,18 +165,18 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 												width: 80px;
 												box-shadow: inset 0 1px 0 1px #0002;
 											`}
-										/>
-									)
-								}
-								let coveragePercent: number | undefined
-								if (report?.jsonSummary) {
-									const summary = JSON.parse(report.jsonSummary)
-									coveragePercent = summary.total.statements.pct
-								}
-								return (
-									<span
-										key={report?.ref ?? idx}
-										class={css`
+												/>
+											)
+										}
+										let coveragePercent: number | undefined
+										if (report?.jsonSummary) {
+											const summary = JSON.parse(report.jsonSummary)
+											coveragePercent = summary.total.statements.pct
+										}
+										return (
+											<span
+												key={report?.ref ?? idx}
+												class={css`
 												display: flex;
 												box-sizing: border-box;
 												flex-flow: column;
@@ -158,9 +189,9 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 												min-height: 30px;
 												min-width: 80px;
 												`}
-									>
-										<span
-											class={css`
+											>
+												<span
+													class={css`
 													position: relative;
 													box-sizing: border-box;
 													display: flex;
@@ -176,12 +207,12 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 													min-width: 80px;
 													line-break: none;
 												`}
-										>
-											{report.ref}
-											{when(
-												coveragePercent,
-												<span
-													class={css`
+												>
+													{report.ref}
+													{when(
+														coveragePercent,
+														<span
+															class={css`
 															position: absolute;
 															bottom: -12px;
 															margin: auto;
@@ -194,14 +225,16 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 															padding: 1px 3px 2px 6px;
 															box-shadow: 0 2px 0px -1px #0005;
 														`}
-												>
-													{coveragePercent}%
-												</span>,
-											)}
-										</span>
-									</span>
-								)
-							})}
+														>
+															{coveragePercent}%
+														</span>,
+													)}
+												</span>
+											</span>
+										)
+									})}
+								</div>
+							))}
 						</div>
 					</section>
 

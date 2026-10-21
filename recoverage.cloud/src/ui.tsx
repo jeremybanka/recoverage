@@ -13,7 +13,7 @@ import { createDatabase } from "./db"
 import type { Bindings } from "./env"
 import { computeHash } from "./hash"
 import { Project, ProjectToken } from "./project"
-import { projectsAllowed, type Role, tokensAllowed } from "./roles-permissions"
+import { getProjectLimit, type Role, tokensAllowed } from "./roles-permissions"
 import * as schema from "./schema"
 
 type GithubUserData = Endpoints[`GET /user`][`response`][`data`] & {
@@ -100,7 +100,7 @@ uiRoutes.get(`/project`, uiAuth, async (c) => {
 	// console.log(`Projects`, projects)
 
 	const userRole = c.get(`userRole`)
-	const numberOfProjectsAllowed = projectsAllowed.get(userRole)
+	const numberOfProjectsAllowed = getProjectLimit(userRole, user.id)
 	const mayCreateProject = projects.length < numberOfProjectsAllowed
 
 	return c.html(
@@ -110,6 +110,7 @@ uiRoutes.get(`/project`, uiAuth, async (c) => {
 					{...project}
 					mode="existing"
 					userRole={userRole}
+					githubUserId={user.id}
 					key={project.id}
 				/>
 			))}
@@ -144,9 +145,9 @@ uiRoutes.get(`/project`, uiAuth, async (c) => {
 
 uiRoutes.post(`/project`, uiAuth, async (c) => {
 	const userRole = c.get(`userRole`)
-	const numberOfProjectsAllowed = projectsAllowed.get(userRole)
 	const db = c.get(`drizzle`)
 	const { id: userId } = c.get(`githubUserData`)
+	const numberOfProjectsAllowed = getProjectLimit(userRole, userId)
 
 	const currentProjects = await db.query.projects.findMany({
 		where: eq(schema.projects.userId, userId),
@@ -174,6 +175,7 @@ uiRoutes.post(`/project`, uiAuth, async (c) => {
 			{...project}
 			mode="existing"
 			userRole={userRole}
+			githubUserId={userId}
 			tokens={[]}
 			reports={[]}
 		/>,
@@ -208,6 +210,7 @@ uiRoutes.delete(`/project/:projectId`, uiAuth, async (c) => {
 		<Project
 			{...project}
 			userRole={c.get(`userRole`)}
+			githubUserId={userId}
 			tokens={project.tokens.map((token) => ({ ...token, mode: `deleted` }))}
 			mode="deleted"
 		/>,
