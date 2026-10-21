@@ -89,7 +89,7 @@ export function prepareBunLockImport(root: string): void {
 			overrides: manifest.overrides ?? {},
 		}),
 	)
-	manifest.packageManager = `pnpm@12.14.0`
+	manifest.packageManager = `pnpm@12.15.0`
 	delete manifest.workspaces
 	delete manifest.trustedDependencies
 	delete manifest.overrides

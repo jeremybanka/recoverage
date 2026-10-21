@@ -1,6 +1,6 @@
 # Repository commands
 
-Run these commands from the repository root with `pnpm run <command>`. `mise.toml` selects Node 26.12.1, pnpm 12.14.0, and Bun. Install dependencies with `pnpm install --frozen-lockfile`. Bun remains the recoverage runtime, SQLite implementation, and public test runner; pnpm handles dependency downloads and script orchestration. Cloud deployment tooling runs on Node. Runtime cloud/S3 transfers still use Bun and require a patched Bun release for the compromised-CA mitigation. Package-level commands keep the same meaning while narrowing their scope.
+Run these commands from the repository root with `pnpm run <command>`. `mise.toml` selects Node 26.12.1, pnpm 12.15.0, and Bun. Install dependencies with `pnpm install --frozen-lockfile`. Bun remains the recoverage runtime, SQLite implementation, and public test runner; pnpm handles dependency downloads and script orchestration. Cloud deployment tooling runs on Node. Runtime cloud/S3 transfers still use Bun and require a patched Bun release for the compromised-CA mitigation. Package-level commands keep the same meaning while narrowing their scope.
 
 Following the [mise Node.js cookbook](https://mise.jdx.dev/mise-cookbook/nodejs.html#add-node-modules-binaries-to-the-path), mise adds the repository root’s `node_modules/.bin` to `PATH`. With shell activation or `mise exec -- <tool>`, installed dependency CLIs are available from the root and package directories.
 

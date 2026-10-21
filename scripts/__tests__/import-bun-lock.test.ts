@@ -70,7 +70,7 @@ test(`historical lock import preserves nested versions, aliases, integrity, and 
 		expect(
 			JSON.parse(readFileSync(path.join(root, `package.json`), `utf8`))
 				.packageManager,
-		).toBe(`pnpm@12.14.0`)
+		).toBe(`pnpm@12.15.0`)
 	} finally {
 		rmSync(root, { recursive: true, force: true })
 	}

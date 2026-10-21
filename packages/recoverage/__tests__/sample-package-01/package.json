@@ -11,5 +11,5 @@
 		"test:coverage": "node ./node_modules/vitest/vitest.mjs run --coverage && recoverage capture",
 		"coverage:status": "recoverage diff"
 	},
-	"packageManager": "pnpm@12.14.0"
+	"packageManager": "pnpm@12.15.0"
 }

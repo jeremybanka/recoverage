@@ -62,5 +62,5 @@
 		"typescript-language-server": "6.0.2",
 		"vscode-langservers-extracted": "4.10.0"
 	},
-	"packageManager": "pnpm@12.14.0"
+	"packageManager": "pnpm@12.15.0"
 }
