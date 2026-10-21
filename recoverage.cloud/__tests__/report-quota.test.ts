@@ -92,6 +92,7 @@ test(`the maintainer can upload, retain, and update reports beyond the quota`, a
 				reports,
 				mode: `existing`,
 				userRole: `free`,
+				githubUserId: 8570459,
 			}),
 		),
 	)

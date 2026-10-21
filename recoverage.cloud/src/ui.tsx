@@ -110,6 +110,7 @@ uiRoutes.get(`/project`, uiAuth, async (c) => {
 					{...project}
 					mode="existing"
 					userRole={userRole}
+					githubUserId={user.id}
 					key={project.id}
 				/>
 			))}
@@ -174,6 +175,7 @@ uiRoutes.post(`/project`, uiAuth, async (c) => {
 			{...project}
 			mode="existing"
 			userRole={userRole}
+			githubUserId={userId}
 			tokens={[]}
 			reports={[]}
 		/>,
@@ -208,6 +210,7 @@ uiRoutes.delete(`/project/:projectId`, uiAuth, async (c) => {
 		<Project
 			{...project}
 			userRole={c.get(`userRole`)}
+			githubUserId={userId}
 			tokens={project.tokens.map((token) => ({ ...token, mode: `deleted` }))}
 			mode="deleted"
 		/>,
