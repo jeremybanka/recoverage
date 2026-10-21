@@ -21,6 +21,7 @@ mock.module(${JSON.stringify(coverageModule)}, () => ({
   },
   diff: async (defaultBranch = "main") => {
     console.log(JSON.stringify({ diff: defaultBranch }))
+    if (process.env.DIFF_THROW) throw new Error(process.env.DIFF_THROW)
     return Number(process.env.DIFF_EXIT ?? 0)
   },
 }))
@@ -144,6 +145,19 @@ describe(`CLI execution`, () => {
 		expect(result.status).toBe(1)
 		expect(JSON.parse(result.stdout)).toEqual({ capture: `trunk` })
 	})
+
+	it(`propagates standalone capture failure`, () => {
+		expect(invoke([`capture`], true, { CAPTURE_EXIT: `1` }).status).toBe(1)
+	})
+
+	it.each([{ command: [] }, { command: [`diff`] }])(
+		`fails when comparison throws for $command`,
+		({ command }) => {
+			const result = invoke(command, true, { DIFF_THROW: `comparison failed` })
+			expect(result.status).toBe(1)
+			expect(result.stderr).toContain(`comparison failed`)
+		},
+	)
 
 	it.each([{ command: [] }, { command: [`diff`] }])(
 		`preserves coverage failure for $command`,

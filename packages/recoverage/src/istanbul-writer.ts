@@ -59,12 +59,13 @@ class VirtualFileSystem extends TreeMap<string, string> {
 
 	public readFileSync(filePath: string): string {
 		let currentNode: TreeMap<string, string> | undefined
-		for (const segment of filePath.split(`/`)) {
+		const segments = filePath.split(`/`).filter((segment) => segment !== ``)
+		for (const [index, segment] of segments.entries()) {
 			const nextNode = (currentNode ?? this).get(segment)
 			if (nextNode instanceof TreeMap) {
 				currentNode = nextNode
 			} else {
-				if (segment !== filePath.split(`/`).at(-1)) {
+				if (index !== segments.length - 1) {
 					throw new Error(`Cannot read a file`)
 				}
 				if (typeof nextNode === `string`) {
@@ -326,7 +327,7 @@ export class VirtualFileWriter {
 		if (path.isAbsolute(subdir)) {
 			throw new Error(`Cannot create subdir writer for absolute path: ${subdir}`)
 		}
-		return new VirtualFileWriter(`${this.baseDir}/${subdir}`)
+		return new VirtualFileWriter(`${this.baseDir}/${subdir}`, this.vfs)
 	}
 
 	/**
