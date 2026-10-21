@@ -1,5 +1,14 @@
 # recoverage
 
+## 0.1.20
+
+### Patch Changes
+
+- 949640c: ✨ Support `coverage/lcov.info` when no Istanbul JSON report is present, including coverage from Bun's built-in test runner. Compare executable line coverage using one statement per LCOV line, merge repeated source records, and include all reported files. Existing Istanbul JSON reports retain precedence.
+- bfbbe86: 🐛 Exit with status 1 when `recoverage diff` throws, including when the comparison branch does not exist.
+
+  🐛 Read absolute paths consistently in the virtual report filesystem and share files with subdirectory writers.
+
 ## 0.1.19
 
 ### Patch Changes
