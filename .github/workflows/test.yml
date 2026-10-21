@@ -44,7 +44,7 @@ jobs:
   Recoverage:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # This job compares local reports and needs no hosted-service or cache secrets.
+    # Comparisons need no secrets; only pushes to main publish the live badge.
     env:
       TURBO_TOKEN: ""
       TURBO_TEAM: ""
@@ -61,6 +61,14 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: bun packages/recoverage/__scripts__/coverage-check.bun.ts "$BASE_SHA"
+      - name: Publish package coverage for the live badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        working-directory: packages/recoverage
+        env:
+          RECOVERAGE_CLOUD_TOKEN: ${{ secrets.RECOVERAGE_CLOUD_TOKEN }}
+        run: |
+          : "${RECOVERAGE_CLOUD_TOKEN:?Set the RECOVERAGE_CLOUD_TOKEN repository secret to publish the coverage badge}"
+          bun bin/recoverage.bin.js capture
 
   Breakage:
     name: Breakage
