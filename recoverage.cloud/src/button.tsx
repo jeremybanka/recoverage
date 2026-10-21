@@ -19,6 +19,7 @@ export function create(props: CreateProps): Loadable<HtmlEscapedString> {
 		<button
 			hx-post={props[`hx-post`]}
 			hx-swap={props[`hx-swap`]}
+			disabled={disabled}
 			type="button"
 			class={css`
         background: ${disabled ? `transparent` : `var(--color-bg-t3)`};

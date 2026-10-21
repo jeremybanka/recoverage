@@ -5,8 +5,12 @@ export type Role = Roles<typeof authorization>
 export type Permission = Permissions<typeof authorization>
 
 // Stable GitHub user IDs verified via GET /users/{login}. These IDs are stored
-// in users.id during GitHub OAuth; never trust an ID supplied in an upload.
+// in users.id during GitHub OAuth; never trust an ID supplied in a request.
 export const unlimitedReportGithubUserIds: ReadonlySet<number> = new Set([
+	8570459, // jeremybanka
+])
+
+const unlimitedProjectGithubUserIds: ReadonlySet<number> = new Set([
 	8570459, // jeremybanka
 ])
 
@@ -38,6 +42,12 @@ export const projectsAllowed = new Escalator({
 	permissionData: [[`ownProjects_upTo3`, 3]] as const,
 	fallback: 0 as const,
 })
+
+export function getProjectLimit(role: Role, githubUserId: number): number {
+	return unlimitedProjectGithubUserIds.has(githubUserId)
+		? Number.POSITIVE_INFINITY
+		: projectsAllowed.get(role)
+}
 
 export const tokensAllowed = new Escalator({
 	style: `untilMiss`,
