@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 import Cloudflare from "cloudflare"
 import type { D1 } from "cloudflare/resources/d1/d1"

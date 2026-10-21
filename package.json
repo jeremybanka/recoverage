@@ -4,35 +4,30 @@
 	"type": "module",
 	"description": "",
 	"main": "index.js",
-	"workspaces": [
-		"packages/*",
-		"recoverage.cloud",
-		"packages/recoverage/__tests__/public/consumer"
-	],
 	"scripts": {
 		"bench": "cd lib && vitest bench",
 		"build": "turbo run build",
 		"change": "changeset",
-		"check": "bun run check:fmt && bun run check:deps && bun run check:eslint && bun run check:biome && bun run check:tsc",
+		"check": "pnpm run check:fmt && pnpm run check:deps && pnpm run check:eslint && pnpm run check:biome && pnpm run check:tsc",
 		"check:biome": "turbo run check:biome",
 		"check:deps": "pin-checker --ignore-workspaces",
 		"check:eslint": "turbo run check:eslint",
 		"check:fmt": "dprint check",
 		"check:tsc": "turbo run check:tsc && bun --check --tsconfig-override scripts/tsconfig.json",
 		"cov": "cross-env CI=true turbo run cov --concurrency=2 --env-mode=loose",
-		"cov:check": "bun run cov && bun packages/recoverage/__scripts__/coverage-check.bun.ts",
+		"cov:check": "pnpm run cov && bun packages/recoverage/__scripts__/coverage-check.bun.ts",
 		"fmt": "dprint fmt",
 		"gen": "turbo run gen",
 		"lint:fix:biome": "biome lint --write *",
 		"lint:fix:eslint": "NODE_OPTIONS=--require=./scripts/eslint-typescript.cjs eslint --fix .",
-		"nuke": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && rm bun.lock",
-		"release:publish": "bun run build && changeset publish",
+		"nuke": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && rm pnpm-lock.yaml",
+		"release:publish": "pnpm run build && changeset publish",
 		"release:version": "changeset version",
 		"test": "cross-env CI=true turbo run test --concurrency=2",
 		"test:watch": "turbo run test:watch --concurrency=30",
 		"watch:types": "turbo run watch:types --concurrency=30",
-		"workflows:update": "bun ./scripts/update-workflows.bun.ts",
-		"test:breakage": "bun scripts/test-breakage.ts",
+		"workflows:update": "node ./scripts/update-workflows.node.ts",
+		"test:breakage": "node scripts/test-breakage.ts",
 		"test:tooling": "bun test scripts/__tests__"
 	},
 	"keywords": [],
@@ -67,18 +62,5 @@
 		"typescript-language-server": "6.0.2",
 		"vscode-langservers-extracted": "4.10.0"
 	},
-	"packageManager": "bun@1.4.3",
-	"trustedDependencies": [
-		"@biomejs/biome",
-		"dprint",
-		"esbuild",
-		"rolldown",
-		"sharp",
-		"unrs-resolver",
-		"workerd"
-	],
-	"overrides": {
-		"rolldown": "1.2.14",
-		"rolldown-plugin-dts": "0.28.8"
-	}
+	"packageManager": "pnpm@12.14.0"
 }

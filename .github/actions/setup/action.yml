@@ -1,10 +1,10 @@
 name: Setup
-description: Install the requested mise tools and bun dependencies.
+description: Install the requested mise tools and pnpm dependencies.
 inputs:
   install_args:
     description: Space-separated mise tools to install.
     required: false
-    default: "bun node"
+    default: "bun node pnpm"
 runs:
   using: composite
   steps:
@@ -16,4 +16,4 @@ runs:
 
     - name: Install Dependencies
       shell: bash
-      run: bun install --frozen-lockfile
+      run: pnpm install --frozen-lockfile

@@ -159,7 +159,7 @@ export function collectPackage(directory: string, scratch: string): void {
 			path.join(mirror, consumer),
 			`dir`,
 		)
-		run([`bun`, `run`, `build`], mirror)
+		run([`pnpm`, `run`, `build`], mirror)
 		cpSync(path.join(mirror, `dist`), declarations, {
 			recursive: true,
 			filter: (file) =>
@@ -214,9 +214,9 @@ export default async (environment) => mergeConfig(
 		testEnvironment,
 	)
 	if (hasPublicTests) {
-		run([`bun`, `run`, `build`], mirror)
+		run([`pnpm`, `run`, `build`], mirror)
 		cpSync(declarations, path.join(mirror, `dist`), { recursive: true })
-		run([`bun`, `run`, `test:public-api`], mirror, testEnvironment)
+		run([`pnpm`, `run`, `test:public-api`], mirror, testEnvironment)
 	}
 	const raw = readdirSync(counters).filter((name) => name.endsWith(`.json`))
 	if (raw.length === 0) throw new Error(`Tests produced no coverage counters`)
@@ -260,7 +260,7 @@ export function collectCloud(directory: string): void {
 			)
 			run(
 				[
-					`bun`,
+					`pnpm`,
 					`add`,
 					`--dev`,
 					`--exact`,

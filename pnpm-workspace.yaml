@@ -1,0 +1,28 @@
+packages:
+  - "packages/*"
+  - "recoverage.cloud"
+  - "packages/recoverage/__tests__/public/consumer"
+
+autoInstallPeers: false
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - "@typescript/*"
+  # Keep first-party exemptions aligned with renovate.json.
+  - breakage
+  - comline
+  - jurist
+  - takua
+
+allowBuilds:
+  core-js: false
+  "@biomejs/biome": true
+  "dprint": true
+  "esbuild": true
+  "rolldown": true
+  "sharp": true
+  "unrs-resolver": true
+  "workerd": true
+
+overrides:
+  rolldown: 1.2.14
+  rolldown-plugin-dts: 0.28.8

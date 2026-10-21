@@ -1,7 +1,13 @@
 {
 	"$schema": "https://turbo.build/schema.json",
 	"ui": "tui",
-	"globalDependencies": ["tsconfig.json", ".bun-version", ".node-version"],
+	"globalDependencies": [
+		"tsconfig.json",
+		".bun-version",
+		".node_version",
+		"mise.toml",
+		"pnpm-workspace.yaml"
+	],
 	"tasks": {
 		"build": {
 			"dependsOn": ["gen", "^build", "^gen"],

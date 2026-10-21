@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 import * as fs from "node:fs"
 import * as path from "node:path"
@@ -7,7 +7,7 @@ import { getPreviewConfigEnv } from "./preview-env.ts"
 
 const previewEnv = getPreviewConfigEnv()
 
-const projectRootPath = path.join(import.meta.dir, `..`)
+const projectRootPath = path.join(import.meta.dirname, `..`)
 const wranglerConfigPath = path.join(projectRootPath, `wrangler.jsonc`)
 let content = fs.readFileSync(wranglerConfigPath, `utf8`)
 // Remove single-line comments (basic regex, sufficient for simple JSONC)

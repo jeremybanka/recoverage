@@ -14,10 +14,10 @@ const root = path.resolve(import.meta.dirname, `..`)
 const packageDirectory = path.join(root, `packages/recoverage`)
 
 function run(...args: string[]): void {
-	const result = spawnSync(`bun`, args, { cwd: root, stdio: `inherit` })
+	const result = spawnSync(`pnpm`, args, { cwd: root, stdio: `inherit` })
 	if (result.error) throw result.error
 	if (result.status !== 0) {
-		throw new Error(`bun ${args.join(` `)} failed (${result.status}).`)
+		throw new Error(`pnpm ${args.join(` `)} failed (${result.status}).`)
 	}
 }
 
@@ -26,8 +26,8 @@ if (execFileSync(`git`, [`status`, `--porcelain`], { cwd: root }).length) {
 }
 
 // A failing current suite or build is never certified as a breaking release.
-run(`run`, `--cwd`, packageDirectory, `build`)
-run(`run`, `--cwd`, packageDirectory, `test:public`)
+run(`--dir`, packageDirectory, `run`, `build`)
+run(`--dir`, packageDirectory, `run`, `test:public`)
 
 const outcome = await breakage({
 	baseDirname: root,
@@ -36,7 +36,7 @@ const outcome = await breakage({
 	// Existing integration tests provide a real baseline before the first release
 	// containing the expanded public suite. Include their fixtures in restoration.
 	testPattern: `packages/recoverage/__tests__/{diff-coverage.test.ts,sample-package-*/{**,.gitignore},public/**}`,
-	testCommand: `bun run --cwd packages/recoverage test:public`,
+	testCommand: `pnpm --dir packages/recoverage run test:public`,
 	// Certify below using the exact release selected by breakage.
 	certifyCommand: `false`,
 })

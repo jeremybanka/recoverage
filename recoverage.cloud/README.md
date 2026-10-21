@@ -16,17 +16,17 @@ deployed with Wrangler. It provides:
 From the repository root:
 
 ```sh
-bun install
-bun run --filter=recoverage.cloud gen
-bun run --filter=recoverage.cloud dev
+pnpm install --frozen-lockfile
+pnpm --filter=recoverage.cloud run gen
+pnpm --filter=recoverage.cloud run dev
 ```
 
 Useful scripts:
 
-- `bun run --filter=recoverage.cloud test` - run the app tests once.
-- `bun run --filter=recoverage.cloud check` - run Biome, ESLint, and type checks.
-- `bun run --filter=recoverage.cloud db:gen` - generate Drizzle migrations.
-- `bun run --filter=recoverage.cloud db:up` - apply D1 migrations.
+- `pnpm --filter=recoverage.cloud run test` - run the app tests once.
+- `pnpm --filter=recoverage.cloud run check` - run Biome, ESLint, and type checks.
+- `pnpm --filter=recoverage.cloud run db:gen` - generate Drizzle migrations.
+- `pnpm --filter=recoverage.cloud run db:up` - apply D1 migrations.
 
 ## Configuration
 

@@ -1,10 +1,17 @@
 import { execFileSync } from "node:child_process"
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	rmSync,
+	writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
 import path from "node:path"
 
 import Database from "bun:sqlite"
 
+import { prepareBunLockImport } from "../../../scripts/import-bun-lock.bun.ts"
 import {
 	collectCloud,
 	collectPackage,
@@ -29,7 +36,11 @@ try {
 	const archive = path.join(scratch, `baseline.tar`)
 	run([`git`, `archive`, `--output`, archive, base], repositoryRoot)
 	run([`tar`, `-xf`, archive, `-C`, baseline], repositoryRoot)
-	run([`bun`, `install`, `--frozen-lockfile`], baseline)
+	if (!existsSync(path.join(baseline, `pnpm-lock.yaml`))) {
+		prepareBunLockImport(baseline)
+		run([`pnpm`, `import`], baseline)
+	}
+	run([`pnpm`, `install`, `--frozen-lockfile`], baseline)
 	const cwd = path.resolve(process.cwd())
 	const selected =
 		cwd === repositoryRoot
@@ -43,8 +54,8 @@ try {
 		console.log(`\nComparing ${name} against ${base}`)
 		const basePackage = path.join(baseline, name)
 		if (name === `recoverage.cloud`) {
-			run([`bun`, `run`, `build`], path.join(baseline, `packages/recoverage`))
-			run([`bun`, `run`, `gen:scripts`], basePackage)
+			run([`pnpm`, `run`, `build`], path.join(baseline, `packages/recoverage`))
+			run([`pnpm`, `run`, `gen:scripts`], basePackage)
 			collectCloud(basePackage)
 		} else collectPackage(basePackage, path.join(scratch, `instrumented`))
 		const comparison = path.join(scratch, `compare`, name)

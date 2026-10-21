@@ -3,6 +3,7 @@
 	"compilerOptions": { "types": ["bun"] },
 	"include": [
 		"test-breakage.ts",
+		"import-bun-lock.bun.ts",
 		"release-compatibility.ts",
 		"__tests__/**/*.ts"
 	]

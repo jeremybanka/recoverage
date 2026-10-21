@@ -33,19 +33,19 @@
 		"recoverage": "bin/recoverage.bin.js"
 	},
 	"scripts": {
-		"build": "bun --bun tsdown",
-		"check": "bun run check:eslint && bun run check:tsc && bun run check:biome",
+		"build": "tsdown",
+		"check": "pnpm run check:eslint && pnpm run check:tsc && pnpm run check:biome",
 		"check:biome": "biome lint -- .",
 		"check:eslint": "NODE_OPTIONS=--require=../../scripts/eslint-typescript.cjs eslint -- .",
 		"check:tsc": "bun --check",
 		"cov": "bun __scripts__/coverage.bun.ts",
-		"cov:check": "bun run cov && bun __scripts__/coverage-check.bun.ts",
-		"dev": "bun --bun tsdown --watch",
+		"cov:check": "pnpm run cov && bun __scripts__/coverage-check.bun.ts",
+		"dev": "tsdown --watch",
 		"postversion": "dprint fmt package.json",
-		"test": "vitest run && bun run test:public-api",
+		"test": "vitest run && pnpm run test:public-api",
 		"test:watch": "vitest --watch",
 		"watch:types": "tsc --watch --noEmit",
-		"test:public": "vitest run __tests__/diff-coverage.test.ts && bun run test:public-api",
+		"test:public": "vitest run __tests__/diff-coverage.test.ts && pnpm run test:public-api",
 		"test:public-api": "bun test __tests__/public"
 	},
 	"dependencies": {

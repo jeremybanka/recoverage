@@ -42,7 +42,7 @@ jobs:
       - uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
         with:
           # This expects you to have a script called release:publish which does a build for your packages and calls changeset publish
-          publish-script: bun run release:publish
-          version-script: bun run release:version
+          publish-script: pnpm run release:publish
+          version-script: pnpm run release:version
           github-token: ${{ steps.app-token.outputs.token }}
           push-with-git-cli: true

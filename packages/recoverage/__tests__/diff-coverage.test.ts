@@ -9,7 +9,7 @@ import { simpleGit } from "simple-git"
 import * as Yalc from "yalc"
 
 beforeAll(async () => {
-	const build = spawn(`bun`, [`run`, `build`], {
+	const build = spawn(`pnpm`, [`run`, `build`], {
 		stdio: `inherit`,
 		env: { ...process.env, FORCE_COLOR: `1` },
 	})
@@ -37,7 +37,7 @@ afterEach(async () => {
 })
 
 async function runScript(...args: string[]): Promise<ChildProcess> {
-	const proc = spawn(`bun`, args, {
+	const proc = spawn(`pnpm`, args[0] === `install` ? args : [`run`, ...args], {
 		stdio: `inherit`,
 		env: { ...process.env, FORCE_COLOR: `1`, CI: `false` },
 		timeout: 90_000,
@@ -73,7 +73,6 @@ async function loadSample(packageName: string) {
 		await rename(`.yalc`, `packages`)
 		const install = await runScript(`install`)
 		expect(install.exitCode).toBe(0)
-		// console.log(readdirSync(`node_modules/.bun`))
 	}
 	phase++
 }

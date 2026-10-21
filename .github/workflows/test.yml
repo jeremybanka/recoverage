@@ -30,8 +30,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/setup-test-git
-      - run: bun run test
-      - run: bun run test:tooling
+      - run: pnpm run test
+      - run: pnpm run test:tooling
 
   Build:
     runs-on: ubuntu-latest
@@ -39,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
-      - run: bun run build
+      - run: pnpm run build
 
   Recoverage:
     runs-on: ubuntu-latest
@@ -55,7 +55,7 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/setup-test-git
-      - run: bun run cov
+      - run: pnpm run cov
       - name: Compare each package with the PR target commit
         if: github.event_name == 'pull_request'
         env:
@@ -80,4 +80,4 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/setup-test-git
-      - run: bun run test:breakage
+      - run: pnpm run test:breakage
