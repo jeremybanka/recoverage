@@ -224,6 +224,12 @@ try {
 })
 
 describe(`documented installed CLI behavior`, () => {
+	it(`fails when the comparison branch does not exist`, () => {
+		const result = consumer.cli(`diff`, `-b`, `missing-branch`)
+		expect(result.status).toBe(1)
+		expect(result.stderr).toContain(`missing-branch`)
+	})
+
 	for (const flag of [`--default-branch`, `--defaultBranch`, `-b`]) {
 		it(`honors ${flag} on capture, diff, and the combined command`, () => {
 			consumer.coverage([1, 1])

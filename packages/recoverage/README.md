@@ -1,5 +1,7 @@
 # recoverage
 
+[![Statement coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Frecoverage.cloud%2Fshields%2FMwtSPckGChfYnC633Mp-Z%2Frecoverage)](https://github.com/jeremybanka/recoverage/actions/workflows/test.yml)
+
 `recoverage` is a command-line tool that streamlines the process of maintaining code coverage in ECMAScript projects.
 
 The core idea is simple: **coverage should increase over time**. Recoverage supports this idea by comparing the coverage of your default branch against feature branches.

@@ -5,6 +5,7 @@ import {
 	mkdirSync,
 	readdirSync,
 	readFileSync,
+	statSync,
 	symlinkSync,
 	writeFileSync,
 } from "node:fs"
@@ -146,6 +147,25 @@ export function collectPackage(directory: string, scratch: string): void {
 	// checked by the ordinary build, not by this disposable runtime-only build.
 	const manifestPath = path.join(mirror, `package.json`)
 	const manifest = JSON.parse(readFileSync(manifestPath, `utf8`))
+	const hasPublicTests = Boolean(manifest.scripts[`test:public-api`])
+	const declarations = path.join(scratch, `declarations`)
+	if (hasPublicTests) {
+		// Build the revision's uninstrumented declarations, including in baseline
+		// checkouts that have never been built. Runtime instrumentation distorts
+		// inferred types, so preserve these across the Vitest suite's clean build.
+		const consumer = `__tests__/public/consumer/node_modules`
+		symlinkSync(
+			path.join(directory, consumer),
+			path.join(mirror, consumer),
+			`dir`,
+		)
+		run([`bun`, `run`, `build`], mirror)
+		cpSync(path.join(mirror, `dist`), declarations, {
+			recursive: true,
+			filter: (file) =>
+				statSync(file).isDirectory() || /\.d\.[cm]?ts(?:\.map)?$/.test(file),
+		})
+	}
 	manifest.scripts.build = manifest.scripts.build.replace(
 		`tsdown`,
 		`tsdown --no-dts`,
@@ -157,14 +177,47 @@ export function collectPackage(directory: string, scratch: string): void {
 	)
 	const counters = path.join(scratch, `counters`)
 	mkdirSync(counters)
-	run(
-		[`node`, path.join(directory, `node_modules/vitest/vitest.mjs`), `run`],
-		mirror,
-		{
-			...localEnvironment,
-			RECOVERAGE_COUNTERS: counters,
-		},
+	const testEnvironment = { ...localEnvironment, RECOVERAGE_COUNTERS: counters }
+	// Vitest tears down workers without firing their process exit listeners.
+	// Flush each test file explicitly, preserving its normal setup and config.
+	const setup = path.join(mirror, `.recoverage-coverage-setup.ts`)
+	writeFileSync(
+		setup,
+		`import { writeFileSync } from "node:fs";
+import { afterAll } from "vitest";
+afterAll(() => {
+  const output = process.env.RECOVERAGE_COUNTERS + "/vitest-" + process.pid + "-" + Math.random() + ".json";
+  writeFileSync(output, JSON.stringify(globalThis.__coverage__ || {}));
+});
+`,
 	)
+	const config = path.join(mirror, `.recoverage-coverage.config.ts`)
+	writeFileSync(
+		config,
+		`import { mergeConfig } from "vitest/config";
+import original from "./vitest.config.ts";
+export default async (environment) => mergeConfig(
+  typeof original === "function" ? await original(environment) : await original,
+  { test: { setupFiles: [${JSON.stringify(setup)}] } },
+);
+`,
+	)
+	run(
+		[
+			`node`,
+			path.join(directory, `node_modules/vitest/vitest.mjs`),
+			`run`,
+			`--config`,
+			config,
+		],
+		mirror,
+		testEnvironment,
+	)
+	if (hasPublicTests) {
+		run([`bun`, `run`, `build`], mirror)
+		cpSync(declarations, path.join(mirror, `dist`), { recursive: true })
+		run([`bun`, `run`, `test:public-api`], mirror, testEnvironment)
+	}
 	const raw = readdirSync(counters).filter((name) => name.endsWith(`.json`))
 	if (raw.length === 0) throw new Error(`Tests produced no coverage counters`)
 	const merged = createCoverageMap(zero)

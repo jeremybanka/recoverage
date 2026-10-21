@@ -121,6 +121,7 @@ switch (inputs.case) {
 			}
 		} catch (thrown) {
 			console.error(thrown)
+			process.exit(1)
 		}
 		break
 	case `help`:
