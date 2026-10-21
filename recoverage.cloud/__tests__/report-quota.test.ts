@@ -1,7 +1,9 @@
 import { env } from "cloudflare:test"
 import { eq } from "drizzle-orm"
 import { Hono } from "hono"
+import { createCoverageMap } from "istanbul-lib-coverage"
 import { nanoid } from "nanoid"
+import { getCoverageJsonSummary } from "recoverage/lib"
 import { istanbulReportFixture, jsonSummaryFixture } from "recoverage-fixtures"
 
 import app from "../src"
@@ -170,4 +172,57 @@ test(`an exempt account's token stays scoped to its own project`, async () => {
 			payload.mapData,
 		)
 	}
+})
+
+test(`Istanbul implicit else branches survive upload and produce a live badge`, async () => {
+	const { token, projectId } = await createReporter(8570459)
+	const range = {
+		start: { line: 1, column: 0 },
+		end: { line: 1, column: 20 },
+	}
+	const mapData = {
+		"example.ts": {
+			path: `example.ts`,
+			statementMap: { 0: range, 1: range },
+			fnMap: {},
+			branchMap: {
+				0: {
+					type: `if`,
+					line: 1,
+					loc: range,
+					locations: [range, structuredClone(range)],
+				},
+			},
+			s: { 0: 1, 1: 0 },
+			f: {},
+			b: { 0: [1, 0] },
+		},
+	}
+	// Istanbul emits empty coordinates for an if statement's implicit else,
+	// despite its TypeScript declarations requiring every coordinate.
+	Object.assign(mapData[`example.ts`].branchMap[0].locations[1], {
+		start: {},
+		end: {},
+	})
+	const jsonSummary = getCoverageJsonSummary(createCoverageMap(mapData))
+	const report = { mapData, jsonSummary }
+	const response = await upload(token, `implicit-else`, report)
+	expect(response.status, await response.text()).toBe(200)
+	expect(await (await download(token, `implicit-else`)).json()).toEqual(mapData)
+	const badge = await app.request(`/shields/${projectId}/implicit-else`, {}, env)
+	expect(badge.status).toBe(200)
+	expect(await badge.json()).toMatchObject({
+		schemaVersion: 1,
+		label: `coverage`,
+		message: `50%`,
+		color: `orange`,
+	})
+
+	// Missing source positions are valid; supplied invalid coordinates are not.
+	const malformed = structuredClone(report)
+	Object.assign(malformed.mapData[`example.ts`].branchMap[0].locations[1].end, {
+		line: `invalid`,
+	})
+	expect((await upload(token, `malformed`, malformed)).status).toBe(400)
+	expect((await download(token, `malformed`)).status).toBe(404)
 })

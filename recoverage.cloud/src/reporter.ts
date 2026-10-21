@@ -160,8 +160,16 @@ const rangeType: Type<Istanbul.Range> = type({
 	end: locationType,
 })
 
+// Istanbul represents an implicit else branch without source coordinates.
+// Keep this exception limited to completely empty branch locations.
+const emptyLocationType = type({ "+": `reject` })
+const implicitBranchRangeType = type({
+	start: emptyLocationType,
+	end: emptyLocationType,
+})
+
 // Coverage data for one file
-const istanbulCoverageFileEntryType: Type<Istanbul.FileCoverageData> = type({
+const istanbulCoverageFileEntryType = type({
 	path: `string`,
 	statementMap: { "[string]": rangeType },
 	fnMap: {
@@ -176,7 +184,7 @@ const istanbulCoverageFileEntryType: Type<Istanbul.FileCoverageData> = type({
 		"[string]": {
 			line: `number.integer`,
 			type: `string`,
-			locations: type(rangeType, `[]`),
+			locations: type([rangeType, `|`, implicitBranchRangeType], `[]`),
 			loc: rangeType,
 		},
 	},
@@ -186,13 +194,11 @@ const istanbulCoverageFileEntryType: Type<Istanbul.FileCoverageData> = type({
 	b: { "[string]": `number.integer[]` },
 })
 
-export type IstanbulCoverageMap = {
-	[key: string]: Istanbul.FileCoverageData
-}
 // A coverage map is a record keyed by file path
-export const istanbulCoverageMapType: Type<IstanbulCoverageMap> = type({
+export const istanbulCoverageMapType = type({
 	"[string]": istanbulCoverageFileEntryType,
 })
+export type IstanbulCoverageMap = typeof istanbulCoverageMapType.infer
 
 export type V8EndLocation = {
 	line: number
