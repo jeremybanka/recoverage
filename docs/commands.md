@@ -61,7 +61,7 @@ The aggregate `check` remains the static-check suite; `test:breakage` additional
 
 ## Configuration validation
 
-Run `bun run check:correctly` for the same offline validation used by the JSON Schemas CI job. Correctly's associations in `correctly.config.ts` cover repository tooling; TypeScript and editor settings receive JSONC syntax checks. Fixture directories and package-manager lockfiles are excluded.
+Run `bun run check:correctly` for the same offline validation used by the `Check / Correctly` CI job. Correctly's associations in `correctly.config.ts` cover repository tooling; TypeScript and editor settings receive JSONC syntax checks. Fixture directories and package-manager lockfiles are excluded.
 
 Commit the entire `.correctly/` directory, including its lock and schema snapshots. Formatters exclude this directory because changing snapshot bytes invalidates their digests. After intentionally changing associations, run `bun run correctly schemas pull --all`, review the snapshot diff, and rerun the check. For an upstream schema refresh, use `bun run correctly schemas pull --association 'Dprint'` (or another association name). Renovate refreshes only the relevant remote associations after dependency installation. Package-local schemas follow their installed dependency versions.
 

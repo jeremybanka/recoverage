@@ -56,8 +56,8 @@ jobs:
       - uses: ./.github/actions/setup
       - run: bun check:tsc
 
-  JSONSchemas:
-    name: JSON Schemas
+  Correctly:
+    name: Correctly
     runs-on: ubuntu-latest
     timeout-minutes: 9
     steps:
