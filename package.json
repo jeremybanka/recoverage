@@ -46,7 +46,7 @@
 		"@dprint/markdown": "0.27.1",
 		"@eslint/eslintrc": "3.3.7",
 		"@eslint/js": "10.0.1",
-		"@types/bun": "npm:bun-types@1.4.3",
+		"@types/bun": "npm:bun-types@1.4.4",
 		"@types/eslint": "9.6.1",
 		"@types/semver": "7.8.0",
 		"@typescript-eslint/eslint-plugin": "8.72.0",
