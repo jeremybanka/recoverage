@@ -21,7 +21,8 @@
 			"!**/heap.json",
 			"!**/node_modules/**/*",
 			"!**/projects",
-			"!**/worker-configuration.d.ts"
+			"!**/worker-configuration.d.ts",
+			"!**/.correctly"
 		]
 	},
 	"linter": {

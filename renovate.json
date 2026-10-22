@@ -46,7 +46,14 @@
 		},
 		{
 			"matchDatasources": ["npm"],
-			"matchPackageNames": ["breakage", "comline", "jurist", "takua"],
+			"matchPackageNames": [
+				"breakage",
+				"comline",
+				"jurist",
+				"takua",
+				"@correctlyjs/schemars",
+				"correctly"
+			],
 			"minimumReleaseAge": null,
 			"groupName": "jeremybanka packages"
 		},
@@ -66,6 +73,54 @@
 			],
 			"matchPackageNames": ["recoverage", "recoverage-0-1-18"],
 			"enabled": false
+		},
+		{
+			"matchPackageNames": ["dprint", "@dprint/*", "/^dprint-plugin-/"],
+			"postUpgradeTasks": {
+				"commands": [
+					"bun install --frozen-lockfile",
+					"bun run correctly schemas pull --association 'Dprint'"
+				],
+				"executionMode": "branch",
+				"fileFilters": [".correctly/**"],
+				"installTools": {
+					"node": {},
+					"bun": {}
+				}
+			}
+		},
+		{
+			"matchPackageNames": [
+				"renovatebot/github-action",
+				"ghcr.io/renovatebot/renovate"
+			],
+			"postUpgradeTasks": {
+				"commands": [
+					"bun install --frozen-lockfile",
+					"bun run correctly schemas pull --association 'Renovate'"
+				],
+				"executionMode": "branch",
+				"fileFilters": [".correctly/**"],
+				"installTools": {
+					"node": {},
+					"bun": {}
+				}
+			}
+		},
+		{
+			"matchPackageNames": ["jdx/mise", "jdx/mise-action"],
+			"postUpgradeTasks": {
+				"commands": [
+					"bun install --frozen-lockfile",
+					"bun run correctly schemas pull --association 'Mise'"
+				],
+				"executionMode": "branch",
+				"fileFilters": [".correctly/**"],
+				"installTools": {
+					"node": {},
+					"bun": {}
+				}
+			}
 		}
 	]
 }
