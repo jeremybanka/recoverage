@@ -26,6 +26,7 @@
         "eslint-plugin-simple-import-sort": "14.0.0",
         "jiti": "2.7.0",
         "pin-dependencies-checker": "2.7.1",
+        "recoverage": "workspace:*",
         "semver": "7.8.5",
         "turbo": "2.11.10",
         "typescript": "7.0.2",
