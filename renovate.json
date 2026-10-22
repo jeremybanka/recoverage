@@ -26,14 +26,14 @@
 		{
 			"description": "Temporary Bun 1.4.4 release-age exception; remove after 2026-10-23 10:20 UTC.",
 			"matchPackageNames": ["bun", "oven-sh/bun", "@oven/bun-*", "bun-types"],
-			"matchNewValue": "/^(?:npm:bun-types@)?(?:bun-v|v)?1\\.4\\.4$/",
+			"matchJsonata": ["version = '1.4.4' or newVersion = '1.4.4'"],
 			"minimumReleaseAge": null
 		},
 		{
 			"description": "Temporary exception for the current @types/bun release; remove with the Bun 1.4.4 exception.",
 			"matchDatasources": ["npm"],
 			"matchPackageNames": ["@types/bun"],
-			"matchNewValue": "1.4.3",
+			"matchJsonata": ["version = '1.4.3' or newVersion = '1.4.3'"],
 			"minimumReleaseAge": null
 		},
 		{
