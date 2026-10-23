@@ -24,38 +24,24 @@
 	"statusCheckWhen": { "minimumReleaseAge": "never" },
 	"packageRules": [
 		{
-			"description": "Temporary Bun 1.4.4 release-age exception; remove after 2026-10-23 10:20 UTC.",
-			"matchPackageNames": ["bun", "oven-sh/bun", "@oven/bun-*", "bun-types"],
-			"matchJsonata": ["version = '1.4.4' or newVersion = '1.4.4'"],
-			"minimumReleaseAge": null
-		},
-		{
-			"description": "Temporary exception for the current @types/bun release; remove with the Bun 1.4.4 exception.",
-			"matchDatasources": ["npm"],
-			"matchPackageNames": ["@types/bun"],
-			"matchJsonata": ["version = '1.4.3' or newVersion = '1.4.3'"],
-			"minimumReleaseAge": null
-		},
-		{
 			"matchManagers": ["github-actions"],
 			"dependencyDashboardApproval": true
 		},
 		{
-			"matchPackageNames": ["@typescript/*"],
-			"minimumReleaseAge": null
-		},
-		{
 			"matchDatasources": ["npm"],
 			"matchPackageNames": [
+				"@correctlyjs/schemars",
 				"breakage",
 				"comline",
+				"correctly",
 				"jurist",
+				"recoverage",
 				"takua",
-				"@correctlyjs/schemars",
-				"correctly"
+				"treetrunks"
 			],
 			"minimumReleaseAge": null,
-			"groupName": "jeremybanka packages"
+			"groupName": "jeremybanka packages",
+			"description": "Exempt consumed jeremybanka packages at every version"
 		},
 		{
 			"matchPackageNames": ["wrangler", "@cloudflare/vitest-plugin"],
@@ -63,7 +49,6 @@
 		},
 		{
 			"matchPackageNames": ["bun", "oven-sh/bun"],
-			"minimumReleaseAge": null,
 			"groupName": "Bun"
 		},
 		{
