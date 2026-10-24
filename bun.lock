@@ -53,7 +53,7 @@
       "dependencies": {
         "@t3-oss/env-core": "0.13.11",
         "arktype": "2.2.9",
-        "comline": "0.9.1",
+        "comline": "0.9.2",
         "diff": "9.0.0",
         "istanbul-lib-coverage": "3.2.2",
         "istanbul-lib-report": "3.0.1",
@@ -970,7 +970,7 @@
 
     "color-name": ["color-name@1.1.4", "", {}, "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA=="],
 
-    "comline": ["comline@0.9.1", "", { "dependencies": { "@standard-schema/spec": "1.1.0", "treetrunks": "0.1.13" }, "peerDependencies": { "arktype": "^2.1.28", "zod": "^4.2.0" }, "optionalPeers": ["arktype", "zod"] }, "sha512-RbB0sJLMiTHe02VpHLK3RmXUk9Y/Jw5H35yx9X8rVWM7SQKDaSJ6AgIY1TbjhbduXhPrJEeiBbInvuYep5I9jw=="],
+    "comline": ["comline@0.9.2", "", { "dependencies": { "@standard-schema/spec": "1.1.0", "treetrunks": "0.1.13" }, "peerDependencies": { "arktype": "^2.1.28", "zod": "^4.2.0" }, "optionalPeers": ["arktype", "zod"] }, "sha512-gphLPX44fbnQS/e0n0vNNSFXj9XEMBay4tTVR6ymsFWoOXk+qARjDOx323Dbjnthlb8+r7x1+2F38fJKT0CMFQ=="],
 
     "commander": ["commander@12.1.0", "", {}, "sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA=="],
 
@@ -1847,6 +1847,8 @@
     "breakage/minimatch": ["minimatch@10.2.6", "", { "dependencies": { "brace-expansion": "^5.0.8" } }, "sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A=="],
 
     "correctly/ajv": ["ajv@8.20.0", "", { "dependencies": { "fast-deep-equal": "^3.1.3", "fast-uri": "^3.0.1", "json-schema-traverse": "^1.0.0", "require-from-string": "^2.0.2" } }, "sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA=="],
+
+    "correctly/comline": ["comline@0.9.1", "", { "dependencies": { "@standard-schema/spec": "1.1.0", "treetrunks": "0.1.13" }, "peerDependencies": { "arktype": "^2.1.28", "zod": "^4.2.0" }, "optionalPeers": ["arktype", "zod"] }, "sha512-RbB0sJLMiTHe02VpHLK3RmXUk9Y/Jw5H35yx9X8rVWM7SQKDaSJ6AgIY1TbjhbduXhPrJEeiBbInvuYep5I9jw=="],
 
     "correctly/ignore": ["ignore@7.0.13", "", {}, "sha512-2E8Q6rh+1RRSq/YdaGsNfXsEZy9FVqv6BSSrkmZJP7BnaoPnRfKL+YaofPvP+5rzdk144qSm6i4+hvPgUcbV4Q=="],
 
