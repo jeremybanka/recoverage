@@ -31,6 +31,7 @@
 			"matchDatasources": ["npm"],
 			"matchPackageNames": [
 				"@correctlyjs/schemars",
+				"@breakage/changesets",
 				"breakage",
 				"comline",
 				"correctly",

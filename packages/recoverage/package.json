@@ -46,7 +46,8 @@
 		"test:watch": "vitest --watch",
 		"watch:types": "tsc --watch --noEmit",
 		"test:public": "vitest run __tests__/diff-coverage.test.ts && bun run test:public-api",
-		"test:public-api": "bun test __tests__/public"
+		"test:public-api": "bun test __tests__/public",
+		"test:breakage": "breakage"
 	},
 	"dependencies": {
 		"@t3-oss/env-core": "0.13.11",
@@ -60,6 +61,7 @@
 		"takua": "0.2.3"
 	},
 	"devDependencies": {
+		"@breakage/changesets": "0.1.0",
 		"@types/bun": "npm:bun-types@1.4.4",
 		"@types/istanbul-lib-coverage": "2.0.6",
 		"@types/istanbul-lib-instrument": "1.7.8",
@@ -67,6 +69,7 @@
 		"@types/istanbul-reports": "3.0.4",
 		"@types/node": "26.6.5",
 		"@vitest/coverage-istanbul": "5.0.5",
+		"breakage": "0.10.0",
 		"eslint": "10.13.0",
 		"istanbul-lib-instrument": "6.0.3",
 		"nyc": "18.0.0",

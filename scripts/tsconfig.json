@@ -1,9 +1,0 @@
-{
-	"extends": "../tsconfig.json",
-	"compilerOptions": { "types": ["bun"] },
-	"include": [
-		"test-breakage.ts",
-		"release-compatibility.ts",
-		"__tests__/**/*.ts"
-	]
-}
