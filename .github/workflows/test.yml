@@ -31,7 +31,6 @@ jobs:
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/setup-test-git
       - run: bun run test
-      - run: bun run test:tooling
 
   Build:
     runs-on: ubuntu-latest

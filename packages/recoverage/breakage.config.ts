@@ -1,7 +1,6 @@
+import { changesetsReleaseDelta } from "@breakage/changesets"
 import type { BreakageConfig } from "breakage"
-import { defineConfig } from "breakage"
-
-import { recoverageRelease } from "./__scripts__/breakage-release.ts"
+import { defineConfig, semverPolicy } from "breakage"
 
 const config: BreakageConfig = defineConfig({
 	// Match only this package's stable releases, including annotated tags.
@@ -10,7 +9,10 @@ const config: BreakageConfig = defineConfig({
 	// the expanded public suite. Paths are relative to this config's directory.
 	testPattern: `__tests__/{diff-coverage.test.ts,sample-package-*/{**,.gitignore},public/**}`,
 	test: `bun run test:public`,
-	release: recoverageRelease(),
+	release: {
+		resolveDelta: changesetsReleaseDelta(),
+		policy: semverPolicy({ beforeV1: `minor` }),
+	},
 })
 
 export default config
