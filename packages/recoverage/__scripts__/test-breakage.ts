@@ -3,14 +3,15 @@ import { readFile } from "node:fs/promises"
 import path from "node:path"
 
 import { readChangesets } from "@changesets/read"
-import { breakage } from "breakage"
+import { changesetsReleaseDelta } from "@breakage/changesets"
+import { breakage, semverPolicy } from "breakage"
 
 import {
 	certifyBreakingChange,
 	hasReleasedPublicTests,
-} from "./release-compatibility.ts"
+} from "../../../scripts/release-compatibility.ts"
 
-const root = path.resolve(import.meta.dirname, `..`)
+const root = path.resolve(import.meta.dirname, `../../..`)
 const packageDirectory = path.join(root, `packages/recoverage`)
 
 function run(...args: string[]): void {
@@ -30,15 +31,17 @@ run(`run`, `--cwd`, packageDirectory, `build`)
 run(`run`, `--cwd`, packageDirectory, `test:public`)
 
 const outcome = await breakage({
-	baseDirname: root,
+	baseDirname: packageDirectory,
 	// Match only this package's stable releases, including annotated tags.
 	tagPattern: `\\trefs/tags/recoverage@(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:\\^\\{\\})?$`,
 	// Existing integration tests provide a real baseline before the first release
 	// containing the expanded public suite. Include their fixtures in restoration.
-	testPattern: `packages/recoverage/__tests__/{diff-coverage.test.ts,sample-package-*/{**,.gitignore},public/**}`,
-	testCommand: `bun run --cwd packages/recoverage test:public`,
-	// Certify below using the exact release selected by breakage.
-	certifyCommand: `false`,
+	testPattern: `__tests__/{diff-coverage.test.ts,sample-package-*/{**,.gitignore},public/**}`,
+	test: `bun run test:public`,
+	release: {
+		resolveDelta: changesetsReleaseDelta(),
+		policy: semverPolicy({ beforeV1: `minor` }),
+	},
 })
 
 if (!(`breakingChangesFound` in outcome)) {
@@ -47,7 +50,11 @@ if (!(`breakingChangesFound` in outcome)) {
 		`Compatibility was not established; a release and public tests are required.`,
 	)
 }
-if (!hasReleasedPublicTests(outcome.testsFound)) {
+if (
+	!hasReleasedPublicTests(
+		outcome.testsFound.map((file) => `packages/recoverage/${file}`),
+	)
+) {
 	throw new Error(
 		`The release baseline contains no executable public contracts; fixtures and helpers alone cannot establish compatibility.`,
 	)
@@ -68,7 +75,7 @@ if (outcome.breakingChangesFound) {
 			`utf8`,
 		),
 	})
-	if (!certified) {
+	if (!outcome.release?.breaking || !certified) {
 		throw new Error(
 			`Breaking changes require a recoverage minor bump before 1.0 (major thereafter) and 💥 BREAKING CHANGE: release notes.`,
 		)
