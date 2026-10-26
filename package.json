@@ -45,7 +45,7 @@
 		"@changesets/config": "4.0.1",
 		"@changesets/read": "1.0.1",
 		"@correctlyjs/schemars": "0.0.5",
-		"@dprint/biome": "0.15.0",
+		"@dprint/biome": "0.15.1",
 		"@dprint/markdown": "0.28.0",
 		"@eslint/eslintrc": "3.3.7",
 		"@eslint/js": "10.0.1",
