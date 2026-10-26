@@ -2,8 +2,8 @@ import { execFileSync, spawnSync } from "node:child_process"
 import { readFile } from "node:fs/promises"
 import path from "node:path"
 
-import { readChangesets } from "@changesets/read"
 import { changesetsReleaseDelta } from "@breakage/changesets"
+import { readChangesets } from "@changesets/read"
 import { breakage, semverPolicy } from "breakage"
 
 import {
