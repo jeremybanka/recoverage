@@ -43,7 +43,7 @@
 		"@changesets/cli": "3.0.3",
 		"@changesets/config": "4.0.1",
 		"@correctlyjs/schemars": "0.0.6",
-		"@dprint/biome": "0.15.1",
+		"@dprint/biome": "0.15.2",
 		"@dprint/markdown": "0.28.2",
 		"@eslint/eslintrc": "3.3.7",
 		"@eslint/js": "10.0.1",
