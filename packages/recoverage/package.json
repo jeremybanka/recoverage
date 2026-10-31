@@ -70,7 +70,7 @@
 		"@types/node": "26.6.6",
 		"@vitest/coverage-istanbul": "5.0.5",
 		"breakage": "0.10.1",
-		"eslint": "10.13.0",
+		"eslint": "10.14.0",
 		"istanbul-lib-instrument": "6.0.3",
 		"nyc": "18.0.0",
 		"recoverage-fixtures": "workspace:*",
