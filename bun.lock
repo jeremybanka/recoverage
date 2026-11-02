@@ -93,7 +93,7 @@
       "dependencies": {
         "arktype": "2.2.9",
         "drizzle-orm": "0.45.4",
-        "hono": "4.13.14",
+        "hono": "4.13.16",
         "htmx.org": "4.0.0",
         "istanbul-lib-coverage": "3.2.2",
         "jurist": "0.0.15",
@@ -1172,7 +1172,7 @@
 
     "he": ["he@1.2.0", "", { "bin": { "he": "bin/he" } }, "sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw=="],
 
-    "hono": ["hono@4.13.14", "", {}, "sha512-yhRLQ21U6qa9Hsu2N7Qcbh8tE+WKEcoErjIo56LeSGiGXGp9sA7UpE86Ui9uexb61KakiGwuHMn2QdV7w6i6kQ=="],
+    "hono": ["hono@4.13.16", "", {}, "sha512-AOLOEhvrV+iH92xXCnFr/5+3KjPKcI3xP63XJtX5spAnkznPdHijlIsUTpi7/9EhWqrTCekw5c5zh1K+YsVw7A=="],
 
     "hookable": ["hookable@6.1.2", "", {}, "sha512-+abwxtiEA52GCVIsQqut3S/uKTbUwYIp4Pe/vv+6py5XiXBCqMZHg6pA6Y5qhgLSEys0/cYuPbO0z1QFj5ZCmg=="],
 
