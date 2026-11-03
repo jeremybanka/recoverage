@@ -128,7 +128,7 @@ test(`collection includes public-only code and preserves declarations and consum
 		write(`__tests__/unit.test.ts`, fixture(`collector-unit.test.ts`))
 		write(
 			`__tests__/public/consumer/node_modules/contract-only/index.js`,
-			fixture(`consumer-dependency.js`),
+			fixture(`consumer-dependency.ts`),
 		)
 		write(
 			`__tests__/public/contract.test.ts`,

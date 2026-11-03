@@ -11,6 +11,10 @@
 		"allowJs": false,
 		"declaration": true,
 		"isolatedDeclarations": true,
-		"types": ["vitest/globals"]
+		"types": ["vitest/globals"],
+		"paths": {
+			"recoverage": ["./src/recoverage.ts"],
+			"recoverage/lib": ["./src/recoverage.lib.ts"]
+		}
 	}
 }
