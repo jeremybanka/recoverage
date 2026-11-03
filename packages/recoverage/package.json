@@ -68,7 +68,7 @@
 		"@types/istanbul-lib-report": "3.0.3",
 		"@types/istanbul-reports": "3.0.4",
 		"@types/node": "26.6.6",
-		"@vitest/coverage-istanbul": "5.0.5",
+		"@vitest/coverage-istanbul": "5.1.0",
 		"breakage": "0.10.1",
 		"eslint": "10.14.0",
 		"istanbul-lib-instrument": "6.0.3",
@@ -77,7 +77,7 @@
 		"tsdown": "0.23.4",
 		"typescript": "7.0.2",
 		"vite": "8.3.5",
-		"vitest": "5.0.5",
+		"vitest": "5.1.0",
 		"yalc": "1.0.0-pre.53"
 	}
 }
