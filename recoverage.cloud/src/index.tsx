@@ -117,8 +117,6 @@ app.get(GITHUB_CALLBACK_ENDPOINT, async (c) => {
 	}
 	const accessTokenResponseText = await accessTokenResponse.text()
 
-	console.log({ accessTokenResponseText })
-
 	const params = new URLSearchParams(accessTokenResponseText)
 	const accessToken = params.get(`access_token`)
 	if (!accessToken) {
