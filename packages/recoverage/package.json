@@ -69,7 +69,7 @@
 		"@types/istanbul-reports": "3.0.4",
 		"@types/node": "26.6.6",
 		"@vitest/coverage-istanbul": "5.1.0",
-		"breakage": "0.10.1",
+		"breakage": "0.10.2",
 		"eslint": "10.14.0",
 		"istanbul-lib-instrument": "6.0.3",
 		"nyc": "18.0.0",
