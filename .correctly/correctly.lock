@@ -8,10 +8,10 @@
     },
     "https://dprint.dev/schemas/v0.json": {
       "digest": "159e313348452ba435354be032433e6f4603b2397ae28a0909c0683c3990aa8f",
-      "discoveredAt": "2026-11-06T00:51:15.515Z",
+      "discoveredAt": "2026-11-07T09:18:25.808Z",
       "packages": {
-        "@dprint/biome": "0.15.3",
-        "@dprint/markdown": "0.28.2",
+        "@dprint/biome": "0.15.4",
+        "@dprint/markdown": "0.29.0",
         "dprint": "0.64.3"
       }
     },
