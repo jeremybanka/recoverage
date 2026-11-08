@@ -39,11 +39,12 @@ Following the [mise Node.js cookbook](https://mise.jdx.dev/mise-cookbook/nodejs.
 `bun run --cwd recoverage.cloud gen:api` regenerates
 `packages/recoverage/src/cloud-api.gen.d.ts` from the server's Hono routes. Commit
 that declaration with API changes. `check:api` builds the CLI prerequisites and
-compares the generated declaration with the committed file before other checks
-can regenerate it. The contract contains route types without Worker bindings;
+compares the inferred client types with the committed contract before other
+checks can regenerate it. The contract contains route types without Worker bindings;
 CLI builds and installed packages do not load the server runtime. The cloud
-package's normal `gen` command also refreshes the contract. Contract generation
-first generates local Worker types, so it also works on a fresh checkout.
+package's normal `gen` command also refreshes the contract. Root commands build
+the CLI prerequisite first; run `bun run build` before invoking `gen:api` directly
+on a fresh checkout. Contract generation prepares local Worker types automatically.
 
 The cloud package's `check:tsc`, `gen`, `go`, and `preview` commands run their child scripts with Bun's built-in parallel runner. `--no-exit-on-error` lets every selected child finish, matching the previous runner's behavior; the group still fails if any child fails. `go` and `preview` deploy only after all their setup scripts succeed.
 

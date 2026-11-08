@@ -17,6 +17,7 @@ From the repository root:
 
 ```sh
 bun install
+bun run build
 bun run --filter=recoverage.cloud gen
 bun run --filter=recoverage.cloud dev
 ```
