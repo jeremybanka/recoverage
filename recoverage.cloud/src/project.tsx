@@ -271,7 +271,7 @@ export function Project(props: ProjectProps): Loadable<HtmlEscapedString> {
 	}
 }
 
-export type CompleteProjectTokenProps = {
+type CompleteProjectTokenProps = {
 	id: string
 	name: string
 	secretShownOnce?: string

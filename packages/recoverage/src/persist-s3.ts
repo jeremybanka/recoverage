@@ -4,6 +4,7 @@ import logger from "takua"
 import type { S3Credentials } from "./recoverage.env.ts"
 
 let s3isInitialized = false
+/** @public Accessed through source-module imports in subprocess implementation tests. */
 export function initS3(credentials: S3Credentials): void {
 	if (s3isInitialized) {
 		return
