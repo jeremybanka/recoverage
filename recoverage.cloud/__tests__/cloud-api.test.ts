@@ -1,10 +1,12 @@
 import { env } from "cloudflare:test"
 import { eq } from "drizzle-orm"
+import { hc, parseResponse } from "hono/client"
 import { generateSignedCookie } from "hono/cookie"
 import { nanoid } from "nanoid"
 import { istanbulReportFixture, jsonSummaryFixture } from "recoverage-fixtures"
 
 import app from "../src"
+import { apiContract } from "../src/api-contract"
 import { createDatabase } from "../src/db"
 import { computeHash } from "../src/hash"
 import * as schema from "../src/schema"
@@ -47,6 +49,34 @@ function api(route: string, method = `GET`, body?: unknown, token = credential) 
 		env,
 	)
 }
+
+test(`Hono RPC client shares validated request bodies and server responses`, async () => {
+	const client = hc<typeof apiContract>(`http://localhost`, {
+		headers: { Authorization: `Bearer ${credential}` },
+		fetch: (input: Parameters<typeof fetch>[0], init?: RequestInit) =>
+			apiContract.request(input, init, env),
+	})
+	const account = await parseResponse(client.account.$get())
+	expect(account.login).toBe(`cli-user`)
+	const created = await parseResponse(
+		client.projects.$post({ json: { name: `RPC project` } }),
+	)
+	const { projects } = await parseResponse(client.projects.$get())
+	expect(projects[0].id).toBe(created.id)
+	const param = { projectId: created.id }
+	const tokens = client.projects[`:projectId`].tokens
+	const token = await parseResponse(
+		tokens.$post({ param, json: { name: `RPC token` } }),
+	)
+	expect(token.token).toContain(`${token.id}.`)
+	const deleted = await parseResponse(
+		tokens[`:tokenId`].$delete({ param: { ...param, tokenId: token.id } }),
+	)
+	expect(deleted).toEqual({ success: true, id: token.id })
+	expect(
+		(await parseResponse(client.projects.$get())).projects[0].tokens,
+	).toEqual([])
+})
 
 async function project() {
 	const response = await api(`/projects`, `POST`, { name: `CLI project` })

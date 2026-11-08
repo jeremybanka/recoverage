@@ -156,6 +156,7 @@ const commonRules = {
 const configs = [
 	{
 		ignores: [
+			`**/*.gen.d.ts`,
 			`**/.wrangler/**`,
 			`**/_shared/**`,
 			`**/build/**`,

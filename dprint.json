@@ -8,6 +8,7 @@
 		"**/CHANGELOG.md"
 	],
 	"excludes": [
+		"**/*.gen.d.ts",
 		"**/.correctly/**",
 		"**/metafile-*",
 		"**/*.cache.json",

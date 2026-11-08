@@ -6,6 +6,15 @@ import { createInterface } from "node:readline/promises"
 import { promisify } from "node:util"
 
 import {
+	type ClientResponse,
+	DetailedError,
+	hc,
+	type InferResponseType,
+	parseResponse,
+} from "hono/client"
+
+import type { apiContract } from "./cloud-api.gen.d.ts"
+import {
 	cloudEnvironment,
 	cloudHost,
 	projectFromConfig,
@@ -16,19 +25,6 @@ import {
 	writeCloudStore,
 } from "./cloud-config.ts"
 
-type Project = {
-	id: string
-	name: string
-	tokens: { id: string; name: string; createdAt: string }[]
-	reports: { ref: string; jsonSummary: string | null; createdAt: string }[]
-}
-type Account = {
-	id: number
-	login: string
-	role: string
-	expiresAt: number
-	limits: { projects: number | null; reports: number | null; tokens: number }
-}
 export type CloudOptions = {
 	host?: string | undefined
 	json?: boolean | undefined
@@ -48,38 +44,54 @@ class CloudRequestError extends Error {
 	}
 }
 
-async function request<T>(
-	host: string,
-	route: string,
-	token?: string,
-	body?: unknown,
-	method = body === undefined ? `GET` : `POST`,
-): Promise<T> {
-	const response = await fetch(new URL(`/api/v1${route}`, host), {
-		method,
-		redirect: `error`,
-		signal: AbortSignal.timeout(30_000),
+function createClient(host: string, token?: string) {
+	return hc<typeof apiContract>(`${host}/api/v1`, {
 		headers: {
 			Accept: `application/json`,
-			...(body === undefined ? {} : { "Content-Type": `application/json` }),
 			...(token ? { Authorization: `Bearer ${token}` } : {}),
 		},
-		...(body === undefined ? {} : { body: JSON.stringify(body) }),
+		init: { redirect: `error` },
+		fetch: (input: Parameters<typeof fetch>[0], init?: RequestInit) =>
+			fetch(input, { ...init, signal: AbortSignal.timeout(30_000) }),
 	})
-	let data: { error?: string }
+}
+
+type Project = InferResponseType<
+	ReturnType<typeof createClient>[`projects`][`$post`],
+	201
+>
+
+async function request<T extends ClientResponse<unknown>>(pending: Promise<T>) {
+	const response = await pending
 	try {
-		data = (await response.json()) as { error?: string }
-	} catch {
-		throw new Error(
-			`Cloud returned a non-JSON response (${response.status}). Check the host and deploy the CLI management API.`,
-		)
+		if (!response.headers.get(`Content-Type`)?.includes(`application/json`))
+			throw new SyntaxError(`Expected JSON`)
+		return await parseResponse(response)
+	} catch (error) {
+		if (error instanceof SyntaxError)
+			throw new Error(
+				`Cloud returned a non-JSON response (${response.status}). Check the host and deploy the CLI management API.`,
+			)
+		if (error instanceof DetailedError) {
+			const detail: unknown = error.detail
+			const data =
+				detail && typeof detail === `object` && `data` in detail
+					? detail.data
+					: undefined
+			const message =
+				data &&
+				typeof data === `object` &&
+				`error` in data &&
+				typeof data.error === `string`
+					? data.error
+					: response.statusText
+			throw new CloudRequestError(
+				response.status,
+				`Cloud request failed (${response.status}): ${message}`,
+			)
+		}
+		throw error
 	}
-	if (!response.ok)
-		throw new CloudRequestError(
-			response.status,
-			`Cloud request failed (${response.status}): ${data.error ?? response.statusText}`,
-		)
-	return data as T
 }
 
 async function context(options: CloudOptions) {
@@ -93,7 +105,14 @@ async function context(options: CloudOptions) {
 		cloudEnvironment(`RECOVERAGE_CLOUD_ACCOUNT_TOKEN`) ??
 		store.accounts[host]?.token
 	if (!credential) throw new Error(`Run recoverage cloud login first.`)
-	return { config, cloud, host, store, credential }
+	return {
+		config,
+		cloud,
+		host,
+		store,
+		credential,
+		client: createClient(host, credential),
+	}
 }
 
 function output(json: boolean | undefined, data: unknown, message: string) {
@@ -106,13 +125,8 @@ export async function cloudLogin(options: CloudOptions): Promise<void> {
 		options.host ?? cloudEnvironment(`RECOVERAGE_CLOUD_URL`) ?? cloud?.host,
 	)
 	const store = await readCloudStore()
-	const device = await request<{
-		deviceCode: string
-		userCode: string
-		verificationUri: string
-		expiresIn: number
-		interval: number
-	}>(host, `/auth/device`, undefined, {})
+	const client = createClient(host)
+	const device = await request(client.auth.device.$post())
 	if (
 		typeof device.deviceCode !== `string` ||
 		typeof device.userCode !== `string` ||
@@ -150,18 +164,16 @@ export async function cloudLogin(options: CloudOptions): Promise<void> {
 	const deadline = Date.now() + Math.min(device.expiresIn, 900) * 1000
 	while (Date.now() < deadline) {
 		await new Promise((resolve) => setTimeout(resolve, interval))
-		const session = await request<{
-			error?: string
-			token: string
-			expiresAt: number
-			account: { id: number; login: string }
-		}>(host, `/auth/session`, undefined, { deviceCode: device.deviceCode })
-		if (session.error === `slow_down`) {
+		const session = await request(
+			client.auth.session.$post({ json: { deviceCode: device.deviceCode } }),
+		)
+		if (`error` in session && session.error === `slow_down`) {
 			interval += 5000
 			continue
 		}
-		if (session.error === `authorization_pending`) continue
+		if (`error` in session && session.error === `authorization_pending`) continue
 		if (
+			`error` in session ||
 			!/^rca_[\w-]+\.[\w-]+$/.test(session.token) ||
 			!Number.isFinite(session.expiresAt) ||
 			!session.account?.login
@@ -177,7 +189,7 @@ export async function cloudLogin(options: CloudOptions): Promise<void> {
 		await writeCloudStore(latest)
 		if (old) {
 			try {
-				await request(host, `/auth/session`, old.token, undefined, `DELETE`)
+				await request(createClient(host, old.token).auth.session.$delete())
 			} catch {
 				/* Expired credentials need no revocation. */
 			}
@@ -193,9 +205,9 @@ export async function cloudLogin(options: CloudOptions): Promise<void> {
 }
 
 export async function cloudLogout(options: CloudOptions): Promise<void> {
-	const { host, store, credential } = await context(options)
+	const { host, store, client } = await context(options)
 	try {
-		await request(host, `/auth/session`, credential, undefined, `DELETE`)
+		await request(client.auth.session.$delete())
 	} catch (error) {
 		// An expired or already-revoked credential can safely be removed locally.
 		if (!(error instanceof CloudRequestError && error.status === 401))
@@ -223,17 +235,13 @@ async function prompt(message: string): Promise<string> {
 }
 
 export async function cloudInit(options: CloudOptions): Promise<void> {
-	const { config, cloud, host, credential } = await context(options)
+	const { config, cloud, host, client } = await context(options)
 	if (options.project && options.name)
 		throw new Error(`Choose either --project or --name.`)
 	const report = validateReport(
 		options.report ?? cloud?.report ?? path.basename(process.cwd()),
 	)
-	const { projects } = await request<{ projects: Project[] }>(
-		host,
-		`/projects`,
-		credential,
-	)
+	const { projects } = await request(client.projects.$get())
 	let projectId =
 		options.project ??
 		(!options.name && cloud?.host === host ? cloud.projectId : undefined)
@@ -255,7 +263,7 @@ export async function cloudInit(options: CloudOptions): Promise<void> {
 			name = choice
 		}
 	}
-	let project: Pick<Project, `id` | `name`> | undefined
+	let project: Project | undefined
 	if (projectId) {
 		project = projects.find((candidate) => candidate.id === projectId)
 		if (!project)
@@ -263,12 +271,7 @@ export async function cloudInit(options: CloudOptions): Promise<void> {
 	} else {
 		if (!name?.trim() || name.length > 128)
 			throw new Error(`Project name must contain 1–128 characters.`)
-		project = await request<Pick<Project, `id` | `name`>>(
-			host,
-			`/projects`,
-			credential,
-			{ name },
-		)
+		project = await request(client.projects.$post({ json: { name } }))
 	}
 	const linked = { host, projectId: project.id, report }
 	const store = await readCloudStore()
@@ -281,11 +284,11 @@ export async function cloudInit(options: CloudOptions): Promise<void> {
 			.find((candidate) => candidate.id === project.id)
 			?.tokens.some((token) => token.id === savedTokenId)
 	if (!tokenExists) {
-		const token = await request<{ token: string }>(
-			host,
-			`/projects/${encodeURIComponent(project.id)}/tokens`,
-			credential,
-			{ name: `local:${hostname()}`.slice(0, 128) },
+		const token = await request(
+			client.projects[`:projectId`].tokens.$post({
+				param: { projectId: encodeURIComponent(project.id) },
+				json: { name: `local:${hostname()}`.slice(0, 128) },
+			}),
 		)
 		store.reporters[key] = token.token
 		await writeCloudStore(store)
@@ -302,13 +305,9 @@ export async function cloudInit(options: CloudOptions): Promise<void> {
 }
 
 export async function cloudStatus(options: CloudOptions): Promise<void> {
-	const { host, cloud, credential } = await context(options)
-	const account = await request<Account>(host, `/account`, credential)
-	const { projects } = await request<{ projects: Project[] }>(
-		host,
-		`/projects`,
-		credential,
-	)
+	const { host, cloud, client } = await context(options)
+	const account = await request(client.account.$get())
+	const { projects } = await request(client.projects.$get())
 	const projectId =
 		options.project ?? (cloud?.host === host ? cloud.projectId : undefined)
 	const project = projectId
@@ -341,32 +340,26 @@ export async function cloudToken(
 	value: string,
 	options: CloudOptions,
 ): Promise<void> {
-	const { host, cloud, credential } = await context(options)
+	const { host, cloud, client } = await context(options)
 	const projectId =
 		options.project ?? (cloud?.host === host ? cloud.projectId : undefined)
 	if (!projectId)
 		throw new Error(`Run recoverage cloud init or specify --project=<id>.`)
-	const route = `/projects/${encodeURIComponent(projectId)}/tokens`
+	const tokens = client.projects[`:projectId`].tokens
+	const param = { projectId: encodeURIComponent(projectId) }
 	if (action === `create`) {
 		if (!value.trim() || value.length > 128)
 			throw new Error(`Token name must contain 1–128 characters.`)
-		const token = await request<{ id: string; name: string; token: string }>(
-			host,
-			route,
-			credential,
-			{ name: value },
-		)
+		const token = await request(tokens.$post({ param, json: { name: value } }))
 		console.error(
 			`Save this reporter token as RECOVERAGE_CLOUD_TOKEN in CI; it is shown only once.`,
 		)
 		output(options.json, token, token.token)
 	} else {
-		const result = await request<{ success: true; id: string }>(
-			host,
-			`${route}/${encodeURIComponent(value)}`,
-			credential,
-			undefined,
-			`DELETE`,
+		const result = await request(
+			tokens[`:tokenId`].$delete({
+				param: { ...param, tokenId: encodeURIComponent(value) },
+			}),
 		)
 		const store = await readCloudStore()
 		const key = reporterKey({ host, projectId })

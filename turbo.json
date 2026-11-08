@@ -3,6 +3,10 @@
 	"ui": "tui",
 	"globalDependencies": ["tsconfig.json", ".bun-version", ".node-version"],
 	"tasks": {
+		"check:api": {
+			"dependsOn": ["^build"],
+			"cache": false
+		},
 		"build": {
 			"dependsOn": ["gen", "^build", "^gen"],
 			"outputs": ["dist/**", "**/dist/*", "**/dist/**/*", "bin/**"],

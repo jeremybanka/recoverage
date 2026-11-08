@@ -224,6 +224,32 @@ try {
 })
 
 describe(`documented installed CLI behavior`, () => {
+	it(`uses cloud management from the installed CLI without the Worker runtime`, () => {
+		consumer.evaluate(`
+import path from 'node:path';
+const manifest = await Bun.file('node_modules/recoverage/package.json').json();
+const executable = typeof manifest.bin === 'string' ? manifest.bin : manifest.bin.recoverage;
+const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch(request) {
+  assert.equal(request.headers.get('authorization'), 'Bearer installed-account');
+  switch (new URL(request.url).pathname) {
+    case '/api/v1/account': return Response.json({ id: 123, login: 'installed-user', role: 'free', expiresAt: Date.now() + 60000, limits: { projects: 3, reports: 3, tokens: 12 } });
+    case '/api/v1/projects': return Response.json({ projects: [] });
+    default: return Response.json({ error: 'Unexpected route' }, { status: 404 });
+  }
+} });
+try {
+  const child = Bun.spawn(['bun', path.resolve('node_modules/recoverage', executable), 'cloud', 'status', '--host=' + server.url.origin, '--json'], {
+    env: { ...process.env, XDG_CONFIG_HOME: path.resolve('credentials'), RECOVERAGE_CLOUD_ACCOUNT_TOKEN: 'installed-account' },
+    stdout: 'pipe', stderr: 'pipe',
+  });
+  const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()]);
+  assert.equal(code, 0, stderr);
+  assert.equal(JSON.parse(stdout).account.login, 'installed-user');
+  assert.equal(stderr, '');
+} finally { server.stop(true); }
+`)
+	})
+
 	it(`fails when the comparison branch does not exist`, () => {
 		const result = consumer.cli(`diff`, `-b`, `missing-branch`)
 		expect(result.status).toBe(1)

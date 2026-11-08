@@ -8,6 +8,7 @@
 			"**",
 			"!**/metafile-*",
 			"!**/*.gen.ts",
+			"!**/*.gen.d.ts",
 			"!**/*.gen.tsx",
 			"!**/*.tsdoc.json",
 			"!**/.turbo",

@@ -3,7 +3,8 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"check": "bun run check:eslint && bun run check:tsc && bun run check:biome",
+		"check": "bun run check:api && bun run check:eslint && bun run check:tsc && bun run check:biome",
+		"check:api": "bun run gen:types && bun __scripts__/gen-api.bun.ts --check",
 		"check:biome": "biome lint -- .",
 		"check:eslint": "NODE_OPTIONS=--require=../scripts/eslint-typescript.cjs eslint -- .",
 		"check:tsc": "bun run --parallel --no-exit-on-error \"check:tsc:*\"",
@@ -14,7 +15,8 @@
 		"db:gen": "drizzle-kit generate",
 		"db:up": "wrangler d1 migrations apply recoverage-data",
 		"dev": "wrangler dev --live-reload",
-		"gen": "bun run --parallel --no-exit-on-error \"gen:*\"",
+		"gen": "bun run --parallel --no-exit-on-error gen:scripts gen:api",
+		"gen:api": "bun run gen:types && bun __scripts__/gen-api.bun.ts",
 		"gen:scripts": "bun __scripts__/gen-scripts.bun.ts",
 		"gen:types": "wrangler types",
 		"go": "bun run --parallel --no-exit-on-error \"setup:*\" && wrangler deploy --minify",
@@ -60,6 +62,7 @@
 		"recoverage": "workspace:*",
 		"recoverage-fixtures": "workspace:*",
 		"takua": "0.2.3",
+		"tsdown": "0.23.7",
 		"vite": "8.3.6",
 		"vitest": "5.1.0",
 		"wrangler": "4.158.0"

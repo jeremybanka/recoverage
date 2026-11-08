@@ -42,6 +42,14 @@ Production deploys use `wrangler.jsonc`; preview deploys use
 
 ## CLI account management
 
+The CLI calls these routes through Hono's RPC client. JSON validators define
+request types, and handler results define response types. Run
+`bun run --cwd recoverage.cloud gen:api` after changing routes and commit the
+generated `packages/recoverage/src/cloud-api.gen.d.ts` with the change.
+`bun run check:api` detects a stale contract. The generated declaration excludes
+Worker bindings so the published CLI needs only Hono's client runtime. The web
+UI continues to use HTMX and the shared project/token operations.
+
 The `/api/v1` JSON API supports CLI login and account management. Before deploying
 this milestone, enable **Device Flow** in the existing GitHub OAuth app's settings
 ([GitHub documentation](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#device-flow)).

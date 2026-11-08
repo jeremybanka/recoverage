@@ -54,6 +54,7 @@
 		"arktype": "2.2.9",
 		"comline": "0.9.3",
 		"diff": "9.0.0",
+		"hono": "4.13.16",
 		"istanbul-lib-coverage": "3.2.2",
 		"istanbul-lib-report": "3.0.1",
 		"istanbul-reports": "3.2.0",
