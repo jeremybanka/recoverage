@@ -5,7 +5,8 @@ import path from "node:path"
 
 import { type Type, type } from "arktype"
 
-export type CloudProject = { host: string; projectId: string; report: string }
+import type { CloudProject } from "./cloud-types.ts"
+
 export const cloudProjectType: Type<CloudProject> = type({
 	host: `string`,
 	projectId: `string`,

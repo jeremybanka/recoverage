@@ -3,8 +3,8 @@ import type { CoverageMapData } from "istanbul-lib-coverage"
 import { createCoverageMap } from "istanbul-lib-coverage"
 import logger from "takua"
 
-import type { CloudProject } from "./cloud-config.ts"
 import { reporterCredentials } from "./cloud-config.ts"
+import type { CloudProject } from "./cloud-types.ts"
 import {
 	deleteAllButLast10Reports,
 	getCoverage,
