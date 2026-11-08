@@ -10,10 +10,9 @@
 		"packages/recoverage/__tests__/public/consumer"
 	],
 	"scripts": {
-		"bench": "cd lib && vitest bench",
 		"build": "turbo run build",
 		"change": "changeset",
-		"check": "bun run check:fmt && bun run check:deps && bun run check:eslint && bun run check:biome && bun run check:tsc && bun run check:correctly",
+		"check": "bun run check:fmt && bun run check:deps && bun run check:eslint && bun run check:biome && bun run check:tsc && bun run check:correctly && bun run check:unused && bun run check:unused:production",
 		"check:correctly": "correctly check --offline",
 		"check:biome": "turbo run check:biome",
 		"check:deps": "pin-checker --ignore-workspaces",
@@ -33,7 +32,9 @@
 		"test:watch": "turbo run test:watch --concurrency=30",
 		"watch:types": "turbo run watch:types --concurrency=30",
 		"workflows:update": "bun ./scripts/update-workflows.bun.ts",
-		"test:breakage": "bun run --cwd packages/recoverage test:breakage"
+		"test:breakage": "bun run --cwd packages/recoverage test:breakage",
+		"check:unused": "knip",
+		"check:unused:production": "knip --production"
 	},
 	"keywords": [],
 	"author": "",
@@ -45,13 +46,9 @@
 		"@correctlyjs/schemars": "0.0.6",
 		"@dprint/biome": "0.15.5",
 		"@dprint/markdown": "0.29.0",
-		"@eslint/eslintrc": "3.3.7",
-		"@eslint/js": "10.0.1",
 		"@types/bun": "npm:bun-types@1.4.4",
-		"@types/eslint": "9.6.1",
 		"@typescript-eslint/eslint-plugin": "8.72.1",
 		"@typescript-eslint/parser": "8.72.1",
-		"c8": "12.0.0",
 		"correctly": "0.3.3",
 		"cross-env": "10.1.0",
 		"dprint": "0.64.3",
@@ -59,13 +56,11 @@
 		"eslint-plugin-import-x": "4.18.0",
 		"eslint-plugin-simple-import-sort": "14.0.0",
 		"jiti": "2.7.0",
+		"knip": "6.44.1",
 		"pin-dependencies-checker": "2.7.1",
-		"recoverage": "workspace:*",
 		"turbo": "2.11.10",
 		"typescript": "7.0.2",
-		"typescript-eslint-typescript": "npm:typescript@6.0.3",
-		"typescript-language-server": "6.0.3",
-		"vscode-langservers-extracted": "4.10.0"
+		"typescript-eslint-typescript": "npm:typescript@6.0.3"
 	},
 	"packageManager": "bun@1.4.4",
 	"trustedDependencies": [

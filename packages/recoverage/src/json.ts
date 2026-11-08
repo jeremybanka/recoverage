@@ -1,4 +1,4 @@
-export namespace Json {
+namespace Json {
 	export type primitive = boolean | number | string | null
 	export type Arr = Array<Arr | Compatible<any> | Obj | primitive>
 	export type Obj = { [key: keyof any]: Arr | Compatible<any> | Obj | primitive }
@@ -19,6 +19,6 @@ export function stringify(
 	return JSON.stringify(value)
 }
 
-export function parse<J extends Json.Val>(stringified: Json.stringified<J>): J {
+function parse<J extends Json.Val>(stringified: Json.stringified<J>): J {
 	return JSON.parse(stringified)
 }

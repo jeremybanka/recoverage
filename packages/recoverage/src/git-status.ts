@@ -7,13 +7,14 @@ import logger from "takua"
 
 import { env } from "./recoverage.env.ts"
 
-export type GitToolkit = {
+type GitToolkit = {
 	_client: SimpleGit | undefined
 	get client(): SimpleGit
 	baseRef: string | undefined
 	currentRef: string | undefined
 }
 
+/** @public Accessed through source-module imports in subprocess implementation tests. */
 export const gitToolkit: GitToolkit = {
 	_client: undefined,
 	baseRef: undefined,

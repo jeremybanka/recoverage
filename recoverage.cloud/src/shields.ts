@@ -16,7 +16,7 @@ type ShieldsEnv = {
 }
 export const shieldsRoutes = new Hono<ShieldsEnv>()
 
-export type ShieldsData = {
+type ShieldsData = {
 	schemaVersion: 1
 	label: string
 	message: string

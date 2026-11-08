@@ -102,7 +102,7 @@ ${code.replace(/^#![^\n]*\n/, ``)}
 	return coverage.toJSON()
 }
 
-export function writeReports(data: CoverageMapData, directory: string): void {
+function writeReports(data: CoverageMapData, directory: string): void {
 	const coverageMap = createCoverageMap(data)
 	if (coverageMap.files().length === 0)
 		throw new Error(`Empty coverage report: ${directory}`)
