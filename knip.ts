@@ -13,6 +13,8 @@ export default {
 				"@dprint/biome",
 				"@dprint/markdown",
 				"@changesets/config",
+				// Keep workspace CLIs available for manual contributor use.
+				"recoverage",
 			],
 		},
 		"packages/fixtures": {

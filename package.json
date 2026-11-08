@@ -58,6 +58,7 @@
 		"jiti": "2.7.0",
 		"knip": "6.44.1",
 		"pin-dependencies-checker": "2.7.1",
+		"recoverage": "workspace:*",
 		"turbo": "2.11.10",
 		"typescript": "7.0.2",
 		"typescript-eslint-typescript": "npm:typescript@6.0.3"
