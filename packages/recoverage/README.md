@@ -126,6 +126,76 @@ To make a report representing your main branch available to your CI runners, you
   - `S3_ENDPOINT`
   - `S3_SECRET_ACCESS_KEY`
 
+## Managing Recoverage Cloud
+
+Log in with GitHub, create a project, and configure the current directory:
+
+```sh
+recoverage cloud login
+recoverage cloud init --name=my-project --report=my-package
+recoverage cloud status
+```
+
+Login prints a GitHub verification URL and a one-time code. Approve the code in
+your browser; the CLI then saves a Recoverage account credential that expires
+after 30 days. Use `--no-browser` on remote machines, then open the printed URL
+on another device. GitHub access tokens are not saved by the CLI or cloud service.
+Run `recoverage cloud logout` to revoke the current account credential.
+
+Use `cloud init --project=PROJECT_ID` to link an existing project. Without either
+`--name` or `--project`, an interactive terminal shows projects and asks you to
+choose one or name a new one. Scripts must provide an explicit selection. Run
+`cloud status` to find project and token IDs. Repeating `cloud init` in a linked
+directory reuses its project and local reporter token; revoked tokens are replaced.
+
+Initialization preserves existing configuration and adds a public `cloud` setting:
+
+```json
+{
+  "defaultBranch": "main",
+  "cloud": {
+    "host": "https://recoverage.cloud",
+    "projectId": "PROJECT_ID",
+    "report": "my-package"
+  }
+}
+```
+
+Commit this configuration. `recoverage`, `capture`, and `diff` use its report name
+and local reporter credential automatically. Report names contain 1–64 letters,
+numbers, dots, underscores, or hyphens; `cloud init` defaults to the current
+directory's name. Existing workflows without cloud configuration still use their
+directory name and `RECOVERAGE_CLOUD_TOKEN`.
+
+Credentials are stored separately in `$XDG_CONFIG_HOME/recoverage/cloud.json`
+(default: `~/.config/recoverage/cloud.json`), with owner-only file permissions.
+Account credentials manage projects and reporter tokens. Reporter tokens only
+read and publish reports for their project. Account credentials do not grant
+direct reporter access.
+
+Create a separate reporter token for CI:
+
+```sh
+recoverage cloud token create ci
+recoverage cloud token create ci --project=PROJECT_ID --json
+recoverage cloud token revoke TOKEN_ID
+```
+
+Creation prints the secret once on stdout, with instructions on stderr. Save it
+as the `RECOVERAGE_CLOUD_TOKEN` CI secret. Revocation takes the token's ID, which
+`cloud status` lists, and immediately removes reporter access. Account login is
+not required in CI when using a reporter token. An environment reporter token
+takes precedence over the local reporter credential.
+
+All cloud commands accept `--json` for machine-readable results on stdout and
+`--host=HTTPS_ORIGIN` to select a service. `RECOVERAGE_CLOUD_URL` overrides the
+configured host; HTTP is allowed only for localhost development. Account credentials
+are stored per host and reporter credentials per host and project. For headless
+management, supply `RECOVERAGE_CLOUD_ACCOUNT_TOKEN` as a secret environment variable;
+it is separate from `RECOVERAGE_CLOUD_TOKEN`. Errors go to stderr and exit with
+status 1. Login instructions and token-storage instructions remain on stderr
+when using `--json`.
+
 ## Local Example
 
 Below is an example to set up a tiny project with Bun, TypeScript, Vitest, and @vitest/coverage-v8.
