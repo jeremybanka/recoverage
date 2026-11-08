@@ -41,7 +41,7 @@ The Worker expects these bindings/secrets:
 Production deploys use `wrangler.jsonc`; preview deploys use
 `wrangler-preview.jsonc` and the `preview:*` scripts.
 
-## CLI account management
+## CLI management API
 
 The CLI calls these routes through Hono's RPC client. JSON validators define
 request types, and handler results define response types. Run
@@ -51,7 +51,7 @@ generated `packages/recoverage/src/cloud-api.gen.d.ts` with the change.
 Worker bindings so the published CLI needs only Hono's client runtime. The web
 UI continues to use HTMX and the shared project/token operations.
 
-The `/api/v1` JSON API supports CLI login and account management. Before deploying
+The `/api/v1` JSON API supports CLI login, project management, and report management. Before deploying
 this milestone, enable **Device Flow** in the existing GitHub OAuth app's settings
 ([GitHub documentation](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#device-flow)).
 It uses the existing `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`; no new secret or
@@ -66,6 +66,21 @@ Worker (`bun run --filter=recoverage.cloud db:up --remote`).
   means unlimited).
 - `GET /api/v1/projects` returns owned projects, report metadata, and token metadata.
 - `POST /api/v1/projects` creates a project from `{ "name": "..." }`.
+- `GET /api/v1/projects/:projectId` returns project metadata.
+- `PATCH /api/v1/projects/:projectId` renames a project from `{ "name": "..." }`.
+- `DELETE /api/v1/projects/:projectId` deletes the project and cascades its reports
+  and reporter tokens.
+- `GET /api/v1/projects/:projectId/tokens` lists token metadata without secrets.
+- `GET /api/v1/projects/:projectId/reports` lists report refs, creation times, and
+  decoded coverage summaries, without coverage maps.
+- `GET /api/v1/projects/:projectId/reports/:reportRef` returns the same metadata
+  for one report.
+- `GET /api/v1/projects/:projectId/reports/:reportRef/data` returns `{ ref, mapData }`.
+- `PUT /api/v1/projects/:projectId/reports/:reportRef` validates and stores
+  `{ mapData, jsonSummary }`, sharing storage and validation with reporter uploads.
+- `DELETE /api/v1/projects/:projectId/reports/:reportRef` deletes a report.
+- `GET /api/v1/projects/:projectId/reports/:reportRef/badge` returns public
+  Shields.io endpoint/image URLs and Markdown. Missing summaries return HTTP 409.
 - `POST /api/v1/projects/:projectId/tokens` creates a reporter token from
   `{ "name": "..." }` and returns its secret once.
 - `DELETE /api/v1/projects/:projectId/tokens/:tokenId` revokes a reporter token.
@@ -94,6 +109,9 @@ allowlist changes; no database migration or CLI release is needed.
 
 The exemption uses the project owner's GitHub ID stored during OAuth, after
 verifying the reporter token. Authentication, project ownership, report ref and
-payload validation, and project/token limits still apply. Reports are retained
-until their project is deleted; there is no separate storage quota or automatic
-retention limit in the app.
+payload validation, and project/token limits still apply. Replacing an existing report does not consume a quota slot, including when the
+project is full. Report creation checks and writes are atomic. Report refs must
+contain 1–64 characters with no slashes or control characters and cannot be `.` or
+`..`; encode refs as URL path components. Maps and summaries retain their existing
+report creation timestamp when replaced. Reports are retained until the report or
+its project is deleted; there is no automatic retention limit.

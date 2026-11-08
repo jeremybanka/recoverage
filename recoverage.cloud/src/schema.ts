@@ -1,8 +1,8 @@
 import { relations, sql } from "drizzle-orm"
 import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core"
-import type { CoverageMap } from "istanbul-lib-coverage"
 import type { JsonSummary } from "recoverage"
 
+import type { CoveragePayload } from "./coverage-payload"
 import type { Json } from "./json"
 import type { Role } from "./roles-permissions"
 
@@ -73,7 +73,7 @@ export const reports = sqliteTable(
 		projectId: text()
 			.references(() => projects.id, { onDelete: `cascade` })
 			.notNull(),
-		data: text().notNull().$type<Json.stringified<CoverageMap>>(),
+		data: text().notNull().$type<Json.stringified<CoveragePayload[`mapData`]>>(),
 		jsonSummary: text().$type<Json.stringified<JsonSummary>>(),
 		createdAt: timestamp().default(SQL_NOW).notNull(),
 	},

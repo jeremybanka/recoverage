@@ -225,15 +225,23 @@ try {
 
 describe(`documented installed CLI behavior`, () => {
 	it(`uses cloud management from the installed CLI without the Worker runtime`, () => {
+		consumer.coverage([1, 0])
 		consumer.evaluate(`
 import path from 'node:path';
 const manifest = await Bun.file('node_modules/recoverage/package.json').json();
 const executable = typeof manifest.bin === 'string' ? manifest.bin : manifest.bin.recoverage;
-const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch(request) {
+let uploaded;
+const server = Bun.serve({ hostname: '127.0.0.1', port: 0, async fetch(request) {
   assert.equal(request.headers.get('authorization'), 'Bearer installed-account');
   switch (new URL(request.url).pathname) {
     case '/api/v1/account': return Response.json({ id: 123, login: 'installed-user', role: 'free', expiresAt: Date.now() + 60000, limits: { projects: 3, reports: 3, tokens: 12 } });
-    case '/api/v1/projects': return Response.json({ projects: [] });
+    case '/api/v1/projects': return Response.json({ projects: [{ id: 'p', name: 'Installed project', tokens: [], reports: [] }] });
+    case '/api/v1/projects/p/tokens': return Response.json({ tokens: [] });
+    case '/api/v1/projects/p/reports/pkg':
+      if (request.method === 'PUT') { uploaded = await request.json(); return Response.json({ success: true, ref: 'pkg', jsonSummary: uploaded.jsonSummary }); }
+      return Response.json({ ref: 'pkg', createdAt: '2026-01-01', jsonSummary: uploaded.jsonSummary });
+    case '/api/v1/projects/p/reports/pkg/data': return Response.json({ ref: 'pkg', mapData: uploaded.mapData });
+    case '/api/v1/projects/p/reports/pkg/badge': return Response.json({ endpoint: server.url.origin + '/shields/p/pkg', image: 'https://img.shields.io/endpoint?url=example', markdown: '![coverage](https://img.shields.io/endpoint?url=example)' });
     default: return Response.json({ error: 'Unexpected route' }, { status: 404 });
   }
 } });
@@ -246,6 +254,23 @@ try {
   assert.equal(code, 0, stderr);
   assert.equal(JSON.parse(stdout).account.login, 'installed-user');
   assert.equal(stderr, '');
+  for (const args of [
+    ['project', 'list'], ['token', 'list', '--project=p'],
+    ['report', 'upload', 'pkg', '--project=p'], ['report', 'show', 'pkg', '--project=p'],
+    ['report', 'download', 'pkg', '--project=p'], ['badge', 'pkg', '--project=p'],
+  ]) {
+    const child = Bun.spawn(['bun', path.resolve('node_modules/recoverage', executable), 'cloud', ...args, '--host=' + server.url.origin, '--json'], {
+      env: { ...process.env, XDG_CONFIG_HOME: path.resolve('credentials'), RECOVERAGE_CLOUD_ACCOUNT_TOKEN: 'installed-account' }, stdout: 'pipe', stderr: 'pipe',
+    });
+    const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()]);
+    assert.equal(code, 0, stderr);
+    const result = JSON.parse(stdout);
+    if (args[0] === 'project') assert.equal(result.projects[0].id, 'p');
+    if (args[1] === 'show') assert.equal(result.jsonSummary.total.statements.pct, 50);
+    if (args[1] === 'download') assert.deepEqual(result, await Bun.file('coverage/coverage-final.json').json());
+    if (args[0] === 'badge') assert(result.endpoint.endsWith('/shields/p/pkg'));
+  }
+  assert.equal(uploaded.jsonSummary.total.statements.total, 2);
 } finally { server.stop(true); }
 `)
 	})

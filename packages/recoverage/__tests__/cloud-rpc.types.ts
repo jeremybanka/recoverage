@@ -38,6 +38,30 @@ async function cloudContract(client: ReturnType<typeof hc<typeof apiContract>>) 
 			json: { name: `ci` },
 		}),
 	)
+	const project = client.projects[`:projectId`]
+	const param = { projectId: `project` }
+	await project.$patch({ param, json: { name: `renamed` } })
+	// @ts-expect-error Renaming requires a name.
+	await project.$patch({ param, json: {} })
+	const report = project.reports[`:reportRef`]
+	const reportParam = { ...param, reportRef: `package` }
+	const metadata = await parseResponse(report.$get({ param: reportParam }))
+	metadata.ref satisfies string
+	metadata.jsonSummary?.total.statements.pct satisfies number | undefined
+	const data = await parseResponse(report.data.$get({ param: reportParam }))
+	data.ref satisfies string
+	// @ts-expect-error Uploads require the coverage map and summary.
+	await report.$put({ param: reportParam, json: {} })
+	await report.$put({
+		param: reportParam,
+		// @ts-expect-error Maps cannot be strings, and summaries require totals.
+		json: { mapData: `bad`, jsonSummary: {} },
+	})
+	const badge = await parseResponse(report.badge.$get({ param: reportParam }))
+	badge.markdown satisfies string
+	const listing = await parseResponse(project.tokens.$get({ param }))
+	// @ts-expect-error Token metadata cannot expose credentials.
+	listing.tokens[0].hash
 	token.token satisfies string
 }
 

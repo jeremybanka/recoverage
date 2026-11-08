@@ -169,7 +169,7 @@ directory name and `RECOVERAGE_CLOUD_TOKEN`.
 
 Credentials are stored separately in `$XDG_CONFIG_HOME/recoverage/cloud.json`
 (default: `~/.config/recoverage/cloud.json`), with owner-only file permissions.
-Account credentials manage projects and reporter tokens. Reporter tokens only
+Account credentials manage projects, reports, and reporter tokens. Reporter tokens only
 read and publish reports for their project. Account credentials do not grant
 direct reporter access.
 
@@ -186,6 +186,56 @@ as the `RECOVERAGE_CLOUD_TOKEN` CI secret. Revocation takes the token's ID, whic
 `cloud status` lists, and immediately removes reporter access. Account login is
 not required in CI when using a reporter token. An environment reporter token
 takes precedence over the local reporter credential.
+
+Manage projects without linking the current directory, and inspect reporter tokens:
+
+```sh
+recoverage cloud project list
+recoverage cloud project show PROJECT_ID
+recoverage cloud project create my-project
+recoverage cloud project rename PROJECT_ID new-name
+recoverage cloud token list
+recoverage cloud project delete PROJECT_ID --yes
+```
+
+Project deletion removes all its reports and tokens. If this directory is linked
+to that project, deletion also removes its `cloud` configuration and local reporter
+credential while preserving other configuration. `project create` creates a project;
+use `cloud init --project=PROJECT_ID` to link it.
+
+Inspect and manage reports in the linked project, or pass `--project=PROJECT_ID`:
+
+```sh
+recoverage cloud report list
+recoverage cloud report show my-package --json
+recoverage cloud report upload my-package
+recoverage cloud report upload my-package --file=coverage/lcov.info
+recoverage cloud report download my-package --output=saved-coverage.json
+recoverage cloud report delete my-package --yes
+recoverage cloud badge my-package --markdown
+```
+
+Explicit upload works on any branch and does not require a Git repository. It
+reads `coverage/coverage-final.json` (Istanbul JSON), falling back to
+`coverage/lcov.info` only when that JSON file is absent. `--file` selects an
+Istanbul JSON file or LCOV file with an `.info` or `.lcov` extension. Invalid or
+empty coverage fails before upload. LCOV represents one statement per executable
+line. Uploading an existing ref replaces it even when the project has reached
+its report limit; deleting a report frees a slot.
+
+`report list` and `report show` return summaries without downloading the full map.
+`report download` writes the map as JSON to stdout, including with `--json`, or
+to a new file with `--output`. It refuses to overwrite an existing file. Istanbul
+maps can be uploaded again with `--file`; legacy V8 maps remain downloadable in
+their stored format. Explicit report commands also accept legacy names with spaces
+and percent signs; refs must contain 1–64 characters and no slashes or control
+characters, and cannot be `.` or `..`.
+
+Project and report deletion prompt for confirmation in a terminal. Scripts must
+pass `--yes`. `cloud badge` prints the Shields.io image URL; `--markdown` prints
+an image snippet, and `--json` returns the endpoint, image URL, and Markdown. Badge
+endpoints are public and expose statement coverage, while report maps require
+authentication. Badge creation requires an existing report with a summary.
 
 All cloud commands accept `--json` for machine-readable results on stdout and
 `--host=HTTPS_ORIGIN` to select a service. `RECOVERAGE_CLOUD_URL` overrides the

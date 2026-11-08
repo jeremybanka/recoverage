@@ -1,20 +1,28 @@
+import { type } from "arktype"
 import { and, eq, gt, lte } from "drizzle-orm"
 import { Hono } from "hono"
 import { validator } from "hono/validator"
+import type { CoverageMapData } from "istanbul-lib-coverage"
 import { nanoid } from "nanoid"
 import { Octokit } from "octokit"
+import type { JsonSummary } from "recoverage"
 
+import { reporterPutType } from "./coverage-payload"
 import { createDatabase } from "./db"
 import type { Bindings } from "./env"
 import { computeHash } from "./hash"
+import { parse } from "./json"
 import {
 	createProject,
 	createReporterToken,
+	deleteProject,
 	getProject,
 	listProjects,
 	managementError,
+	renameProject,
 	revokeReporterToken,
 } from "./management"
+import { deleteReport, getReport, listReports, saveReport } from "./reports"
 import {
 	getProjectLimit,
 	reportsAllowed,
@@ -44,6 +52,16 @@ function stringField(body: Record<string, unknown>, field: string) {
 		managementError(400, `Invalid ${field}.`)
 	}
 	return value
+}
+
+function coverageBody(value: {
+	mapData: CoverageMapData
+	jsonSummary: JsonSummary
+}) {
+	const payload = reporterPutType(value)
+	if (payload instanceof type.errors)
+		managementError(400, `Bad coverage report: ${payload.summary}`)
+	return payload
 }
 
 async function githubPost(
@@ -314,6 +332,141 @@ export const apiRoutes = new Hono<ApiEnv>()
 		if (!token) return c.json({ error: `No token found` }, 404)
 		await revokeReporterToken(db, userId, tokenId)
 		return c.json({ success: true, id: tokenId }, 200)
+	})
+
+	.get(`/projects/:projectId`, async (c) => {
+		const project = await getProject(
+			c.get(`drizzle`),
+			c.get(`user`).id,
+			c.req.param(`projectId`),
+		)
+		return c.json(project, 200)
+	})
+	.patch(
+		`/projects/:projectId`,
+		validator(`json`, (value) => ({
+			name: stringField(jsonObject(value), `name`),
+		})),
+		async (c) => {
+			return c.json(
+				await renameProject(
+					c.get(`drizzle`),
+					c.get(`user`).id,
+					c.req.param(`projectId`),
+					c.req.valid(`json`).name,
+				),
+				200,
+			)
+		},
+	)
+	.delete(`/projects/:projectId`, async (c) => {
+		const project = await deleteProject(
+			c.get(`drizzle`),
+			c.get(`user`).id,
+			c.req.param(`projectId`),
+		)
+		return c.json({ success: true, id: project.id }, 200)
+	})
+	.get(`/projects/:projectId/tokens`, async (c) => {
+		const db = c.get(`drizzle`)
+		const project = await getProject(
+			db,
+			c.get(`user`).id,
+			c.req.param(`projectId`),
+		)
+		const tokens = await db.query.tokens.findMany({
+			where: eq(schema.tokens.projectId, project.id),
+			columns: { id: true, name: true, createdAt: true },
+		})
+		return c.json({ tokens }, 200)
+	})
+	.get(`/projects/:projectId/reports`, async (c) => {
+		const db = c.get(`drizzle`)
+		const project = await getProject(
+			db,
+			c.get(`user`).id,
+			c.req.param(`projectId`),
+		)
+		return c.json({ reports: await listReports(db, project.id) }, 200)
+	})
+	.get(`/projects/:projectId/reports/:reportRef`, async (c) => {
+		const db = c.get(`drizzle`)
+		const project = await getProject(
+			db,
+			c.get(`user`).id,
+			c.req.param(`projectId`),
+		)
+		const report = await getReport(db, project.id, c.req.param(`reportRef`))
+		return c.json(
+			{
+				ref: report.ref,
+				createdAt: report.createdAt,
+				jsonSummary: report.jsonSummary ? parse(report.jsonSummary) : null,
+			},
+			200,
+		)
+	})
+	.get(`/projects/:projectId/reports/:reportRef/data`, async (c) => {
+		const db = c.get(`drizzle`)
+		const project = await getProject(
+			db,
+			c.get(`user`).id,
+			c.req.param(`projectId`),
+		)
+		const report = await getReport(db, project.id, c.req.param(`reportRef`))
+		return c.json({ ref: report.ref, mapData: parse(report.data) }, 200)
+	})
+	.put(
+		`/projects/:projectId/reports/:reportRef`,
+		validator(`json`, coverageBody),
+		async (c) => {
+			const db = c.get(`drizzle`)
+			const user = c.get(`user`)
+			const project = await getProject(db, user.id, c.req.param(`projectId`))
+			const ref = c.req.param(`reportRef`)
+			const payload = c.req.valid(`json`)
+			await saveReport(db, project.id, user.id, user.role, ref, payload)
+			return c.json(
+				{ success: true, ref, jsonSummary: payload.jsonSummary },
+				200,
+			)
+		},
+	)
+	.delete(`/projects/:projectId/reports/:reportRef`, async (c) => {
+		const db = c.get(`drizzle`)
+		const project = await getProject(
+			db,
+			c.get(`user`).id,
+			c.req.param(`projectId`),
+		)
+		const ref = c.req.param(`reportRef`)
+		await deleteReport(db, project.id, ref)
+		return c.json({ success: true, ref }, 200)
+	})
+	.get(`/projects/:projectId/reports/:reportRef/badge`, async (c) => {
+		const db = c.get(`drizzle`)
+		const project = await getProject(
+			db,
+			c.get(`user`).id,
+			c.req.param(`projectId`),
+		)
+		const report = await getReport(db, project.id, c.req.param(`reportRef`))
+		if (!report.jsonSummary)
+			return c.json({ error: `This report has no coverage summary.` }, 409)
+		const endpoint = new URL(
+			`/shields/${encodeURIComponent(project.id)}/${encodeURIComponent(report.ref)}`,
+			c.req.url,
+		).href
+		const image = new URL(`https://img.shields.io/endpoint`)
+		image.searchParams.set(`url`, endpoint)
+		return c.json(
+			{
+				endpoint,
+				image: image.href,
+				markdown: `![Statement coverage](${image.href})`,
+			},
+			200,
+		)
 	})
 
 export type CloudApi = typeof apiRoutes

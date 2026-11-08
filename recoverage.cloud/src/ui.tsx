@@ -13,6 +13,7 @@ import type { Bindings } from "./env"
 import {
 	createProject,
 	createReporterToken,
+	deleteProject,
 	revokeReporterToken,
 } from "./management"
 import { Project, ProjectToken } from "./project"
@@ -198,12 +199,7 @@ uiRoutes.delete(`/project/:projectId`, uiAuth, async (c) => {
 		return c.json({ error: `No project found` }, 404)
 	}
 
-	const result = await db
-		.delete(schema.projects)
-		.where(
-			and(eq(schema.projects.id, projectId), eq(schema.projects.userId, userId)),
-		)
-	console.log(result)
+	await deleteProject(db, userId, projectId)
 	return c.html(
 		<Project
 			{...project}

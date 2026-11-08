@@ -17,6 +17,10 @@ let projects: {
 	tokens: { id: string; name: string }[]
 	reports: unknown[]
 }[]
+let reports: Record<
+	string,
+	{ ref: string; mapData: unknown; jsonSummary: unknown; createdAt: string }
+>
 let polls: number
 let failLogin: boolean
 let revoked: boolean
@@ -110,6 +114,78 @@ const server = createServer(async (request, response) => {
 		send({ projects })
 		return
 	}
+	const projectRoute = route.match(/^\/api\/v1\/projects\/([^/]+)$/)
+	if (projectRoute) {
+		const project = projects.find(
+			(item) => item.id === decodeURIComponent(projectRoute[1]),
+		)
+		if (!project) {
+			send({ error: `Project not found` }, 404)
+			return
+		}
+		if (method === `PATCH`) project.name = body[`name`] ?? ``
+		if (method === `DELETE`) {
+			projects = projects.filter((item) => item !== project)
+			send({ success: true, id: project.id })
+			return
+		}
+		send({ ...project, createdAt: `2026-01-01` })
+		return
+	}
+	const reportRoute = route.match(
+		/^\/api\/v1\/projects\/([^/]+)\/reports(?:\/([^/]+))?(?:\/(data|badge))?$/,
+	)
+	if (reportRoute) {
+		const project = projects.find((item) => item.id === reportRoute[1])
+		if (!project) {
+			send({ error: `Project not found` }, 404)
+			return
+		}
+		const ref = decodeURIComponent(reportRoute[2] ?? ``)
+		if (!ref) {
+			send({
+				reports: Object.values(reports).map(
+					({ mapData: _map, ...metadata }) => metadata,
+				),
+			})
+			return
+		}
+		if (method === `PUT`) {
+			reports[ref] = {
+				ref,
+				mapData: body[`mapData`],
+				jsonSummary: body[`jsonSummary`],
+				createdAt: `2026-01-01`,
+			}
+			send({ success: true, ref, jsonSummary: body[`jsonSummary`] })
+			return
+		}
+		const report = reports[ref]
+		if (!report) {
+			send({ error: `Report not found` }, 404)
+			return
+		}
+		if (method === `DELETE`) {
+			Reflect.deleteProperty(reports, ref)
+			send({ success: true, ref })
+			return
+		}
+		if (reportRoute[3] === `data`) {
+			send({ ref, mapData: report.mapData })
+			return
+		}
+		if (reportRoute[3] === `badge`) {
+			send({
+				endpoint: `${host}/shields/${project.id}/${encodeURIComponent(ref)}`,
+				image: `https://img.shields.io/endpoint?url=example`,
+				markdown: `![Statement coverage](https://img.shields.io/endpoint?url=example)`,
+			})
+			return
+		}
+		const { mapData: _map, ...metadata } = report
+		send(metadata)
+		return
+	}
 	const tokenRoute = route.match(
 		/^\/api\/v1\/projects\/([^/]+)\/tokens(?:\/([^/]+))?$/,
 	)
@@ -117,6 +193,15 @@ const server = createServer(async (request, response) => {
 		const project = projects.find((candidate) => candidate.id === tokenRoute[1])
 		if (!project) {
 			send({ error: `Project not found` }, 404)
+			return
+		}
+		if (method === `GET`) {
+			send({
+				tokens: project.tokens.map((token) => ({
+					...token,
+					createdAt: `2026-01-01`,
+				})),
+			})
 			return
 		}
 		if (method === `POST`) {
@@ -146,6 +231,7 @@ beforeEach(async () => {
 	directory = await mkdtemp(path.join(tmpdir(), `recoverage-cloud-cli-`))
 	calls = []
 	projects = []
+	reports = {}
 	polls = 0
 	failLogin = false
 	revoked = false
@@ -541,4 +627,187 @@ test(`rejects unsafe hosts and keeps denied login credentials out of output and 
 	expect(denied.stdout).toBe(``)
 	expect(denied.stderr).toContain(`Login denied`)
 	expect(denied.stderr).not.toContain(`rca_account.secret`)
+})
+
+test(`project commands list, create, show, rename, confirm deletion, and clear local links`, async () => {
+	const create = await invoke([`project`, `create`, `Project`, `--json`])
+	expect(create.code, create.stderr).toBe(0)
+	expect(JSON.parse(create.stdout).id).toBe(`project-0`)
+	expect((await invoke([`project`, `list`])).stdout).toContain(`Project`)
+	expect(
+		JSON.parse((await invoke([`project`, `list`, `--json`])).stdout).projects,
+	).toHaveLength(1)
+	expect((await invoke([`project`, `show`, `project-0`])).stdout).toContain(
+		`Project`,
+	)
+	expect(
+		(await invoke([`project`, `rename`, `project-0`, `Renamed`])).stdout,
+	).toContain(`Renamed`)
+	await invoke([`init`, `--project=project-0`, `--report=pkg`])
+	const configPath = path.join(directory, `recoverage.config.json`)
+	const config = JSON.parse(await readFile(configPath, `utf8`))
+	await writeFile(
+		configPath,
+		JSON.stringify({ ...config, defaultBranch: `trunk`, custom: true }),
+	)
+	const tokens = await invoke([`token`, `list`, `--json`])
+	expect(tokens.code, tokens.stderr).toBe(0)
+	expect(JSON.parse(tokens.stdout).tokens).toHaveLength(1)
+	expect(tokens.stdout).not.toContain(`secret`)
+	expect((await invoke([`token`, `list`])).stdout).toContain(`token-0`)
+	const denied = await invoke([`project`, `delete`, `project-0`, `--json`])
+	expect(denied.code).toBe(1)
+	expect(denied.stderr).toContain(`--yes`)
+	const cancelled = await invoke([`project`, `delete`, `project-0`], `no\n`)
+	expect(cancelled.code).toBe(1)
+	expect(cancelled.stderr).toContain(`cancelled`)
+	expect(projects).toHaveLength(1)
+	const deleted = await invoke(
+		[`project`, `delete`, `project-0`, `--json`],
+		`yes\n`,
+	)
+	expect(deleted.code, deleted.stderr).toBe(0)
+	expect(projects).toHaveLength(0)
+	expect(JSON.parse(await readFile(configPath, `utf8`))).toEqual({
+		defaultBranch: `trunk`,
+		custom: true,
+	})
+	expect(
+		JSON.parse(
+			await readFile(
+				path.join(directory, `credentials/recoverage/cloud.json`),
+				`utf8`,
+			),
+		).reporters,
+	).toEqual({})
+	projects.push({ id: `other`, name: `Other`, reports: [], tokens: [] })
+	expect((await invoke([`project`, `delete`, `other`, `--yes`])).code).toBe(0)
+})
+
+test(`uploads, inspects, downloads, badges, and deletes coverage without a Git repository`, async () => {
+	projects.push({ id: `p`, name: `Project`, reports: [], tokens: [] })
+	await mkdir(path.join(directory, `coverage`))
+	await writeFile(
+		path.join(directory, `coverage/lcov.info`),
+		`SF:src/file.ts\nDA:1,1\nDA:2,0\nend_of_record\n`,
+	)
+	const opts = [`--project=p`, `--json`]
+	const upload = await invoke([`report`, `upload`, `space % report`, ...opts])
+	expect(upload.code, upload.stderr).toBe(0)
+	expect(JSON.parse(upload.stdout).jsonSummary.total.statements.pct).toBe(50)
+	const list = await invoke([`report`, `list`, ...opts])
+	expect(JSON.parse(list.stdout).reports[0].ref).toBe(`space % report`)
+	expect((await invoke([`report`, `list`, `--project=p`])).stdout).toContain(
+		`50%`,
+	)
+	const show = await invoke([`report`, `show`, `space % report`, ...opts])
+	expect(JSON.parse(show.stdout).jsonSummary.total.statements.total).toBe(2)
+	expect(
+		(await invoke([`report`, `show`, `space % report`, `--project=p`])).stdout,
+	).toContain(`statements`)
+	const download = await invoke([
+		`report`,
+		`download`,
+		`space % report`,
+		...opts,
+	])
+	expect(JSON.parse(download.stdout)[`src/file.ts`].s).toEqual({ 1: 1, 2: 0 })
+	const downloaded = await invoke([
+		`report`,
+		`download`,
+		`space % report`,
+		`--output=report.json`,
+		...opts,
+	])
+	expect(downloaded.code, downloaded.stderr).toBe(0)
+	expect(JSON.parse(downloaded.stdout).output).toBe(
+		path.join(directory, `report.json`),
+	)
+	expect(
+		(
+			await invoke([
+				`report`,
+				`download`,
+				`space % report`,
+				`--output=report.json`,
+				...opts,
+			])
+		).code,
+	).toBe(1)
+	const roundtrip = await invoke([
+		`report`,
+		`upload`,
+		`roundtrip`,
+		`--file=report.json`,
+		`--project=p`,
+	])
+	expect(roundtrip.code, roundtrip.stderr).toBe(0)
+	expect(roundtrip.stdout).toContain(`50%`)
+	expect(
+		(
+			await invoke([
+				`report`,
+				`download`,
+				`roundtrip`,
+				`--output=another.json`,
+				`--project=p`,
+			])
+		).stdout,
+	).toContain(`Saved`)
+	await writeFile(
+		path.join(directory, `coverage/coverage-final.json`),
+		download.stdout,
+	)
+	expect((await invoke([`report`, `upload`, `default`, ...opts])).code).toBe(0)
+	const badge = await invoke([`badge`, `roundtrip`, ...opts])
+	expect(JSON.parse(badge.stdout).endpoint).toContain(`/shields/p/roundtrip`)
+	expect((await invoke([`badge`, `roundtrip`, `--project=p`])).stdout).toMatch(
+		/^https:\/\/img.shields.io/,
+	)
+	expect(
+		(await invoke([`badge`, `roundtrip`, `--project=p`, `--markdown`])).stdout,
+	).toContain(`![Statement coverage]`)
+	expect((await invoke([`report`, `delete`, `roundtrip`, ...opts])).code).toBe(1)
+	expect(reports[`roundtrip`]).toBeDefined()
+	const deleted = await invoke([
+		`report`,
+		`delete`,
+		`roundtrip`,
+		`--yes`,
+		...opts,
+	])
+	expect(deleted.code, deleted.stderr).toBe(0)
+	expect(reports[`roundtrip`]).toBeUndefined()
+	expect(
+		(await invoke([`report`, `delete`, `default`, `--yes`, `--project=p`]))
+			.stdout,
+	).toContain(`Deleted`)
+})
+
+test(`rejects missing projects, empty and malformed coverage, and unreadable files before uploads`, async () => {
+	projects.push({ id: `p`, name: `Project`, reports: [], tokens: [] })
+	expect((await invoke([`report`, `list`, `--json`])).stderr).toContain(
+		`cloud init`,
+	)
+	for (const filename of [`missing.json`, `empty.json`, `invalid.json`]) {
+		if (filename !== `missing.json`)
+			await writeFile(
+				path.join(directory, filename),
+				filename === `empty.json` ? `{}` : `{bad`,
+			)
+		const result = await invoke([
+			`report`,
+			`upload`,
+			`pkg`,
+			`--project=p`,
+			`--file=${filename}`,
+			`--json`,
+		])
+		expect(result.code).toBe(1)
+	}
+	await mkdir(path.join(directory, `coverage/coverage-final.json`), {
+		recursive: true,
+	})
+	expect((await invoke([`report`, `upload`, `pkg`, `--project=p`])).code).toBe(1)
+	expect(calls.some((call) => call.method === `PUT`)).toBe(false)
 })

@@ -176,8 +176,38 @@ describe(`shell completion`, () => {
 			expect(commands.status).toBe(0)
 			expect(commands.stderr).toBe(``)
 			expect(commands.stdout.split(`\n`)).toEqual(
-				expect.arrayContaining([`capture`, `diff`, `help`, `completion`]),
+				expect.arrayContaining([
+					`capture`,
+					`diff`,
+					`help`,
+					`completion`,
+					`cloud`,
+				]),
 			)
+			for (const [args, expected] of [
+				[
+					[`cloud`, ``],
+					[`project`, `report`, `badge`, `token`],
+				],
+				[
+					[`cloud`, `project`, ``],
+					[`list`, `show`, `create`, `rename`, `delete`],
+				],
+				[
+					[`cloud`, `report`, ``],
+					[`list`, `show`, `upload`, `download`, `delete`],
+				],
+				[
+					[`cloud`, `token`, ``],
+					[`list`, `create`, `revoke`],
+				],
+			]) {
+				const result = invoke([`__completeNoDesc`, ...args], false)
+				expect(result.status, result.stderr).toBe(0)
+				expect(result.stdout.split(`\n`)).toEqual(
+					expect.arrayContaining(expected),
+				)
+			}
 			const branches = invoke([`__completeNoDesc`, `diff`, `-b`, ``], false)
 			expect(branches.status).toBe(0)
 			expect(branches.stderr).toBe(``)

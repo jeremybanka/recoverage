@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process"
-import { writeFile } from "node:fs/promises"
+import { readFile, writeFile } from "node:fs/promises"
 import { hostname } from "node:os"
 import path from "node:path"
 import { createInterface } from "node:readline/promises"
@@ -12,6 +12,7 @@ import {
 	type InferResponseType,
 	parseResponse,
 } from "hono/client"
+import { createCoverageMap } from "istanbul-lib-coverage"
 
 import type { apiContract } from "./cloud-api.gen.d.ts"
 import {
@@ -24,6 +25,8 @@ import {
 	validateReport,
 	writeCloudStore,
 } from "./cloud-config.ts"
+import { getCoverageJsonSummary } from "./istanbul-reports.ts"
+import { lineCoverage } from "./lcov.ts"
 
 export type CloudOptions = {
 	host?: string | undefined
@@ -32,6 +35,10 @@ export type CloudOptions = {
 	name?: string | undefined
 	report?: string | undefined
 	noBrowser?: boolean | undefined
+	yes?: boolean | undefined
+	file?: string | undefined
+	output?: string | undefined
+	markdown?: boolean | undefined
 }
 
 const exec = promisify(execFile)
@@ -369,4 +376,206 @@ export async function cloudToken(
 		}
 		output(options.json, result, `Revoked reporter token ${value}.`)
 	}
+}
+
+async function projectContext(options: CloudOptions) {
+	const ctx = await context(options)
+	const id =
+		options.project ??
+		(ctx.cloud?.host === ctx.host ? ctx.cloud.projectId : undefined)
+	if (!id)
+		throw new Error(`Run recoverage cloud init or specify --project=<id>.`)
+	return {
+		...ctx,
+		project: ctx.client.projects[`:projectId`],
+		param: { projectId: encodeURIComponent(id) },
+	}
+}
+
+async function confirmDelete(description: string, options: CloudOptions) {
+	if (options.yes) return
+	if (!process.stdin.isTTY)
+		throw new Error(`Use --yes to ${description} without a prompt.`)
+	const reader = createInterface({
+		input: process.stdin,
+		output: process.stderr,
+	})
+	try {
+		if (
+			!/^y(?:es)?$/i.test(
+				(await reader.question(`${description}? [y/N] `)).trim(),
+			)
+		)
+			throw new Error(`Deletion cancelled.`)
+	} finally {
+		reader.close()
+	}
+}
+
+export async function cloudProject(
+	action: `create` | `delete` | `list` | `rename` | `show`,
+	value: string,
+	options: CloudOptions,
+	name?: string,
+): Promise<void> {
+	const { client, host, cloud, config } = await context(options)
+	if (action === `list`) {
+		const result = await request(client.projects.$get())
+		output(
+			options.json,
+			result,
+			result.projects
+				.map((project) => `${project.id}\t${project.name}`)
+				.join(`\n`),
+		)
+		return
+	}
+	if (action === `create`) {
+		const result = await request(
+			client.projects.$post({ json: { name: value } }),
+		)
+		output(options.json, result, `Created ${result.name} (${result.id}).`)
+		return
+	}
+	const project = client.projects[`:projectId`]
+	const param = { projectId: encodeURIComponent(value) }
+	if (action === `show`) {
+		const result = await request(project.$get({ param }))
+		output(
+			options.json,
+			result,
+			`${result.name} (${result.id}), created ${result.createdAt}.`,
+		)
+	} else if (action === `rename`) {
+		const result = await request(
+			project.$patch({ param, json: { name: name ?? `` } }),
+		)
+		output(options.json, result, `Renamed ${result.id} to ${result.name}.`)
+	} else {
+		const target = await request(project.$get({ param }))
+		await confirmDelete(
+			`Delete project ${target.name} (${target.id}) and all its reports and tokens`,
+			options,
+		)
+		const result = await request(project.$delete({ param }))
+		const store = await readCloudStore()
+		Reflect.deleteProperty(
+			store.reporters,
+			reporterKey({ host, projectId: value }),
+		)
+		await writeCloudStore(store)
+		if (cloud?.host === host && cloud.projectId === value) {
+			Reflect.deleteProperty(config, `cloud`)
+			await writeFile(
+				`recoverage.config.json`,
+				`${JSON.stringify(config, null, 2)}\n`,
+			)
+		}
+		output(options.json, result, `Deleted project ${value}.`)
+	}
+}
+
+export async function cloudTokenList(options: CloudOptions): Promise<void> {
+	const { project, param } = await projectContext(options)
+	const result = await request(project.tokens.$get({ param }))
+	output(
+		options.json,
+		result,
+		result.tokens
+			.map((token) => `${token.id}\t${token.name}\t${token.createdAt}`)
+			.join(`\n`),
+	)
+}
+
+export async function cloudReport(
+	action: `delete` | `download` | `list` | `show` | `upload`,
+	ref: string,
+	options: CloudOptions,
+): Promise<void> {
+	const ctx = await projectContext(options)
+	if (action === `list`) {
+		const result = await request(ctx.project.reports.$get({ param: ctx.param }))
+		output(
+			options.json,
+			result,
+			result.reports
+				.map(
+					(report) =>
+						`${report.ref}\t${report.jsonSummary?.total.statements.pct ?? `unknown`}%\t${report.createdAt}`,
+				)
+				.join(`\n`),
+		)
+		return
+	}
+	const report = ctx.project.reports[`:reportRef`]
+	const param = { ...ctx.param, reportRef: encodeURIComponent(ref) }
+	if (action === `show`) {
+		const result = await request(report.$get({ param }))
+		output(
+			options.json,
+			result,
+			`${result.ref}, created ${result.createdAt}\n${JSON.stringify(result.jsonSummary, null, 2)}`,
+		)
+	} else if (action === `upload`) {
+		let filename = options.file ?? `coverage/coverage-final.json`
+		let text: string
+		try {
+			text = await readFile(filename, `utf8`)
+		} catch (error) {
+			if (
+				options.file ||
+				!(error instanceof Error && `code` in error && error.code === `ENOENT`)
+			)
+				throw error
+			filename = `coverage/lcov.info`
+			text = await readFile(filename, `utf8`)
+		}
+		const map = createCoverageMap(
+			/\.(?:info|lcov)$/i.test(filename)
+				? lineCoverage(text, process.cwd())
+				: JSON.parse(text),
+		)
+		const jsonSummary = getCoverageJsonSummary(map)
+		if (jsonSummary.total.statements.total === 0)
+			throw new Error(`Coverage report contains no executable statements.`)
+		const result = await request(
+			report.$put({ param, json: { mapData: map.toJSON(), jsonSummary } }),
+		)
+		output(
+			options.json,
+			result,
+			`Uploaded ${ref}: ${jsonSummary.total.statements.pct}% statement coverage.`,
+		)
+	} else if (action === `download`) {
+		const result = await request(report.data.$get({ param }))
+		const data = `${JSON.stringify(result.mapData, null, 2)}\n`
+		if (options.output) {
+			await writeFile(options.output, data, { flag: `wx` })
+			output(
+				options.json,
+				{ ref, output: path.resolve(options.output) },
+				`Saved ${ref} to ${options.output}.`,
+			)
+		} else {
+			process.stdout.write(data)
+		}
+	} else {
+		await request(report.$get({ param }))
+		await confirmDelete(`Delete report ${ref}`, options)
+		const result = await request(report.$delete({ param }))
+		output(options.json, result, `Deleted report ${ref}.`)
+	}
+}
+
+export async function cloudBadge(
+	ref: string,
+	options: CloudOptions,
+): Promise<void> {
+	const { project, param } = await projectContext(options)
+	const result = await request(
+		project.reports[`:reportRef`].badge.$get({
+			param: { ...param, reportRef: encodeURIComponent(ref) },
+		}),
+	)
+	output(options.json, result, options.markdown ? result.markdown : result.image)
 }

@@ -60,6 +60,39 @@ export async function getProject(
 	return project
 }
 
+export async function renameProject(
+	db: Database,
+	userId: number,
+	projectId: string,
+	name: string,
+): Promise<Project> {
+	validateName(name)
+	const [project] = await db
+		.update(schema.projects)
+		.set({ name })
+		.where(
+			and(eq(schema.projects.id, projectId), eq(schema.projects.userId, userId)),
+		)
+		.returning()
+	if (!project) managementError(404, `No project found`)
+	return project
+}
+
+export async function deleteProject(
+	db: Database,
+	userId: number,
+	projectId: string,
+): Promise<Project> {
+	const [project] = await db
+		.delete(schema.projects)
+		.where(
+			and(eq(schema.projects.id, projectId), eq(schema.projects.userId, userId)),
+		)
+		.returning()
+	if (!project) managementError(404, `No project found`)
+	return project
+}
+
 export async function createProject(
 	db: Database,
 	userId: number,

@@ -380,3 +380,196 @@ test(`rejects invalid input and revokes the account session on logout`, async ()
 	expect((await api(`/auth/session`, `DELETE`)).status).toBe(200)
 	expect((await api(`/account`)).status).toBe(401)
 })
+
+const coveragePayload = {
+	mapData: istanbulReportFixture,
+	jsonSummary: jsonSummaryFixture,
+}
+
+test(`roundtrips report maps and summaries, builds badges, and atomically replaces at quota`, async () => {
+	const { id } = await project()
+	const base = `/projects/${id}/reports`
+	for (const ref of [`alpha`, `space % report`, `omega`]) {
+		const response = await api(
+			`${base}/${encodeURIComponent(ref)}`,
+			`PUT`,
+			coveragePayload,
+		)
+		expect(response.status, await response.clone().text()).toBe(200)
+	}
+	const listing = await api(base)
+	const text = await listing.text()
+	expect(text).not.toContain(`statementMap`)
+	expect(
+		JSON.parse(text).reports.map((report: { ref: string }) => report.ref),
+	).toEqual([`alpha`, `omega`, `space % report`])
+	const original = await (await api(`${base}/alpha`)).json<{
+		createdAt: string
+	}>()
+	const replacement = {
+		...coveragePayload,
+		jsonSummary: {
+			...jsonSummaryFixture,
+			total: {
+				...jsonSummaryFixture.total,
+				statements: { ...jsonSummaryFixture.total.statements, pct: 42 },
+			},
+		},
+	}
+	expect((await api(`${base}/alpha`, `PUT`, replacement)).status).toBe(200)
+	expect(await (await api(`${base}/alpha`)).json()).toMatchObject({
+		ref: `alpha`,
+		createdAt: original.createdAt,
+		jsonSummary: replacement.jsonSummary,
+	})
+	expect(await (await api(`${base}/alpha/data`)).json()).toEqual({
+		ref: `alpha`,
+		mapData: istanbulReportFixture,
+	})
+	const badge = await (await api(`${base}/space%20%25%20report/badge`)).json<{
+		endpoint: string
+		image: string
+		markdown: string
+	}>()
+	expect(new URL(badge.endpoint).pathname).toBe(
+		`/shields/${id}/space%20%25%20report`,
+	)
+	expect(new URL(badge.image).searchParams.get(`url`)).toBe(badge.endpoint)
+	expect(badge.markdown).toBe(`![Statement coverage](${badge.image})`)
+	expect((await app.request(badge.endpoint, {}, env)).status).toBe(200)
+	expect((await api(`${base}/excess`, `PUT`, coveragePayload)).status).toBe(403)
+	const token = await (
+		await api(`/projects/${id}/tokens`, `POST`, { name: `CI` })
+	).json<{ token: string }>()
+	const reporter = (ref: string) =>
+		app.request(
+			`/reporter/${ref}`,
+			{
+				method: `PUT`,
+				headers: { Authorization: `Bearer ${token.token}` },
+				body: JSON.stringify(coveragePayload),
+			},
+			env,
+		)
+	expect((await reporter(`alpha`)).status).toBe(200)
+	expect((await reporter(`excess`)).status).toBe(401)
+	expect((await api(`${base}/alpha`, `DELETE`)).status).toBe(200)
+	for (const suffix of [``, `/data`, `/badge`])
+		expect((await api(`${base}/alpha${suffix}`)).status).toBe(404)
+	expect((await api(`${base}/alpha`, `DELETE`)).status).toBe(404)
+	const lastSlot = await Promise.all([
+		api(`${base}/new`, `PUT`, coveragePayload),
+		api(`${base}/other`, `PUT`, coveragePayload),
+	])
+	expect(lastSlot.map((response) => response.status).sort()).toEqual([200, 403])
+})
+
+test(`renames and deletes projects with cascading reports and tokens`, async () => {
+	const { id } = await project()
+	const url = `/projects/${id}`
+	expect((await api(url)).status).toBe(200)
+	expect((await api(url, `PATCH`, { name: `Renamed` })).status).toBe(200)
+	expect(await (await api(url)).json()).toMatchObject({ id, name: `Renamed` })
+	for (const name of [``, ` `, `x`.repeat(129), 42])
+		expect((await api(url, `PATCH`, { name })).status).toBe(400)
+	const token = await (await api(`${url}/tokens`, `POST`, { name: `CI` })).json<{
+		id: string
+		token: string
+	}>()
+	const listing = await (await api(`${url}/tokens`)).text()
+	expect(listing).toContain(token.id)
+	for (const secret of [token.token, `"hash"`, `"salt"`])
+		expect(listing).not.toContain(secret)
+	await api(`${url}/reports/pkg`, `PUT`, coveragePayload)
+	expect((await api(url, `DELETE`)).status).toBe(200)
+	expect((await api(url)).status).toBe(404)
+	expect((await api(url, `PATCH`, { name: `Absent` })).status).toBe(404)
+	expect((await api(url, `DELETE`)).status).toBe(404)
+	expect(
+		await db.query.tokens.findFirst({ where: eq(schema.tokens.id, token.id) }),
+	).toBeUndefined()
+	expect((await app.request(`/shields/${id}/pkg`, {}, env)).status).toBe(404)
+	expect(
+		(
+			await app.request(
+				`/reporter/pkg`,
+				{ headers: { Authorization: `Bearer ${token.token}` } },
+				env,
+			)
+		).status,
+	).toBe(401)
+})
+
+test(`requires ownership and account credentials for every management operation`, async () => {
+	const foreignUser = userId + 100_000
+	await db.insert(schema.users).values({ id: foreignUser })
+	try {
+		const foreignProject = nanoid()
+		await db
+			.insert(schema.projects)
+			.values({ id: foreignProject, userId: foreignUser, name: `Foreign` })
+		await db.insert(schema.reports).values({
+			projectId: foreignProject,
+			ref: `pkg`,
+			data: JSON.stringify(istanbulReportFixture),
+			jsonSummary: JSON.stringify(jsonSummaryFixture),
+		})
+		const own = await project()
+		const token = await (
+			await api(`/projects/${own.id}/tokens`, `POST`, { name: `Reporter` })
+		).json<{ token: string }>()
+		for (const [suffix, method, body] of [
+			[``, `GET`, undefined],
+			[``, `PATCH`, { name: `Attack` }],
+			[``, `DELETE`, undefined],
+			[`/tokens`, `GET`, undefined],
+			[`/reports`, `GET`, undefined],
+			[`/reports/pkg`, `GET`, undefined],
+			[`/reports/pkg/data`, `GET`, undefined],
+			[`/reports/pkg/badge`, `GET`, undefined],
+			[`/reports/pkg`, `PUT`, coveragePayload],
+			[`/reports/pkg`, `DELETE`, undefined],
+		] as const) {
+			expect(
+				(await api(`/projects/${foreignProject}${suffix}`, method, body)).status,
+			).toBe(404)
+			expect(
+				(await api(`/projects/${own.id}${suffix}`, method, body, token.token))
+					.status,
+			).toBe(401)
+		}
+	} finally {
+		await db.delete(schema.users).where(eq(schema.users.id, foreignUser))
+	}
+})
+
+test(`validates payloads and refs and handles legacy reports without summaries`, async () => {
+	const { id } = await project()
+	const base = `/projects/${id}/reports`
+	for (const body of [
+		null,
+		{},
+		{ mapData: {}, jsonSummary: {} },
+		{ ...coveragePayload, mapData: `invalid` },
+	])
+		expect((await api(`${base}/pkg`, `PUT`, body)).status).toBe(400)
+	for (const ref of [`bad/name`, `bad\\name`, `bad\u0000name`, `x`.repeat(65)])
+		expect(
+			(await api(`${base}/${encodeURIComponent(ref)}`, `PUT`, coveragePayload))
+				.status,
+		).toBe(400)
+	expect(await (await api(base)).json()).toEqual({ reports: [] })
+	await db.insert(schema.reports).values({
+		projectId: id,
+		ref: `legacy`,
+		data: JSON.stringify(istanbulReportFixture),
+	})
+	expect(await (await api(`${base}/legacy`)).json()).toMatchObject({
+		ref: `legacy`,
+		jsonSummary: null,
+	})
+	expect(await (await api(base)).json()).toMatchObject({
+		reports: [{ ref: `legacy`, jsonSummary: null }],
+	})
+	expect((await api(`${base}/legacy/badge`)).status).toBe(409)
+})
