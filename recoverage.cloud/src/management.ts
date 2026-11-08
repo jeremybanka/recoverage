@@ -18,7 +18,7 @@ type ListedProject = Project & {
 }
 
 export function managementError(
-	status: 400 | 401 | 403 | 404,
+	status: 400 | 401 | 403 | 404 | 502,
 	error: string,
 ): never {
 	throw new HTTPException(status, {

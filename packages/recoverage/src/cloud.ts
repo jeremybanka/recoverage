@@ -40,6 +40,14 @@ export type CloudOptions = {
 
 const exec = promisify(execFile)
 
+class CloudRequestError extends Error {
+	public readonly status: number
+	public constructor(status: number, message: string) {
+		super(message)
+		this.status = status
+	}
+}
+
 async function request<T>(
 	host: string,
 	route: string,
@@ -67,7 +75,8 @@ async function request<T>(
 		)
 	}
 	if (!response.ok)
-		throw new Error(
+		throw new CloudRequestError(
+			response.status,
 			`Cloud request failed (${response.status}): ${data.error ?? response.statusText}`,
 		)
 	return data as T
@@ -185,7 +194,13 @@ export async function cloudLogin(options: CloudOptions): Promise<void> {
 
 export async function cloudLogout(options: CloudOptions): Promise<void> {
 	const { host, store, credential } = await context(options)
-	await request(host, `/auth/session`, credential, undefined, `DELETE`)
+	try {
+		await request(host, `/auth/session`, credential, undefined, `DELETE`)
+	} catch (error) {
+		// An expired or already-revoked credential can safely be removed locally.
+		if (!(error instanceof CloudRequestError && error.status === 401))
+			throw error
+	}
 	Reflect.deleteProperty(store.accounts, host)
 	await writeCloudStore(store)
 	output(options.json, { success: true, host }, `Logged out of ${host}.`)
@@ -259,11 +274,12 @@ export async function cloudInit(options: CloudOptions): Promise<void> {
 	const store = await readCloudStore()
 	const key = reporterKey(linked)
 	const savedToken = store.reporters[key]
+	const savedTokenId = savedToken?.match(/^([\w-]+)\.[\w-]+$/)?.[1]
 	const tokenExists =
-		savedToken &&
+		savedTokenId &&
 		projects
 			.find((candidate) => candidate.id === project.id)
-			?.tokens.some((token) => token.id === savedToken.split(`.`)[0])
+			?.tokens.some((token) => token.id === savedTokenId)
 	if (!tokenExists) {
 		const token = await request<{ token: string }>(
 			host,

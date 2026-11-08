@@ -133,6 +133,32 @@ test(`surfaces disabled device flow and denied or expired login`, async () => {
 	expect((await api(`/auth/session`, `POST`, {})).status).toBe(400)
 })
 
+test.each([`network`, `html`, `invalid-json`])(
+	`returns a JSON gateway error when GitHub returns %s`,
+	async (failure) => {
+		vi.spyOn(globalThis, `fetch`).mockImplementation((_input, init) => {
+			expect(init?.signal).toBeDefined()
+			if (failure === `network`)
+				return Promise.reject(new Error(`connection failed`))
+			return Promise.resolve(
+				failure === `html`
+					? new Response(`<html>unavailable</html>`, { status: 503 })
+					: Response.json(null),
+			)
+		})
+		for (const [route, body] of [
+			[`/auth/device`, {}],
+			[`/auth/session`, { deviceCode: `device` }],
+		] as const) {
+			const response = await api(route, `POST`, body)
+			expect(response.status).toBe(502)
+			expect(await response.json()).toEqual({
+				error: `GitHub login is temporarily unavailable. Try again.`,
+			})
+		}
+	},
+)
+
 test(`rejects missing, malformed, expired, and reporter credentials for management`, async () => {
 	for (const token of [
 		``,

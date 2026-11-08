@@ -57,19 +57,40 @@ function stringField(body: Record<string, unknown>, field: string) {
 	return value
 }
 
+async function githubPost(
+	url: string,
+	body: URLSearchParams,
+): Promise<{ response: Response; data: Record<string, unknown> }> {
+	try {
+		const response = await fetch(url, {
+			method: `POST`,
+			signal: AbortSignal.timeout(10_000),
+			headers: {
+				Accept: `application/json`,
+				"Content-Type": `application/x-www-form-urlencoded`,
+			},
+			body,
+		})
+		const data = await response.json<unknown>()
+		if (!data || typeof data !== `object` || Array.isArray(data))
+			throw new Error(`Invalid response`)
+		return { response, data: data as Record<string, unknown> }
+	} catch {
+		return managementError(
+			502,
+			`GitHub login is temporarily unavailable. Try again.`,
+		)
+	}
+}
+
 apiRoutes.post(`/auth/device`, async (c) => {
-	const response = await fetch(`https://github.com/login/device/code`, {
-		method: `POST`,
-		headers: {
-			Accept: `application/json`,
-			"Content-Type": `application/x-www-form-urlencoded`,
-		},
-		body: new URLSearchParams({
+	const { response, data } = await githubPost(
+		`https://github.com/login/device/code`,
+		new URLSearchParams({
 			client_id: c.env.GITHUB_CLIENT_ID,
 			scope: `read:user`,
 		}),
-	})
-	const data = await response.json<Record<string, unknown>>()
+	)
 	if (!response.ok || typeof data[`device_code`] !== `string`) {
 		return c.json(
 			{
@@ -89,20 +110,15 @@ apiRoutes.post(`/auth/device`, async (c) => {
 
 apiRoutes.post(`/auth/session`, async (c) => {
 	const deviceCode = stringField(await jsonBody(c.req.raw), `deviceCode`)
-	const response = await fetch(`https://github.com/login/oauth/access_token`, {
-		method: `POST`,
-		headers: {
-			Accept: `application/json`,
-			"Content-Type": `application/x-www-form-urlencoded`,
-		},
-		body: new URLSearchParams({
+	const { response, data } = await githubPost(
+		`https://github.com/login/oauth/access_token`,
+		new URLSearchParams({
 			client_id: c.env.GITHUB_CLIENT_ID,
 			client_secret: c.env.GITHUB_CLIENT_SECRET,
 			device_code: deviceCode,
 			grant_type: `urn:ietf:params:oauth:grant-type:device_code`,
 		}),
-	})
-	const data = await response.json<Record<string, unknown>>()
+	)
 	if (
 		data[`error`] === `authorization_pending` ||
 		data[`error`] === `slow_down`
@@ -118,13 +134,18 @@ apiRoutes.post(`/auth/session`, async (c) => {
 	let githubUser: { id: number; login: string }
 	try {
 		const octokit = new Octokit({ auth: data[`access_token`] })
-		githubUser = (await octokit.request(`GET /user`)).data
+		githubUser = (
+			await octokit.request(`GET /user`, {
+				request: { signal: AbortSignal.timeout(10_000) },
+			})
+		).data
 	} catch {
 		return c.json({ error: `Could not verify GitHub identity.` }, 401)
 	}
 	if (
 		!Number.isSafeInteger(githubUser.id) ||
 		githubUser.id <= 0 ||
+		typeof githubUser.login !== `string` ||
 		!githubUser.login
 	) {
 		return c.json({ error: `GitHub returned an unsupported identity.` }, 502)
