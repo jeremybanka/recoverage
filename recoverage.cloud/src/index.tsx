@@ -4,6 +4,7 @@ import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie"
 import { css } from "hono/css"
 import { Octokit } from "octokit"
 
+import { apiRoutes } from "./api"
 import { assetsRoutes } from "./assets"
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
@@ -23,6 +24,7 @@ app.use(`*`, async (c, next) => {
 })
 
 app.route(`assets`, assetsRoutes)
+app.route(`api/v1`, apiRoutes)
 app.route(`reporter`, reporterRoutes)
 app.route(`ui`, uiRoutes)
 app.route(`shields`, shieldsRoutes)

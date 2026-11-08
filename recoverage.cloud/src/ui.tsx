@@ -5,13 +5,16 @@ import type { DrizzleD1Database } from "drizzle-orm/d1"
 import type { MiddlewareHandler } from "hono"
 import { Hono } from "hono"
 import { deleteCookie, getSignedCookie } from "hono/cookie"
-import { nanoid } from "nanoid"
 import { Octokit } from "octokit"
 
 import { cachedFetch } from "./cached-fetch"
 import { createDatabase } from "./db"
 import type { Bindings } from "./env"
-import { computeHash } from "./hash"
+import {
+	createProject,
+	createReporterToken,
+	revokeReporterToken,
+} from "./management"
 import { Project, ProjectToken } from "./project"
 import { getProjectLimit, type Role, tokensAllowed } from "./roles-permissions"
 import * as schema from "./schema"
@@ -164,12 +167,7 @@ uiRoutes.post(`/project`, uiAuth, async (c) => {
 		console.log(`returning creation form`)
 		return c.html(<Project mode="creator" />)
 	}
-	const project = (
-		await db
-			.insert(schema.projects)
-			.values({ userId, name, id: nanoid() })
-			.returning()
-	)[0]
+	const project = await createProject(db, userId, userRole, name)
 	return c.html(
 		<Project
 			{...project}
@@ -247,25 +245,15 @@ uiRoutes.post(`/token/:projectId`, uiAuth, async (c) => {
 		console.log(`returning creation form`)
 		return c.html(<ProjectToken mode="creator" projectId={projectId} />)
 	}
-	const id = nanoid()
-	const secret = nanoid()
-	const salt = nanoid()
-	const hash = await computeHash(secret, salt)
-
-	const token = (
-		await db
-			.insert(schema.tokens)
-			.values({
-				id,
-				name,
-				hash,
-				salt,
-				projectId,
-			})
-			.returning()
-	)[0]
+	const token = await createReporterToken(
+		db,
+		userId,
+		c.get(`userRole`),
+		projectId,
+		name,
+	)
 	return c.html(
-		<ProjectToken {...token} mode="existing" secretShownOnce={secret} />,
+		<ProjectToken {...token} mode="existing" secretShownOnce={token.secret} />,
 	)
 })
 
@@ -290,7 +278,7 @@ uiRoutes.delete(`/token/:tokenId`, uiAuth, async (c) => {
 		return c.json({ error: `Not your token` }, 401)
 	}
 
-	await db.delete(schema.tokens).where(eq(schema.tokens.id, tokenId)).run()
+	await revokeReporterToken(db, userId, tokenId)
 
 	return c.html(<ProjectToken {...token} mode="deleted" />)
 })

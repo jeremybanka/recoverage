@@ -19,6 +19,19 @@ export const users = sqliteTable(`users`, {
 	createdAt: timestamp().default(SQL_NOW).notNull(),
 })
 
+// Account credentials are separate from project-scoped reporter tokens.
+export const accountSessions = sqliteTable(`accountSessions`, {
+	id: text().primaryKey(),
+	userId: integer()
+		.references(() => users.id, { onDelete: `cascade` })
+		.notNull(),
+	githubLogin: text().notNull(),
+	hash: text().notNull(),
+	salt: text().notNull(),
+	expiresAt: integer().notNull(),
+	createdAt: timestamp().default(SQL_NOW).notNull(),
+})
+
 export const projects = sqliteTable(`projects`, {
 	id: text().primaryKey(),
 	userId: integer()

@@ -3,6 +3,8 @@ import type { CoverageMapData } from "istanbul-lib-coverage"
 import { createCoverageMap } from "istanbul-lib-coverage"
 import logger from "takua"
 
+import { reporterCredentials } from "./cloud-config.ts"
+import type { CloudProject } from "./cloud-types.ts"
 import {
 	deleteAllButLast10Reports,
 	getCoverage,
@@ -22,7 +24,7 @@ import {
 	uploadCoverageReportToCloud,
 } from "./persist-cloud.ts"
 import { uploadCoverageDatabaseToS3 } from "./persist-s3.ts"
-import { env, S3_CREDENTIALS } from "./recoverage.env.ts"
+import { S3_CREDENTIALS } from "./recoverage.env.ts"
 
 export class BranchCoverage {
 	public git_ref!: string
@@ -51,6 +53,7 @@ export type JsonSummary = {
 export type RecoverageOptions = {
 	defaultBranch?: string
 	silent?: boolean
+	cloud?: CloudProject
 }
 
 export async function capture(options: RecoverageOptions = {}): Promise<0 | 1> {
@@ -98,9 +101,9 @@ export async function capture(options: RecoverageOptions = {}): Promise<0 | 1> {
 			await uploadCoverageDatabaseToS3(S3_CREDENTIALS)
 			logger.chronicle?.mark(`uploaded coverage database to S3`)
 		}
-		if (env.RECOVERAGE_CLOUD_TOKEN) {
-			// biome-ignore lint/style/noNonNullAssertion: there's always an element here
-			const packageName = process.cwd().split(`/`).at(-1)!
+		const cloud = await reporterCredentials(options.cloud)
+		if (cloud.token) {
+			const packageName = cloud.report
 			logger.chronicle?.mark(
 				`uploading coverage report "${packageName}" to recoverage.cloud`,
 			)
@@ -108,8 +111,8 @@ export async function capture(options: RecoverageOptions = {}): Promise<0 | 1> {
 				packageName,
 				coverageMap,
 				coverageJsonSummary,
-				env.RECOVERAGE_CLOUD_TOKEN,
-				env.RECOVERAGE_CLOUD_URL,
+				cloud.token,
+				cloud.host,
 			)
 			if (cloudResponse instanceof Error) {
 				logger.chronicle?.mark(
@@ -136,6 +139,7 @@ export async function capture(options: RecoverageOptions = {}): Promise<0 | 1> {
 export async function diff(
 	defaultBranch = `main`,
 	silent = false,
+	cloudProject?: CloudProject,
 ): Promise<0 | 1> {
 	if (!silent && !logger.chronicle) {
 		logger.makeChronicle({ inline: true })
@@ -152,22 +156,22 @@ export async function diff(
 
 	if (!baseCoverage) {
 		logger.chronicle?.mark(`no coverage found for the target branch`)
-		if (!env.RECOVERAGE_CLOUD_TOKEN) {
+		const cloud = await reporterCredentials(cloudProject)
+		if (!cloud.token) {
 			logger.chronicle?.mark(
 				`RECOVERAGE_CLOUD_TOKEN not set; cannot download coverage report`,
 			)
 			return 1
 		}
 
-		// biome-ignore lint/style/noNonNullAssertion: there's always an element here
-		const packageName = process.cwd().split(`/`).at(-1)!
+		const packageName = cloud.report
 		logger.chronicle?.mark(
 			`getting report "${packageName}" from recoverage.cloud`,
 		)
 		const cloudCoverage = await downloadCoverageReportFromCloud(
 			packageName,
-			env.RECOVERAGE_CLOUD_TOKEN,
-			env.RECOVERAGE_CLOUD_URL,
+			cloud.token,
+			cloud.host,
 		)
 
 		if (cloudCoverage instanceof Error) {
