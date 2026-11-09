@@ -22,8 +22,8 @@ import {
 	readCloudStore,
 	readProjectConfig,
 	reporterKey,
+	updateCloudStore,
 	validateReport,
-	writeCloudStore,
 } from "./cloud-config.ts"
 import { getCoverageJsonSummary } from "./istanbul-reports.ts"
 import { lineCoverage } from "./lcov.ts"
@@ -116,7 +116,6 @@ async function context(options: CloudOptions) {
 		config,
 		cloud,
 		host,
-		store,
 		credential,
 		client: createClient(host, credential),
 	}
@@ -131,7 +130,7 @@ export async function cloudLogin(options: CloudOptions): Promise<void> {
 	const host = cloudHost(
 		options.host ?? cloudEnvironment(`RECOVERAGE_CLOUD_URL`) ?? cloud?.host,
 	)
-	const store = await readCloudStore()
+	await readCloudStore()
 	const client = createClient(host)
 	const device = await request(client.auth.device.$post())
 	if (
@@ -186,15 +185,15 @@ export async function cloudLogin(options: CloudOptions): Promise<void> {
 			!session.account?.login
 		)
 			throw new Error(`Cloud returned an invalid account credential.`)
-		// Merge again after the potentially long browser flow.
-		const latest = await readCloudStore()
-		const old = store.accounts[host]
-		latest.accounts[host] = {
-			token: session.token,
-			expiresAt: session.expiresAt,
-		}
-		await writeCloudStore(latest)
-		if (old) {
+		const old = await updateCloudStore((store) => {
+			const previous = store.accounts[host]
+			store.accounts[host] = {
+				token: session.token,
+				expiresAt: session.expiresAt,
+			}
+			return previous
+		})
+		if (old && old.token !== session.token) {
 			try {
 				await request(createClient(host, old.token).auth.session.$delete())
 			} catch {
@@ -212,7 +211,7 @@ export async function cloudLogin(options: CloudOptions): Promise<void> {
 }
 
 export async function cloudLogout(options: CloudOptions): Promise<void> {
-	const { host, store, client } = await context(options)
+	const { host, credential, client } = await context(options)
 	try {
 		await request(client.auth.session.$delete())
 	} catch (error) {
@@ -220,8 +219,10 @@ export async function cloudLogout(options: CloudOptions): Promise<void> {
 		if (!(error instanceof CloudRequestError && error.status === 401))
 			throw error
 	}
-	Reflect.deleteProperty(store.accounts, host)
-	await writeCloudStore(store)
+	await updateCloudStore((store) => {
+		if (store.accounts[host]?.token === credential)
+			Reflect.deleteProperty(store.accounts, host)
+	})
 	output(options.json, { success: true, host }, `Logged out of ${host}.`)
 }
 
@@ -281,25 +282,24 @@ export async function cloudInit(options: CloudOptions): Promise<void> {
 		project = await request(client.projects.$post({ json: { name } }))
 	}
 	const linked = { host, projectId: project.id, report }
-	const store = await readCloudStore()
 	const key = reporterKey(linked)
-	const savedToken = store.reporters[key]
-	const savedTokenId = savedToken?.match(/^([\w-]+)\.[\w-]+$/)?.[1]
-	const tokenExists =
-		savedTokenId &&
-		projects
-			.find((candidate) => candidate.id === project.id)
-			?.tokens.some((token) => token.id === savedTokenId)
-	if (!tokenExists) {
+	const tokens = client.projects[`:projectId`].tokens
+	const param = { projectId: encodeURIComponent(project.id) }
+	await updateCloudStore(async (store) => {
+		const savedTokenId = store.reporters[key]?.match(/^([\w-]+)\.[\w-]+$/)?.[1]
+		// Recheck under the lock: another initializer may just have issued a token.
+		if (savedTokenId) {
+			const current = await request(tokens.$get({ param }))
+			if (current.tokens.some((token) => token.id === savedTokenId)) return
+		}
 		const token = await request(
-			client.projects[`:projectId`].tokens.$post({
-				param: { projectId: encodeURIComponent(project.id) },
+			tokens.$post({
+				param,
 				json: { name: `local:${hostname()}`.slice(0, 128) },
 			}),
 		)
 		store.reporters[key] = token.token
-		await writeCloudStore(store)
-	}
+	})
 	await writeFile(
 		`recoverage.config.json`,
 		`${JSON.stringify({ ...config, cloud: linked }, null, 2)}\n`,
@@ -368,12 +368,11 @@ export async function cloudToken(
 				param: { ...param, tokenId: encodeURIComponent(value) },
 			}),
 		)
-		const store = await readCloudStore()
 		const key = reporterKey({ host, projectId })
-		if (store.reporters[key]?.split(`.`)[0] === value) {
-			Reflect.deleteProperty(store.reporters, key)
-			await writeCloudStore(store)
-		}
+		await updateCloudStore((store) => {
+			if (store.reporters[key]?.split(`.`)[0] === value)
+				Reflect.deleteProperty(store.reporters, key)
+		})
 		output(options.json, result, `Revoked reporter token ${value}.`)
 	}
 }
@@ -458,12 +457,12 @@ export async function cloudProject(
 			options,
 		)
 		const result = await request(project.$delete({ param }))
-		const store = await readCloudStore()
-		Reflect.deleteProperty(
-			store.reporters,
-			reporterKey({ host, projectId: value }),
-		)
-		await writeCloudStore(store)
+		await updateCloudStore((store) => {
+			Reflect.deleteProperty(
+				store.reporters,
+				reporterKey({ host, projectId: value }),
+			)
+		})
 		if (cloud?.host === host && cloud.projectId === value) {
 			Reflect.deleteProperty(config, `cloud`)
 			await writeFile(

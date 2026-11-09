@@ -28,6 +28,10 @@ let deviceOverrides: Record<string, unknown>
 let invalidSession: boolean
 let pendingError: string
 let htmlResponse: boolean
+let tokenResponseDelay: number
+let accountTokens: Set<string>
+let revokedAccounts: Set<string>
+let sessionTokens: string[]
 
 const server = createServer(async (request, response) => {
 	const route = request.url ?? ``
@@ -70,9 +74,11 @@ const server = createServer(async (request, response) => {
 			send({ error: pendingError }, 202)
 			return
 		}
+		const token = sessionTokens.shift() ?? `rca_account.secret`
+		accountTokens.add(`Bearer ${token}`)
 		send(
 			{
-				token: invalidSession ? `invalid` : `rca_account.secret`,
+				token: invalidSession ? `invalid` : token,
 				expiresAt: Date.now() + 60_000,
 				account: { id: 123, login: `test-user` },
 			},
@@ -80,12 +86,17 @@ const server = createServer(async (request, response) => {
 		)
 		return
 	}
-	if (request.headers.authorization !== `Bearer rca_account.secret` || revoked) {
+	const authorization = request.headers.authorization ?? ``
+	if (
+		!accountTokens.has(authorization) ||
+		revokedAccounts.has(authorization) ||
+		revoked
+	) {
 		send({ error: `Unauthorized` }, 401)
 		return
 	}
 	if (route === `/api/v1/auth/session` && method === `DELETE`) {
-		revoked = true
+		revokedAccounts.add(authorization)
 		send({ success: true })
 		return
 	}
@@ -210,6 +221,8 @@ const server = createServer(async (request, response) => {
 				name: body[`name`] ?? ``,
 			}
 			project.tokens.push(token)
+			if (tokenResponseDelay)
+				await new Promise((resolve) => setTimeout(resolve, tokenResponseDelay))
 			send({ ...token, token: `${token.id}.reporter-secret` }, 201)
 			return
 		}
@@ -239,6 +252,10 @@ beforeEach(async () => {
 	invalidSession = false
 	pendingError = `authorization_pending`
 	htmlResponse = false
+	tokenResponseDelay = 0
+	accountTokens = new Set([`Bearer rca_account.secret`])
+	revokedAccounts = new Set()
+	sessionTokens = []
 	await mkdir(path.join(directory, `credentials/recoverage`), {
 		recursive: true,
 	})
@@ -268,7 +285,11 @@ afterAll(async () => {
 	)
 })
 
-async function invoke(args: string[], input?: string) {
+async function invoke(
+	args: string[],
+	input?: string,
+	settings: { cwd?: string; accountToken?: string } = {},
+) {
 	try {
 		const execution = exec(
 			`bun`,
@@ -281,7 +302,7 @@ async function invoke(args: string[], input?: string) {
 				...args,
 			],
 			{
-				cwd: directory,
+				cwd: settings.cwd ?? directory,
 				timeout: 15_000,
 				env: {
 					...process.env,
@@ -289,7 +310,7 @@ async function invoke(args: string[], input?: string) {
 					RECOVERAGE_TEST_BROWSER_FILE: path.join(directory, `browser-url`),
 					XDG_CONFIG_HOME: path.join(directory, `credentials`),
 					RECOVERAGE_CLOUD_URL: host,
-					RECOVERAGE_CLOUD_ACCOUNT_TOKEN: ``,
+					RECOVERAGE_CLOUD_ACCOUNT_TOKEN: settings.accountToken ?? ``,
 					RECOVERAGE_CLOUD_TOKEN: ``,
 					NO_COLOR: `1`,
 				},
@@ -415,6 +436,7 @@ test(`expires device login rather than polling indefinitely`, async () => {
 })
 
 test(`honors GitHub polling slowdowns and revokes the replaced account credential`, async () => {
+	sessionTokens = [`rca_replacement.secret`]
 	pendingError = `slow_down`
 	const result = await invoke([`login`, `--no-browser`, `--json`])
 	expect(result.code, result.stderr).toBe(0)
@@ -810,4 +832,119 @@ test(`rejects missing projects, empty and malformed coverage, and unreadable fil
 	})
 	expect((await invoke([`report`, `upload`, `pkg`, `--project=p`])).code).toBe(1)
 	expect(calls.some((call) => call.method === `PUT`)).toBe(false)
+})
+
+test.each([false, true])(
+	`environment-token logout preserves a different saved account (expired: %s)`,
+	async (expired) => {
+		const environmentToken = `rca_environment.secret`
+		accountTokens.add(`Bearer ${environmentToken}`)
+		if (expired) revokedAccounts.add(`Bearer ${environmentToken}`)
+		const destination = path.join(directory, `credentials/recoverage/cloud.json`)
+		const before = await readFile(destination, `utf8`)
+		const result = await invoke([`logout`, `--json`], undefined, {
+			accountToken: environmentToken,
+		})
+		expect(result.code, result.stderr).toBe(0)
+		expect(JSON.parse(await readFile(destination, `utf8`))).toEqual(
+			JSON.parse(before),
+		)
+		expect(calls.find((call) => call.method === `DELETE`)?.authorization).toBe(
+			`Bearer ${environmentToken}`,
+		)
+		expect(revokedAccounts.has(`Bearer rca_account.secret`)).toBe(false)
+		expect((await invoke([`status`, `--json`])).code).toBe(0)
+	},
+)
+
+test(`environment-token logout clears a matching saved credential`, async () => {
+	const result = await invoke([`logout`, `--json`], undefined, {
+		accountToken: `rca_account.secret`,
+	})
+	expect(result.code, result.stderr).toBe(0)
+	const store = JSON.parse(
+		await readFile(
+			path.join(directory, `credentials/recoverage/cloud.json`),
+			`utf8`,
+		),
+	)
+	expect(store.accounts[host]).toBeUndefined()
+})
+
+test(`parallel initializers retain credentials for different projects and reuse tokens for the same project`, async () => {
+	projects.push(
+		...[`first`, `second`].map((id) => ({
+			id,
+			name: id,
+			reports: [],
+			tokens: [],
+		})),
+	)
+	tokenResponseDelay = 500
+	const first = path.join(directory, `first`)
+	const second = path.join(directory, `second`)
+	await Promise.all([mkdir(first), mkdir(second)])
+	const results = await Promise.all([
+		invoke([`init`, `--project=first`, `--report=pkg`, `--json`], undefined, {
+			cwd: first,
+		}),
+		invoke([`init`, `--project=second`, `--report=pkg`, `--json`], undefined, {
+			cwd: second,
+		}),
+	])
+	for (const result of results) expect(result.code, result.stderr).toBe(0)
+	const destination = path.join(directory, `credentials/recoverage/cloud.json`)
+	const store = JSON.parse(await readFile(destination, `utf8`))
+	expect(store.accounts[host].token).toBe(`rca_account.secret`)
+	expect(store.reporters).toEqual({
+		[`${host}/first`]: `token-0.reporter-secret`,
+		[`${host}/second`]: `token-0.reporter-secret`,
+	})
+	for (const [cwd, projectId] of [
+		[first, `first`],
+		[second, `second`],
+	]) {
+		expect(
+			JSON.parse(
+				await readFile(path.join(cwd, `recoverage.config.json`), `utf8`),
+			).cloud.projectId,
+		).toBe(projectId)
+	}
+	// Both processes begin with no local credential for this third project.
+	projects.push({ id: `shared`, name: `Shared`, reports: [], tokens: [] })
+	const sameProject = await Promise.all(
+		[first, second].map((cwd) =>
+			invoke([`init`, `--project=shared`, `--json`], undefined, { cwd }),
+		),
+	)
+	for (const result of sameProject) expect(result.code, result.stderr).toBe(0)
+	expect(
+		projects.find((project) => project.id === `shared`)?.tokens,
+	).toHaveLength(1)
+	expect(JSON.parse(await readFile(destination, `utf8`)).reporters).toEqual({
+		...store.reporters,
+		[`${host}/shared`]: `token-0.reporter-secret`,
+	})
+})
+
+test(`parallel logins replace and revoke the latest saved session without losing reporter credentials`, async () => {
+	sessionTokens = [`rca_first.secret`, `rca_second.secret`]
+	polls = 1
+	const destination = path.join(directory, `credentials/recoverage/cloud.json`)
+	const initial = JSON.parse(await readFile(destination, `utf8`))
+	initial.reporters[`${host}/existing`] = `existing.reporter-secret`
+	await writeFile(destination, JSON.stringify(initial))
+	const results = await Promise.all([
+		invoke([`login`, `--no-browser`, `--json`]),
+		invoke([`login`, `--no-browser`, `--json`]),
+	])
+	for (const result of results) expect(result.code, result.stderr).toBe(0)
+	const store = JSON.parse(await readFile(destination, `utf8`))
+	expect(store.reporters).toEqual(initial.reporters)
+	expect(store.accounts[host].token).toMatch(/^rca_(first|second)\.secret$/)
+	const issued = [`rca_account.secret`, `rca_first.secret`, `rca_second.secret`]
+	for (const token of issued)
+		expect(revokedAccounts.has(`Bearer ${token}`)).toBe(
+			token !== store.accounts[host].token,
+		)
 })

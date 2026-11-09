@@ -11,3 +11,5 @@
 ✨ Manage the rest of the cloud workflow with project listing, inspection, creation, renaming and deletion; token listing; report listing, summaries, uploads, downloads and deletion; and public badge URLs or Markdown. Explicit uploads support Istanbul JSON and LCOV on any branch. Confirm project/report deletion interactively or use `--yes` in scripts.
 
 🐛 Allow report replacement at the project report limit and enforce creation limits atomically across reporter and management uploads.
+
+🐛 Preserve saved account credentials when logging out with a different environment token. Serialize credential updates across CLI processes so concurrent initialization, login, and cleanup retain unrelated credentials.

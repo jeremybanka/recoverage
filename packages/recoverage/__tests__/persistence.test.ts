@@ -40,9 +40,9 @@ describe(`cloud persistence workflows`, () => {
 try {
   delete process.env.RECOVERAGE_CLOUD_TOKEN;
   process.env.XDG_CONFIG_HOME = process.cwd() + "/settings";
-  const { writeCloudStore } = await import(${sourceModule(`cloud-config.ts`)});
+  const { updateCloudStore } = await import(${sourceModule(`cloud-config.ts`)});
   const cloud = { host: server.url.origin, projectId: "project", report: "stable-package" };
-  await writeCloudStore({ accounts: { [cloud.host]: { token: "account-must-not-upload", expiresAt: Date.now() + 60000 } }, reporters: { [cloud.host + "/project"]: "local-reporter" } });
+  await updateCloudStore(store => { store.accounts[cloud.host] = { token: "account-must-not-upload", expiresAt: Date.now() + 60000 }; store.reporters[cloud.host + "/project"] = "local-reporter"; });
   current = "feature";
   assert.equal(await capture({ silent: true, cloud }), 0);
   assert.equal(await diff("main", true, cloud), 0);

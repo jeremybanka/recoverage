@@ -1,9 +1,18 @@
 import { randomUUID } from "node:crypto"
-import { chmod, mkdir, readFile, rename, writeFile } from "node:fs/promises"
+import {
+	chmod,
+	mkdir,
+	readFile,
+	realpath,
+	rename,
+	rm,
+	writeFile,
+} from "node:fs/promises"
 import { homedir } from "node:os"
 import path from "node:path"
 
 import { type Type, type } from "arktype"
+import { lock } from "proper-lockfile"
 
 import type { CloudProject } from "./cloud-types.ts"
 
@@ -97,8 +106,12 @@ function storePath() {
 }
 
 export async function readCloudStore(): Promise<Store> {
+	return readStore(storePath())
+}
+
+async function readStore(destination: string): Promise<Store> {
 	try {
-		const store = storeType(JSON.parse(await readFile(storePath(), `utf8`)))
+		const store = storeType(JSON.parse(await readFile(destination, `utf8`)))
 		if (store instanceof type.errors)
 			throw new Error(`Invalid cloud credential file: ${store.summary}`)
 		return store
@@ -108,16 +121,42 @@ export async function readCloudStore(): Promise<Store> {
 	}
 }
 
-export async function writeCloudStore(store: Store): Promise<void> {
-	const destination = storePath()
-	await mkdir(path.dirname(destination), { recursive: true, mode: 0o700 })
-	await chmod(path.dirname(destination), 0o700)
+async function writeCloudStore(
+	destination: string,
+	store: Store,
+): Promise<void> {
 	const temporary = `${destination}.${randomUUID()}.tmp`
-	await writeFile(temporary, `${JSON.stringify(store, null, 2)}\n`, {
-		mode: 0o600,
-		flag: `wx`,
+	try {
+		await writeFile(temporary, `${JSON.stringify(store, null, 2)}\n`, {
+			mode: 0o600,
+			flag: `wx`,
+		})
+		await rename(temporary, destination)
+	} finally {
+		await rm(temporary, { force: true })
+	}
+}
+
+export async function updateCloudStore<T>(
+	update: (store: Store) => Promise<T> | T,
+): Promise<T> {
+	const directory = path.dirname(storePath())
+	await mkdir(directory, { recursive: true, mode: 0o700 })
+	await chmod(directory, 0o700)
+	// Resolve the parent, since the store may not exist yet. Aliases must share a lock.
+	const destination = path.join(await realpath(directory), `cloud.json`)
+	const release = await lock(destination, {
+		realpath: false,
+		retries: { retries: 180, factor: 1, minTimeout: 500, maxTimeout: 500 },
 	})
-	await rename(temporary, destination)
+	try {
+		const store = await readStore(destination)
+		const result = await update(store)
+		await writeCloudStore(destination, store)
+		return result
+	} finally {
+		await release()
+	}
 }
 
 export function reporterKey(

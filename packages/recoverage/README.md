@@ -140,7 +140,9 @@ Login prints a GitHub verification URL and a one-time code. Approve the code in
 your browser; the CLI then saves a Recoverage account credential that expires
 after 30 days. Use `--no-browser` on remote machines, then open the printed URL
 on another device. GitHub access tokens are not saved by the CLI or cloud service.
-Run `recoverage cloud logout` to revoke the current account credential.
+Run `recoverage cloud logout` to revoke the current account credential. When
+`RECOVERAGE_CLOUD_ACCOUNT_TOKEN` is set, logout revokes that token and removes a
+saved credential only if it matches; a different saved account remains available.
 
 Use `cloud init --project=PROJECT_ID` to link an existing project. Without either
 `--name` or `--project`, an interactive terminal shows projects and asks you to
@@ -169,6 +171,10 @@ directory name and `RECOVERAGE_CLOUD_TOKEN`.
 
 Credentials are stored separately in `$XDG_CONFIG_HOME/recoverage/cloud.json`
 (default: `~/.config/recoverage/cloud.json`), with owner-only file permissions.
+Updates are serialized across CLI processes with a lock, including token creation
+during initialization. Interrupted writers leave recoverable locks; successful
+writes replace the file atomically.
+
 Account credentials manage projects, reports, and reporter tokens. Reporter tokens only
 read and publish reports for their project. Account credentials do not grant
 direct reporter access.
