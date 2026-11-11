@@ -45,7 +45,7 @@
 		"octokit": "5.0.5"
 	},
 	"devDependencies": {
-		"@cloudflare/vitest-plugin": "1.6.1",
+		"@cloudflare/vitest-plugin": "1.7.0",
 		"@octokit/types": "18.0.0",
 		"@t3-oss/env-core": "0.13.11",
 		"@types/bun": "npm:bun-types@1.4.4",
@@ -60,6 +60,6 @@
 		"takua": "0.2.3",
 		"vite": "8.3.7",
 		"vitest": "5.1.0",
-		"wrangler": "4.159.0"
+		"wrangler": "4.160.0"
 	}
 }
