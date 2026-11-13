@@ -59,7 +59,7 @@
 		"knip": "6.45.1",
 		"pin-dependencies-checker": "2.7.1",
 		"recoverage": "workspace:*",
-		"turbo": "2.11.10",
+		"turbo": "2.11.11",
 		"typescript": "7.0.2",
 		"typescript-eslint-typescript": "npm:typescript@6.0.3"
 	},
