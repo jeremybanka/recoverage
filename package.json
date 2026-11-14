@@ -44,7 +44,7 @@
 		"@changesets/cli": "3.0.3",
 		"@changesets/config": "4.0.1",
 		"@correctlyjs/schemars": "0.0.6",
-		"@dprint/biome": "0.15.5",
+		"@dprint/biome": "0.15.6",
 		"@dprint/markdown": "0.29.0",
 		"@types/bun": "npm:bun-types@1.4.4",
 		"@typescript-eslint/eslint-plugin": "8.72.2",
