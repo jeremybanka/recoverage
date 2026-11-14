@@ -1,4 +1,4 @@
-import { rmSync, writeFileSync } from "node:fs"
+import { copyFileSync, rmSync, writeFileSync } from "node:fs"
 import path from "node:path"
 
 import {
@@ -30,9 +30,7 @@ afterAll(() => {
 })
 
 function capture(): void {
-	consumer.evaluate(
-		`import { capture } from 'recoverage'; assert.equal(await capture({ defaultBranch: 'trunk', silent: true }), 0);`,
-	)
+	consumer.execute(`capture.ts`)
 }
 
 function branch(): void {
@@ -54,12 +52,9 @@ function lcovCoverage(hits: readonly [number, number]): void {
 
 describe(`LCOV capture and comparison`, () => {
 	it(`captures LCOV produced by Bun's built-in test runner`, () => {
-		writeFileSync(
+		copyFileSync(
+			path.resolve(import.meta.dirname, `../support/fixtures/example.test.ts`),
 			path.join(consumer.directory, `example.test.ts`),
-			`import { expect, test } from 'bun:test';
-import { one } from './example.ts';
-test('one', () => { expect(one).toBe(1); });
-`,
 		)
 		const result = consumer.run(`bun`, [
 			`test`,
@@ -82,9 +77,7 @@ test('one', () => { expect(one).toBe(1); });
 			lcovCoverage(after)
 			const result = consumer.cli(`-b`, `trunk`)
 			expect(result.status, result.stderr).toBe(expected)
-			consumer.evaluate(
-				`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), ${expected});`,
-			)
+			consumer.execute(`diff-expected.ts`, String(expected))
 		})
 	}
 
@@ -107,9 +100,7 @@ test('one', () => { expect(one).toBe(1); });
 			`{invalid`,
 		)
 		expect(consumer.cli(`capture`, `-b`, `trunk`).status).toBe(1)
-		consumer.evaluate(
-			`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), 1);`,
-		)
+		consumer.execute(`diff-failure.ts`)
 	})
 
 	for (const report of [
@@ -123,9 +114,7 @@ test('one', () => { expect(one).toBe(1); });
 			branch()
 			writeFileSync(path.join(consumer.directory, `coverage/lcov.info`), report)
 			expect(consumer.cli(`capture`, `-b`, `trunk`).status).toBe(1)
-			consumer.evaluate(
-				`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), 1);`,
-			)
+			consumer.execute(`diff-failure.ts`)
 		})
 	}
 
@@ -147,9 +136,7 @@ describe(`published package contracts`, () => {
 			branch()
 			consumer.coverage(after)
 			capture()
-			consumer.evaluate(
-				`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), ${expected});`,
-			)
+			consumer.execute(`diff-expected.ts`, String(expected))
 		})
 	}
 
@@ -157,9 +144,7 @@ describe(`published package contracts`, () => {
 		consumer.coverage([1, 1])
 		branch()
 		capture()
-		consumer.evaluate(
-			`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), 1);`,
-		)
+		consumer.execute(`diff-failure.ts`)
 	})
 
 	it(`compiles ordinary consumers through both published declaration exports`, () => {
@@ -173,53 +158,22 @@ describe(`published package contracts`, () => {
 		it(`compares a current ${label} with data captured by recoverage@0.1.18`, () => {
 			consumer.installDataProducer()
 			consumer.coverage(before)
-			consumer.evaluate(
-				`import { capture } from 'recoverage-0-1-18'; assert.equal(await capture({ defaultBranch: 'trunk', silent: true }), 0);`,
-			)
+			consumer.execute(`capture-released.ts`)
 			branch()
 			consumer.coverage(after)
 			capture()
-			consumer.evaluate(
-				`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), ${expected});`,
-			)
+			consumer.execute(`diff-expected.ts`, String(expected))
 		})
 	}
 
 	it(`accepts consumer-owned Istanbul maps through the lib subpath`, () => {
 		consumer.coverage([1, 0])
-		consumer.evaluate(`
-import { getCoverageJsonSummary, getCoverageTextReport } from 'recoverage/lib';
-import { createCoverageMap } from 'istanbul-lib-coverage';
-const map = createCoverageMap(await Bun.file('coverage/coverage-final.json').json());
-const summary = getCoverageJsonSummary(map);
-assert.equal(summary.total.statements.total, 2);
-assert.equal(summary.total.statements.covered, 1);
-assert.equal(summary.total.statements.pct, 50);
-assert.ok(getCoverageTextReport(map).trim().length > 0);
-`)
+		consumer.execute(`summary.ts`)
 	})
 
 	it(`returns cloud results and errors without prescribing HTTP implementation details`, () => {
 		consumer.coverage([1, 0])
-		consumer.evaluate(`
-import { downloadCoverageReportFromCloud, uploadCoverageReportToCloud, getCoverageJsonSummary } from 'recoverage/lib';
-import { createCoverageMap } from 'istanbul-lib-coverage';
-const map = createCoverageMap(await Bun.file('coverage/coverage-final.json').json());
-const summary = getCoverageJsonSummary(map);
-let status = 200;
-const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch() {
-  return new Response('coverage contents', { status });
-} });
-try {
-  assert.equal(await downloadCoverageReportFromCloud('example', 'token', server.url.href), 'coverage contents');
-  const uploaded = await uploadCoverageReportToCloud('example', map, summary, 'token', server.url.href);
-  assert(!(uploaded instanceof Error));
-  assert.equal(uploaded.success, true);
-  status = 503;
-  assert(await downloadCoverageReportFromCloud('example', 'token', server.url.href) instanceof Error);
-  assert(await uploadCoverageReportToCloud('example', map, summary, 'token', server.url.href) instanceof Error);
-} finally { server.stop(true); }
-`)
+		consumer.execute(`cloud.ts`)
 	})
 })
 
@@ -269,9 +223,7 @@ describe(`documented installed CLI behavior`, () => {
 			expect(result.status).not.toBe(0)
 			rmSync(path.join(consumer.directory, `recoverage.config.json`))
 			// Observe absence of capture through the public API, without reading tables.
-			consumer.evaluate(
-				`import { diff } from 'recoverage'; assert.equal(await diff('trunk', true), 1);`,
-			)
+			consumer.execute(`diff-failure.ts`)
 		})
 	}
 

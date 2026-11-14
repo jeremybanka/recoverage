@@ -1,6 +1,7 @@
 import type { SpawnSyncReturns } from "node:child_process"
 import { spawnSync } from "node:child_process"
 import {
+	copyFileSync,
 	cpSync,
 	existsSync,
 	mkdirSync,
@@ -117,9 +118,9 @@ export class Consumer {
 			path.join(this.directory, `.gitignore`),
 			`*\n!example.ts\n!.gitignore\n`,
 		)
-		writeFileSync(
+		copyFileSync(
+			path.resolve(import.meta.dirname, `../../support/fixtures/example.ts`),
 			path.join(this.directory, `example.ts`),
-			`export const one = 1\nexport const two = 2\n`,
 		)
 		mkdirSync(path.join(this.directory, `coverage`))
 		this.git(`init`, `--initial-branch=trunk`)
@@ -182,11 +183,13 @@ export class Consumer {
 		expect(result.status, result.stderr).toBe(0)
 	}
 
-	public evaluate(script: string): void {
-		const result = this.run(`bun`, [
-			`--eval`,
-			`import assert from 'node:assert/strict';\n${script}`,
-		])
+	public execute(scenario: string, ...args: string[]): void {
+		const target = path.join(this.directory, `scenario.ts`)
+		copyFileSync(
+			path.resolve(import.meta.dirname, `scenarios`, scenario),
+			target,
+		)
+		const result = this.run(`bun`, [target, ...args])
 		expect(result.status, result.stderr).toBe(0)
 	}
 
