@@ -8,11 +8,11 @@
     },
     "https://dprint.dev/schemas/v0.json": {
       "digest": "159e313348452ba435354be032433e6f4603b2397ae28a0909c0683c3990aa8f",
-      "discoveredAt": "2026-11-14T00:45:34.196Z",
+      "discoveredAt": "2026-11-18T01:34:43.565Z",
       "packages": {
-        "@dprint/biome": "0.15.6",
+        "@dprint/biome": "0.15.7",
         "@dprint/markdown": "0.29.0",
-        "dprint": "0.64.3"
+        "dprint": "0.65.0"
       }
     },
     "https://mise.jdx.dev/schema/mise.json": {
