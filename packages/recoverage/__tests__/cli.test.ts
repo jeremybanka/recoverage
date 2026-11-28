@@ -4,29 +4,12 @@ import { tmpdir } from "node:os"
 import path from "node:path"
 
 const entry = path.resolve(import.meta.dirname, `../src/recoverage.x.ts`)
-const coverageModule = path.resolve(import.meta.dirname, `../src/recoverage.ts`)
 let directory: string
 let preload: string
 
 beforeEach(() => {
 	directory = mkdtempSync(path.join(tmpdir(), `recoverage-cli-`))
-	preload = path.join(directory, `mock-coverage.ts`)
-	writeFileSync(
-		preload,
-		`import { mock } from "bun:test"
-mock.module(${JSON.stringify(coverageModule)}, () => ({
-  capture: async ({ defaultBranch = "main" } = {}) => {
-    console.log(JSON.stringify({ capture: defaultBranch }))
-    return Number(process.env.CAPTURE_EXIT ?? 0)
-  },
-  diff: async (defaultBranch = "main") => {
-    console.log(JSON.stringify({ diff: defaultBranch }))
-    if (process.env.DIFF_THROW) throw new Error(process.env.DIFF_THROW)
-    return Number(process.env.DIFF_EXIT ?? 0)
-  },
-}))
-`,
-	)
+	preload = path.resolve(import.meta.dirname, `support/mock-coverage.ts`)
 })
 
 afterEach(() => {

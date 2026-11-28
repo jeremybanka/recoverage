@@ -6,11 +6,15 @@
 		"**/*.config.ts",
 		"__scripts__/**/*.ts"
 	],
-	"exclude": ["dist", "__tests__/public/consumer"],
+	"exclude": ["dist", "__tests__/public/consumer", "__tests__/support/fixtures"],
 	"compilerOptions": {
 		"allowJs": false,
 		"declaration": true,
 		"isolatedDeclarations": true,
-		"types": ["vitest/globals"]
+		"types": ["vitest/globals"],
+		"paths": {
+			"recoverage": ["./src/recoverage.ts"],
+			"recoverage/lib": ["./src/recoverage.lib.ts"]
+		}
 	}
 }

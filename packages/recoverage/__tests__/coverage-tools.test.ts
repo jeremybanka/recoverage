@@ -19,6 +19,13 @@ import {
 	normalizedCoverage,
 } from "../__scripts__/coverage-tools.ts"
 
+function fixture(name: string): string {
+	return readFileSync(
+		path.resolve(import.meta.dirname, `support/fixtures`, name),
+		`utf8`,
+	)
+}
+
 test(`source and bundled Bun processes retain identical counters, including early exits`, () => {
 	const directory = mkdtempSync(
 		path.join(tmpdir(), `recoverage-instrumentation-`),
@@ -28,21 +35,8 @@ test(`source and bundled Bun processes retain identical counters, including earl
 		const destination = path.join(directory, `instrumented`)
 		const counters = path.join(directory, `counters`)
 		for (const dir of [source, destination, counters]) mkdirSync(dir)
-		writeFileSync(
-			path.join(source, `entry.ts`),
-			`#!/usr/bin/env bun
-export function choose(value: boolean): string {
-  if (value) return "yes"
-  return "no"
-}
-console.log(choose(process.argv.includes("yes")))
-process.exit(0)
-`,
-		)
-		writeFileSync(
-			path.join(source, `unimported.ts`),
-			`export const unused = () => 42\n`,
-		)
+		writeFileSync(path.join(source, `entry.ts`), fixture(`entry.ts`))
+		writeFileSync(path.join(source, `unimported.ts`), fixture(`unimported.ts`))
 		const merged = createCoverageMap(instrumentSources(source, destination))
 		const entry = path.join(destination, `entry.ts`)
 		const bundle = path.join(directory, `bundle.js`)
@@ -125,63 +119,22 @@ test(`collection includes public-only code and preserves declarations and consum
 				},
 			}),
 		)
-		write(
-			`src/recoverage.ts`,
-			`export function value(publicCall: boolean): string {
-  if (publicCall) return "public";
-  return "unit";
-}`,
-		)
-		write(`src/recoverage.x.ts`, `export const cli = true;`)
-		write(`src/git-status.ts`, `export const git = true;`)
-		write(
-			`build.ts`,
-			`
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-rmSync("dist", { recursive: true, force: true });
-mkdirSync("dist");
-const result = await Bun.build({ entrypoints: ["src/recoverage.ts"], outdir: "dist", target: "bun" });
-if (!result.success) throw new Error("build failed");
-// Model a clean runtime build that cannot emit declarations after instrumentation.
-if (!readFileSync("src/recoverage.ts", "utf8").includes("__recoverageFs")) {
-  writeFileSync("dist/recoverage.d.ts", "export declare function value(publicCall: boolean): string;");
-}
-`,
-		)
-		write(
-			`vitest.config.ts`,
-			`export default { test: { include: ["__tests__/unit.test.ts"] } };`,
-		)
-		write(
-			`__tests__/unit.test.ts`,
-			`
-import { expect, test } from "vitest";
-import { value } from "../src/recoverage.ts";
-import { cli } from "../src/recoverage.x.ts";
-import { git } from "../src/git-status.ts";
-test("unit path", () => { expect(value(false)).toBe("unit"); expect(cli && git).toBe(true); });
-`,
-		)
+		write(`src/recoverage.ts`, fixture(`collector-source.ts`))
+		write(`src/recoverage.x.ts`, fixture(`collector-cli.ts`))
+		write(`src/git-status.ts`, fixture(`collector-git.ts`))
+		write(`build.ts`, fixture(`collector-build.ts`))
+		write(`recoverage.d.ts`, fixture(`recoverage.d.ts`))
+		write(`vitest.config.ts`, fixture(`collector-vitest.config.ts`))
+		write(`__tests__/unit.test.ts`, fixture(`collector-unit.test.ts`))
 		write(
 			`__tests__/public/consumer/node_modules/contract-only/index.js`,
-			`export const marker = "consumer dependency";`,
+			fixture(`consumer-dependency.ts`),
 		)
 		write(
 			`__tests__/public/contract.test.ts`,
-			`
-import { expect, test } from "bun:test";
-import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { marker } from "./consumer/node_modules/contract-only/index.js";
-test("public path", () => {
-  const result = spawnSync("bun", ["--eval", 'import { value } from "./dist/recoverage.js"; console.log(value(true));'], { encoding: "utf8" });
-  expect(result.status).toBe(0);
-  expect(result.stdout.trim()).toBe("public");
-  expect(readFileSync("dist/recoverage.d.ts", "utf8")).toContain("export declare function value");
-  expect(marker).toBe("consumer dependency");
-});
-`,
+			fixture(`collector-public.test.ts`),
 		)
+		write(`__tests__/public/consume.ts`, fixture(`consume.ts`))
 		collectPackage(packageDirectory, path.join(directory, `scratch`))
 		const coverage = createCoverageMap(normalizedCoverage(packageDirectory))
 		expect(
@@ -195,7 +148,7 @@ test("public path", () => {
 		// seemingly healthy report based only on the Vitest half of the suite.
 		write(
 			`__tests__/public/contract.test.ts`,
-			`import { test } from "bun:test"; test("failure", () => { throw new Error("public contract failed"); });`,
+			fixture(`collector-failure.test.ts`),
 		)
 		expect(() => {
 			collectPackage(packageDirectory, path.join(directory, `failing`))

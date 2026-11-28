@@ -5,26 +5,15 @@ import path from "node:path"
 
 import { localEnvironment } from "../../__scripts__/coverage-tools.ts"
 
-export function sourceModule(name: string): string {
-	return JSON.stringify(path.resolve(import.meta.dirname, `../../src`, name))
-}
-
 // A fresh process isolates Bun module mocks, environment, and database caches.
 // Preserve RECOVERAGE_COUNTERS so these tests contribute to the normal report.
-export function runBun(script: string): void {
+export function runBun(scenario: string, ...args: string[]): void {
 	const directory = mkdtempSync(path.join(tmpdir(), `recoverage-behavior-`))
 	try {
 		mkdirSync(path.join(directory, `coverage`))
 		const result = spawnSync(
 			`bun`,
-			[
-				`--eval`,
-				`
-import assert from "node:assert/strict";
-import { mock } from "bun:test";
-${script}
-`,
-			],
+			[path.resolve(import.meta.dirname, `scenarios`, scenario), ...args],
 			{
 				cwd: directory,
 				encoding: `utf8`,
